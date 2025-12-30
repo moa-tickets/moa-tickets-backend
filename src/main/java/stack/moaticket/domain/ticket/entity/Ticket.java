@@ -23,8 +23,8 @@ import java.time.LocalDateTime;
         name = "ticket",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_seat_session_id",
-                        columnNames = {"seat_id", "session_id"}
+                        name = "uk_session_seat_id",
+                        columnNames = {"session_id", "seat_id"}
                 )
         })
 public class Ticket extends Base {

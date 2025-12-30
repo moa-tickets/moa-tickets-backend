@@ -22,7 +22,7 @@ public class Hall extends Base {
     @Column(name = "hall_id")
     private Long id;
 
-    @Column(name = "hall_name", nullable = false)
+    @Column(name = "hall_name", nullable = false, unique = true)
     private String name;
 
     @Enumerated(EnumType.STRING)

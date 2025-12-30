@@ -15,7 +15,15 @@ import stack.moaticket.domain.hall.entity.Hall;
 @AllArgsConstructor
 @Entity
 @SuperBuilder
-@Table(name = "seat")
+@Table(
+
+        name = "seat",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_hall_seat",
+                        columnNames = {"hall_id", "seat_number"}
+                )
+        })
 public class Seat extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "seat_id")

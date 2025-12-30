@@ -34,9 +34,10 @@ public class Payment extends Base {
     @Column(name = "payment_amount", nullable = false, updatable = false)
     private int amount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_state", nullable = false)
     private PaymentState state;
 
-    @Column(name = "payment_paid_at", nullable = false, updatable = false)
+    @Column(name = "payment_paid_at", nullable = true)
     private LocalDateTime paidAt;
 }

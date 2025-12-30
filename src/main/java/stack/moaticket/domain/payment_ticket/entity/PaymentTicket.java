@@ -27,6 +27,6 @@ public class PaymentTicket extends Base {
     private Payment payment;
 
     @ManyToOne
-    @JoinColumn(name = "ticket_id", nullable = false)
+    @JoinColumn(name = "ticket_id", nullable = false, unique = true)
     private Ticket ticket;
 }

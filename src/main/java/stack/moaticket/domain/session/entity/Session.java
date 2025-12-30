@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import stack.moaticket.domain.base.Base;
+import stack.moaticket.domain.concert.entity.Concert;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +22,10 @@ public class Session extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "session_id")
     private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "concert_id", nullable = false)
+    private Concert concert;
 
     @Column(name = "session_date", nullable = false)
     private LocalDateTime date;

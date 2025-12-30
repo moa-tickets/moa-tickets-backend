@@ -11,13 +11,22 @@ import stack.moaticket.domain.seat.entity.Seat;
 import stack.moaticket.domain.session.entity.Session;
 import stack.moaticket.domain.ticket.type.TicketState;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @SuperBuilder
-@Table(name = "ticket")
+@Table(
+        name = "ticket",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_seat_session_id",
+                        columnNames = {"seat_id", "session_id"}
+                )
+        })
 public class Ticket extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ticket_id")
@@ -39,5 +48,5 @@ public class Ticket extends Base {
     private String holdToken;
 
     @Column(name = "hold_expired", nullable = true)
-    private String holdExpired;
+    private LocalDateTime holdExpired;
 }

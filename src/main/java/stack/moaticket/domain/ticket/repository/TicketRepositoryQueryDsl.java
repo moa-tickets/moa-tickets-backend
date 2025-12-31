@@ -15,14 +15,25 @@ import static stack.moaticket.domain.ticket.entity.QTicket.ticket;
 public class TicketRepositoryQueryDsl {
     private final JPAQueryFactory jpaQueryFactory;
 
-    // 여러 티켓 조회(비관적 락). 데드락 방지를 위해 id 기준 정렬
-    public List<Ticket> getTicketWithLock(List<Long> ticketIds) {
+    // HOLD 처리용 : 선택된 티켓들을 비관적 락으로 함께 조회
+    // 데드락 방지를 위해 id 기준 정렬
+    public List<Ticket> getTicketsWithLock(List<Long> ticketIds) {
         return jpaQueryFactory.selectFrom(ticket)
                 .where(ticket.id.in(ticketIds))
                 .orderBy(ticket.id.asc())
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetch();
     }
+
+    // CONFIRM / RELEASE 처리용 : holdToken으로 점유된 티켓 묶음을 락과 함께 조회
+    public List<Ticket> getTicketsByHoldTokenWithLock(String holdToken) {
+        return jpaQueryFactory.selectFrom(ticket)
+                .where(ticket.holdToken.eq(holdToken))
+                .orderBy(ticket.id.asc())
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetch();
+    }
+
 
     // 회차별 티켓 목록 조회(좌석 배치도용)
     public List<Ticket> getTicketsBySession(long sessionId) {

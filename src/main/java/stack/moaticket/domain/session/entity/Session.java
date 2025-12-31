@@ -17,13 +17,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @SuperBuilder
-@Table(name = "session")
+@Table(name = "session",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_concert_session_date",
+                        columnNames = {"concert_id", "session_date"}
+                )
+        }
+)
 public class Session extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "session_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "concert_id", nullable = false)
     private Concert concert;
 

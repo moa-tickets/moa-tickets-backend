@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import stack.moaticket.domain.base.Base;
-import stack.moaticket.domain.seat.entity.Seat;
 import stack.moaticket.domain.session.entity.Session;
 import stack.moaticket.domain.ticket.type.TicketState;
 
@@ -23,8 +22,8 @@ import java.time.LocalDateTime;
         name = "ticket",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_session_seat_id",
-                        columnNames = {"session_id", "seat_id"}
+                        name = "uk_session_seat_num",
+                        columnNames = {"session_id", "seat_num"}
                 )
         })
 public class Ticket extends Base {
@@ -32,13 +31,12 @@ public class Ticket extends Base {
     @Column(name = "ticket_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
-    @ManyToOne
-    @JoinColumn(name = "seat_id", nullable = false)
-    private Seat seat;
+    @Column(name = "seat_num", nullable = false)
+    private int num;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ticket_state", nullable = false)

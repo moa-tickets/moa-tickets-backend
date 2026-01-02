@@ -15,6 +15,7 @@ public enum MoaExceptionType {
     VALIDATION_FAILED("요청 값이 올바르지 않습니다.", 400),
 
     // 403
+    INVALID_STREAM_REQUEST("유효하지 않은 스트림 요청입니다.", 403),
     HOLD_TOKEN_MISMATCH("선점 토큰이 일치하지 않습니다.", 403),
 
     // 404
@@ -31,7 +32,10 @@ public enum MoaExceptionType {
     HOLD_EXPIRED("좌석 선점 시간이 만료되었습니다.", 410),
 
     // 500
-    INTERNAL_SERVER_ERROR("서버 내부 오류", 500);
+    INTERNAL_SERVER_ERROR("서버 내부 오류", 500),
+
+    // 502
+    STREAM_ERROR("스트림 관련 오류가 발생했습니다.", 502);
 
     private final String message;
     private final Integer statusCode;

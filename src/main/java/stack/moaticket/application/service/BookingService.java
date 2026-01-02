@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.domain.ticket.type.TicketState;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,14 +39,14 @@ public class BookingService {
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsWithLock(sortedIds);
 
         if (tickets.size() != sortedIds.size()) {
-            throw new IllegalArgumentException("일부 티켓을 찾을 수 없습니다");
+            throw new MoaException(MoaExceptionType.TICKET_NOT_FOUND);
         }
 
         // 모두 같은 session인지 검증
         boolean allSameSession = tickets.stream()
                 .allMatch(t -> t.getSession().getId().equals(sessionId));
         if (!allSameSession) {
-            throw new IllegalArgumentException("다른 회차의 좌석은 함께 선택할 수 없습니다");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -52,10 +54,15 @@ public class BookingService {
         // 만료된 HOLD는 AVAILABLE로 정리
         tickets.forEach(t -> normalizeExpiredHold(t, now));
 
-        // 모두 AVAILABLE이어야 HOLD 가능
-        boolean allAvailable = tickets.stream().allMatch(t -> t.getState() == TicketState.AVAILABLE);
-        if (!allAvailable) {
-            throw new IllegalStateException("선택한 좌석 중 이미 예약된 좌석이 있습니다");
+        // 상태별로 명확하게 409 처리
+        for (Ticket t : tickets) {
+            if (t.getState() == TicketState.SOLD) {
+                throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
+            }
+            if (t.getState() == TicketState.HOLD) {
+                // 만료된 HOLD는 위에서 AVAILABLE로 풀렸으니 여기서 HOLD면 "만료 전 다른 사람이 선점중"
+                throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
+            }
         }
 
         // HOLD 토큰/만료시간 생성
@@ -84,7 +91,7 @@ public class BookingService {
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsByHoldTokenWithLock(holdToken);
 
         if (tickets.isEmpty()) {
-            throw new IllegalArgumentException("유효하지 않은 holdToken 입니다");
+            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -100,10 +107,10 @@ public class BookingService {
         );
 
         if (!allHeldByToken) {
-            throw new IllegalStateException("점유 정보가 유효하지 않습니다");
+            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
-        // SOLD 확정 + HOLD 정보 정리(추천)
+        // SOLD 확정 + HOLD 정보 정리
         for (Ticket t : tickets) {
             t.setState(TicketState.SOLD);
             t.setHoldToken(null);
@@ -117,7 +124,10 @@ public class BookingService {
      */
     @Transactional
     public void releaseHold(String holdToken) {
-        validateHoldToken(holdToken);
+        // 없거나 빈 토큰 그냥 성공 처리
+        if (holdToken == null || holdToken.isBlank()) {
+            return;
+        }
 
         // 토큰으로 묶인 티켓들 락 조회
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsByHoldTokenWithLock(holdToken);
@@ -129,11 +139,11 @@ public class BookingService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 만료된 HOLD는 AVAILABLE로 정리(이미 풀렸으면 idempotent 처리하고 싶다면 OK)
+        // 만료된 HOLD는 AVAILABLE로 정리
         tickets.forEach(t -> normalizeExpiredHold(t, now));
 
+        // HOLD 토큰/만료가 이상할 경우 토큰 소유가 아니므로 403 처리해야하지만 인증 붙으면 변경
         boolean allReleasable = tickets.stream().allMatch(t ->
-                // 만료로 이미 풀린 경우까지 허용할지 정책 선택
                 t.getState() == TicketState.AVAILABLE
                         || (t.getState() == TicketState.HOLD
                         && holdToken.equals(t.getHoldToken())
@@ -142,7 +152,7 @@ public class BookingService {
         );
 
         if (!allReleasable) {
-            throw new IllegalStateException("점유 해제할 수 없는 좌석이 포함되어 있습니다");
+            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
         for (Ticket t : tickets) {
@@ -166,22 +176,21 @@ public class BookingService {
 
     private void validateHoldRequest(Long sessionId, List<Long> ticketIds) {
         if (sessionId == null) {
-            throw new IllegalArgumentException("sessionId는 필수입니다");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
         if (ticketIds == null || ticketIds.isEmpty()) {
-            throw new IllegalArgumentException("ticketIds는 필수입니다");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
         if (ticketIds.size() > MAX_TICKETS_PER_HOLD) {
-            throw new IllegalArgumentException("최대 " + MAX_TICKETS_PER_HOLD + "개까지 선택 가능합니다");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
     }
 
     private void validateHoldToken(String holdToken) {
         if (holdToken == null || holdToken.isBlank()) {
-            throw new IllegalArgumentException("holdToken은 필수입니다");
+            throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
         }
-        // (선택) 형식 검증: "hold_" prefix 등
-        // if (!holdToken.startsWith("hold_")) ...
+
     }
 
     /**

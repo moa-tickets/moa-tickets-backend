@@ -102,8 +102,6 @@ public class BookingService {
 
         boolean allHeldByToken = tickets.stream().allMatch(t ->
                 t.getState() == TicketState.HOLD
-                        && holdToken.equals(t.getHoldToken())
-                        && t.getHoldExpired() != null
                         && !now.isAfter(t.getHoldExpired())
         );
 
@@ -147,8 +145,6 @@ public class BookingService {
         boolean allReleasable = tickets.stream().allMatch(t ->
                 t.getState() == TicketState.AVAILABLE
                         || (t.getState() == TicketState.HOLD
-                        && holdToken.equals(t.getHoldToken())
-                        && t.getHoldExpired() != null
                         && !now.isAfter(t.getHoldExpired()))
         );
 

@@ -1,7 +1,6 @@
 package stack.moaticket.system.config;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,9 +46,7 @@ public class SecurityConfig {
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
                         configuration.setMaxAge(3600L);
-
                         configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization"));
-
                         return configuration;
                     }
                 }));

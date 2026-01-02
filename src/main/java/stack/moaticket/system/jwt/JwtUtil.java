@@ -23,11 +23,10 @@ public class JwtUtil {
     }
 
     public Boolean isExpired(String token) {
-
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-    public String createJwt(long memberId, String role, Long expiredMs){
+    public String createJwt(long memberId, Long expiredMs){
         return Jwts.builder()
                 .subject(String.valueOf(memberId))
                 .issuedAt(new Date(System.currentTimeMillis()))

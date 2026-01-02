@@ -1,10 +1,6 @@
 package stack.moaticket.system.jwt;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import stack.moaticket.domain.member.entity.Member;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -16,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -35,17 +31,16 @@ public class JwtFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
 
         if(cookies != null) {
-            for (Cookie cookie : cookies){
-                if(cookie.getName().equals("Authorization")){
-                    authorization = cookie.getValue();
-                }
-            }
+            authorization = Arrays.stream(cookies)
+                    .filter(cookie -> cookie.getName().equals("Authorization"))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
         }
 
         if(authorization == null){
             System.out.println("token null");
             filterChain.doFilter(request, response);
-
             return;
         }
 
@@ -54,7 +49,6 @@ public class JwtFilter extends OncePerRequestFilter {
         if(jwtUtil.isExpired(token)){
             System.out.println("token expired");
             filterChain.doFilter(request, response);
-
             return;
         }
 

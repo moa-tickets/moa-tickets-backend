@@ -18,6 +18,7 @@ import stack.moaticket.domain.oauth_info.service.OauthInfoService;
 import stack.moaticket.system.oauth.facade.OauthFacade;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -48,6 +49,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         } else {
             //존재하는 oauthinfo가 있을시 state를 기준으로 막을거 생각(탈퇴, 차단등)
             Member loggedInMember = memberService.findById(existOauthInfo.getMember().getId());
+            if(loggedInMember == null) throw new RuntimeException(); // TODO
             memberId = loggedInMember.getId();
         }
 

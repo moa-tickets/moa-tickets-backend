@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import stack.moaticket.domain.member.entity.Member;
 
+import java.util.Optional;
+
 import static stack.moaticket.domain.member.entity.QMember.member;
 
 @Repository

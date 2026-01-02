@@ -17,5 +17,18 @@ spring:
     resources:
       add-mappings: false
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            scope:
+              - profile
+              - email
+  jwt:
+    secret: ${JWT_SECRET}
+
 server:
   port: ${SERVER_PORT:8080}

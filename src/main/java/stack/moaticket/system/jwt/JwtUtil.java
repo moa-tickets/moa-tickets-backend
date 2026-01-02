@@ -22,10 +22,6 @@ public class JwtUtil {
         return Long.parseLong(Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getSubject());
     }
 
-    public Boolean isExpired(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
-    }
-
     public String createJwt(long memberId, Long expiredMs){
         return Jwts.builder()
                 .subject(String.valueOf(memberId))

@@ -1,5 +1,9 @@
 package stack.moaticket.system.jwt;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,43 +25,44 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(request.getRequestURL().toString().endsWith("/login")) {
+        try {
+            if(request.getRequestURL().toString().endsWith("/login")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String authorization = null;
+            Cookie[] cookies = request.getCookies();
+
+            if(cookies != null) {
+                authorization = Arrays.stream(cookies)
+                        .filter(cookie -> cookie.getName().equals("Authorization"))
+                        .map(Cookie::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
+
+            if(authorization == null){
+                System.out.println("token null");
+                throw new RuntimeException(); // TODO
+            }
+
+            String token = authorization;
+
+            long memberId = jwtUtil.getSubject(token);
+
+            Authentication authToken = new UsernamePasswordAuthenticationToken(memberId, null, null);
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
             filterChain.doFilter(request, response);
-            return;
+        } catch (MalformedJwtException e) {
+            throw new RuntimeException(); // TODO
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException(); // TODO
+        } catch (UnsupportedJwtException e) {
+            throw new RuntimeException(); // TODO
+        } catch (SignatureException e) {
+            throw new RuntimeException(); // TODO
         }
-
-
-        String authorization = null;
-        Cookie[] cookies = request.getCookies();
-
-        if(cookies != null) {
-            authorization = Arrays.stream(cookies)
-                    .filter(cookie -> cookie.getName().equals("Authorization"))
-                    .map(Cookie::getValue)
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        if(authorization == null){
-            System.out.println("token null");
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = authorization;
-
-        if(jwtUtil.isExpired(token)){
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        long memberId = jwtUtil.getSubject(token);
-
-        Authentication authToken = new UsernamePasswordAuthenticationToken(memberId, null, null);
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
-
     }
 }

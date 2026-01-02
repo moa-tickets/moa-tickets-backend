@@ -5,11 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.application.service.BookingService;
-import stack.moaticket.domain.ticket.entity.Ticket;
-import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
-import stack.moaticket.domain.ticket.type.TicketState;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,7 +14,6 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
-    private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
 
     /**
      * 회차별 좌석 목록 조회 (좌석 배치도용)
@@ -31,15 +26,7 @@ public class BookingController {
     public ResponseEntity<List<BookingDto.TicketResponse>> getTicketsBySession(
             @PathVariable Long sessionId
     ) {
-        LocalDateTime now = LocalDateTime.now();
-
-        List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsBySession(sessionId);
-
-        List<BookingDto.TicketResponse> response = tickets.stream()
-                .map(ticket -> toTicketResponse(ticket, now))
-                .toList();
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(bookingService.getTicketsBySession(sessionId));
     }
 
     /**
@@ -86,26 +73,4 @@ public class BookingController {
         return ResponseEntity.ok().build();
     }
 
-    private BookingDto.TicketResponse toTicketResponse(Ticket ticket, LocalDateTime now) {
-        String state = resolveStateForView(ticket, now);
-
-        return BookingDto.TicketResponse.builder()
-                .ticketId(ticket.getId())
-                .seatNum(ticket.getNum())
-                .state(state)
-                .build();
-    }
-
-    /**
-     * "보이는 상태" 계산:
-     * - HOLD + 만료됨 => AVAILABLE로 내려준다
-     */
-    private String resolveStateForView(Ticket ticket, LocalDateTime now) {
-        if (ticket.getState() == TicketState.HOLD
-                && ticket.getHoldExpired() != null
-                && now.isAfter(ticket.getHoldExpired())) {
-            return TicketState.AVAILABLE.name();
-        }
-        return ticket.getState().name();
-    }
 }

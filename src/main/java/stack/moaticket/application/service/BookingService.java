@@ -3,6 +3,7 @@ package stack.moaticket.application.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.domain.ticket.type.TicketState;
@@ -163,6 +164,30 @@ public class BookingService {
             }
         }
     }
+
+    public List<BookingDto.TicketResponse> getTicketsBySession(Long sessionId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsBySession(sessionId);
+
+        return tickets.stream()
+                .map(t -> BookingDto.TicketResponse.builder()
+                        .ticketId(t.getId())
+                        .seatNum(t.getNum())
+                        .state(resolveStateForView(t, now))
+                        .build())
+                .toList();
+    }
+
+    private String resolveStateForView(Ticket ticket, LocalDateTime now) {
+        if (ticket.getState() == TicketState.HOLD
+                && ticket.getHoldExpired() != null
+                && now.isAfter(ticket.getHoldExpired())) {
+            return TicketState.AVAILABLE.name();
+        }
+        return ticket.getState().name();
+    }
+
 
     private void normalizeExpiredHold(Ticket t, LocalDateTime now) {
         if (t.getState() == TicketState.HOLD

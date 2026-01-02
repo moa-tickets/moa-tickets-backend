@@ -33,7 +33,7 @@ public class BookingService {
         // 데드락 방지: 항상 같은 순서로 락 획득
         List<Long> sortedIds = ticketIds.stream().sorted().toList();
 
-        // 🔒 선택 좌석들 락 조회
+        // 선택 좌석들 락 조회
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsWithLock(sortedIds);
 
         if (tickets.size() != sortedIds.size()) {
@@ -80,7 +80,7 @@ public class BookingService {
     public void confirmHold(String holdToken) {
         validateHoldToken(holdToken);
 
-        // 🔒 토큰으로 묶인 티켓들 락 조회
+        // 토큰으로 묶인 티켓들 락 조회
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsByHoldTokenWithLock(holdToken);
 
         if (tickets.isEmpty()) {
@@ -119,12 +119,12 @@ public class BookingService {
     public void releaseHold(String holdToken) {
         validateHoldToken(holdToken);
 
-        // 🔒 토큰으로 묶인 티켓들 락 조회
+        // 토큰으로 묶인 티켓들 락 조회
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsByHoldTokenWithLock(holdToken);
 
+        // 토큰이 원래 없으면 그냥 성공 처리
         if (tickets.isEmpty()) {
-            // idempotent하게 성공 처리할지(OK) / 에러로 할지 선택 가능
-            throw new IllegalArgumentException("유효하지 않은 holdToken 입니다");
+            return;
         }
 
         LocalDateTime now = LocalDateTime.now();

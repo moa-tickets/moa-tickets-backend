@@ -36,7 +36,7 @@ public class TicketRepositoryQueryDsl {
 
 
     // 회차별 티켓 목록 조회(좌석 배치도용)
-    public List<Ticket> getTicketsBySession(long sessionId) {
+    public List<Ticket> getTicketsBySession(Long sessionId) {
         return jpaQueryFactory.selectFrom(ticket)
                 .where(ticket.session.id.eq(sessionId))
                 .orderBy(ticket.num.asc())

@@ -76,7 +76,7 @@ public class BookingService {
             t.setHoldExpired(expiresAt);
         }
 
-        return new HoldResult(holdToken, sessionId, sortedIds, expiresAt);
+        return new HoldResult(holdToken, expiresAt);
     }
 
     /**
@@ -194,7 +194,7 @@ public class BookingService {
     }
 
     /**
-     * Service 내부 전용 결과 객체 (Controller/DTO는 다음 커밋에서 변환)
+     * Service 내부 전용 결과 객체
      */
-    public record HoldResult(String holdToken, Long sessionId, List<Long> ticketIds, LocalDateTime expiresAt) {}
+    public record HoldResult(String holdToken, LocalDateTime expiresAt) {}
 }

@@ -28,11 +28,12 @@ public class FaqQuestionService {
     private static final int PAGE_SIZE = 10;
   
     public static <T extends Ownable> void checkOwner(T data, Member member) {
-        if(member == null || member.getId() == null) {
+        if (member == null || member.getId() == null) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
 
-        if(data.getMember() == null || !data.getMember().getId().equals(member.getId())) {
+        if (data.getMember() == null || !data.getMember().getId().equals(member.getId())) {
+        }
     }
 
     // 글 생성

@@ -25,7 +25,7 @@ public class FaqQuestionService {
     public static void checkAuth(Member member) {
         // 인가 기능
         if(member.getId() == null) {
-            throw new MoaException(MoaExceptionType.NOT_AUTH);
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
     }
 
@@ -66,7 +66,9 @@ public class FaqQuestionService {
 
     // 글 수정
     @Transactional
-    public FaqQuestionResponseDTO updateQuestion(Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
+    public FaqQuestionResponseDTO updateQuestion(Member member, Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
+
+        checkAuth(member);
 
         // 기존의 엔티티 조회
         FaqQuestion faqQuestionById = faqQuestionRepository.findById(id).orElseThrow(() -> {

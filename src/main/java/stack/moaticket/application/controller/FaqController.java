@@ -33,10 +33,11 @@ public class FaqController {
 
     @PutMapping(value = "/api/faq/{id}")
     public ResponseApiDTO<FaqQuestionResponseDTO> updateFaqQuestion(
+            @AuthenticationPrincipal Member member,
             @PathVariable Long id,
             @RequestPart FaqQuestionRequestDTO rqdto,
             @RequestPart(value = "file", required = false) MultipartFile file) {
-        FaqQuestionResponseDTO updateFinalDTO = faqQuestionService.updateQuestion(id, rqdto, file);
+        FaqQuestionResponseDTO updateFinalDTO = faqQuestionService.updateQuestion(member, id, rqdto, file);
         return ResponseApiDTO.success(MessageType.UPDATE, updateFinalDTO);
     }
 }

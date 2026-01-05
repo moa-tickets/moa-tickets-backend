@@ -13,7 +13,6 @@ import stack.moaticket.domain.member.entity.Member;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder

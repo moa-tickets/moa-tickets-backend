@@ -2,14 +2,11 @@ package stack.moaticket.domain.ticket.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import stack.moaticket.domain.hall.type.HallType;
 import stack.moaticket.domain.session.entity.Session;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepository;
 import stack.moaticket.domain.ticket.type.TicketState;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

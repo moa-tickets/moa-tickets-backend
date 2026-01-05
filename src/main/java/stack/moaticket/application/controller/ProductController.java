@@ -12,7 +12,6 @@ import stack.moaticket.application.dto.ConcertDetailDto;
 import stack.moaticket.application.dto.ConcertListDto;
 import stack.moaticket.application.dto.CreateConcertDto;
 import stack.moaticket.application.service.ProductService;
-import stack.moaticket.domain.concert.service.ConcertService;
 import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;

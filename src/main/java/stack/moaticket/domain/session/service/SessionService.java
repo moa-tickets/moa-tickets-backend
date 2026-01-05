@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import stack.moaticket.application.dto.SessionDto;
 import stack.moaticket.domain.concert.entity.Concert;
-import stack.moaticket.domain.concert.repository.ConcertRepositoryQueryDsl;
 import stack.moaticket.domain.session.entity.Session;
 import stack.moaticket.domain.session.repository.SessionRepository;
 import stack.moaticket.domain.session.repository.SessionRepositoryQueryDsl;
@@ -14,7 +13,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SessionService {
-    private final ConcertRepositoryQueryDsl concertRepositoryQueryDsl;
     private final SessionRepository sessionRepository;
     private final SessionRepositoryQueryDsl sessionRepositoryQueryDsl;
 

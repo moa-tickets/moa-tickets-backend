@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 import stack.moaticket.domain.concert.entity.Concert;
 import stack.moaticket.domain.concert.repository.ConcertRepository;
 import stack.moaticket.domain.concert.repository.ConcertRepositoryQueryDsl;
-import stack.moaticket.domain.hall.repository.HallRepositoryQueryDsl;
-import stack.moaticket.domain.member.repository.MemberRepositoryQueryDsl;
 
 import java.util.List;
 

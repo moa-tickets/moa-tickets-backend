@@ -6,8 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.member.type.MemberState;
+
+import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,4 +39,5 @@ public class Member extends Base {
 
     @Column(name = "member_email", nullable = false, updatable = false)
     private String email;
+
 }

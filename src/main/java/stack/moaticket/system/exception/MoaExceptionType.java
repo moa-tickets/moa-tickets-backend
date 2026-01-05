@@ -18,12 +18,14 @@ public enum MoaExceptionType {
     // 403
     INVALID_STREAM_REQUEST("유효하지 않은 스트림 요청입니다.", 403),
     HOLD_TOKEN_MISMATCH("선점 토큰이 일치하지 않습니다.", 403),
+    NOT_AUTH("인증되지 않은 사용자입니다",403),
 
     // 404
     NOT_FOUND("요청한 리소스를 찾을 수 없습니다.", 404),
     TICKET_NOT_FOUND("티켓 정보를 찾을 수 없습니다.", 404),
     SESSION_NOT_FOUND("회차 정보를 찾을 수 없습니다.", 404),
     SEAT_NOT_FOUND("좌석 정보를 찾을 수 없습니다.", 404),
+    MEMBER_NOT_FOUND("올바른 사용자를 찾을 수 없습니다", 404),
 
     // 409
     TICKET_ALREADY_SOLD("이미 판매 완료된 좌석입니다.", 409),

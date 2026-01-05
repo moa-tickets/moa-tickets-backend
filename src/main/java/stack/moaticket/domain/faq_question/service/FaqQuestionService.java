@@ -1,5 +1,7 @@
 package stack.moaticket.domain.faq_question.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
 import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.repository.MemberRepository;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
@@ -18,10 +21,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FaqQuestionService {
     private final FaqQuestionRepository faqQuestionRepository;
+    private final MemberRepository memberRepository;
 
     // 글 생성
     @Transactional
-    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto, MultipartFile file) {
+    public FaqQuestionResponseDTO createQuestion(FaqQuestionRequestDTO rqdto, MultipartFile file) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if(authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new MoaException(MoaExceptionType.NOT_AUTH);
+        }
+
+        String email = authentication.getName();
+
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
 
         // 중복 체크
         if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {

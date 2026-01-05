@@ -20,8 +20,8 @@ public class FaqController {
     private final FaqQuestionService faqQuestionService;
 
     @PostMapping(value= "/api/faq")
-    public ResponseApiDTO<FaqQuestionResponseDTO> createFaqQuestion(@AuthenticationPrincipal Member member, @RequestPart FaqQuestionRequestDTO rdto, @RequestPart(value = "file", required = false) MultipartFile file) {
-        FaqQuestionResponseDTO finalDTO = faqQuestionService.createQuestion(member, rdto, file);
+    public ResponseApiDTO<FaqQuestionResponseDTO> createFaqQuestion(@RequestPart FaqQuestionRequestDTO rdto, @RequestPart(value = "file", required = false) MultipartFile file) {
+        FaqQuestionResponseDTO finalDTO = faqQuestionService.createQuestion(rdto, file);
         return ResponseApiDTO.success(MessageType.CREATE, finalDTO);
     }
 

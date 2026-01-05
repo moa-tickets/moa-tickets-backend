@@ -17,19 +17,19 @@ public class FaqController {
 
     private final FaqQuestionService faqQuestionService;
 
-    @PostMapping(value= "/api/faq/create")
+    @PostMapping(value= "/api/faq")
     public ResponseApiDTO<FaqQuestionResponseDTO> createFaqQuestion(@RequestPart FaqQuestionRequestDTO rdto, @RequestPart(value = "file", required = false) MultipartFile file) {
         FaqQuestionResponseDTO finalDTO = faqQuestionService.createQuestion(rdto, file);
         return ResponseApiDTO.success(MessageType.CREATE, finalDTO);
     }
 
-    @GetMapping(value= "/api/faq/read")
+    @GetMapping(value= "/api/faq")
     public ResponseApiDTO<List<FaqQuestionResponseDTO>> readFaqQuestion() {
         List<FaqQuestionResponseDTO> readFinalDTO = faqQuestionService.readQuestionList();
         return ResponseApiDTO.success(MessageType.RETRIEVE, readFinalDTO);
     }
 
-    @PutMapping(value = "/api/faq/{id}/update")
+    @PutMapping(value = "/api/faq/{id}")
     public ResponseApiDTO<FaqQuestionResponseDTO> updateFaqQuestion(@PathVariable Long id, @RequestPart FaqQuestionRequestDTO rqdto, @RequestPart(value = "file", required = false) MultipartFile file) {
         FaqQuestionResponseDTO updateFinalDTO = faqQuestionService.updateQuestion(id, rqdto, file);
         return ResponseApiDTO.success(MessageType.UPDATE, updateFinalDTO);

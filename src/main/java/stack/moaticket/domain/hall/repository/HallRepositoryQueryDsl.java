@@ -22,6 +22,7 @@ public class HallRepositoryQueryDsl {
 
     public List<Hall> getAllHall() {
         return jpaQueryFactory.selectFrom(hall)
+                .orderBy(hall.createdAt.desc())
                 .fetch();
     }
 

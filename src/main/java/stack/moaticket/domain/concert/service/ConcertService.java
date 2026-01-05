@@ -31,27 +31,15 @@ public class ConcertService {
     }
 
 
-    //READ(Concert내의 id 값을 입력받아 그 값을 이용해 ConcertQueryDsl의 getConcertById를 이용해 가지고 온다. 하나의 콘서트를 리턴)
     public Concert getConcertById(long concertId){
         Concert concert = concertRepositoryQueryDsl.getConcert(concertId);
 
         return concert;
     }
-    //READ(검색조건에 맞춰서 여러개 생성 예정)
     public List<Concert> getConcertList(String concertName, String sortBy, String sortOrder, Pageable pageable){
         List<Concert> concertList = concertRepositoryQueryDsl.getConcertList(concertName, sortBy, sortOrder, pageable);
 
         return concertList;
     }
 
-    //UPDATE(ConcertDto를 입력받아 그 안의 id와 내용을 가지고 update실행
-//    @Transactional
-//    public long updateConcert(long id, CreateConcertDto.Request request){
-//        Concert concert = concertRepositoryQueryDsl.getConcert(id);
-//
-//        Hall hall = hallRepositoryQueryDsl.getHall(request.getHallId());
-//
-//        concert.updateConcert(request, hall);
-//        return concert.getId();
-//    }
 }

@@ -9,7 +9,6 @@ import stack.moaticket.domain.hall.type.HallType;
 
 public class HallDto {
 
-    //Request
     @Getter
     @NoArgsConstructor
     public static class HallRequest{
@@ -17,7 +16,6 @@ public class HallDto {
         private HallType hallType;
     }
 
-    //HallResponse에 이 세가지가 모두 필요할지...
     @Getter
     @Builder
     public static class HallResponse{

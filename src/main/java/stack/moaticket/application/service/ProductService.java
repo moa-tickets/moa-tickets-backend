@@ -55,8 +55,8 @@ public class ProductService {
         return response;
     }
 
-    public List<ConcertListDto.Response> getConcertList(ConcertListDto.Request request, Pageable pageable) {
-        List<ConcertListDto.Response> concertList = concertService.getConcertList(request.getConcertName(), request.getSortBy(), request.getSortOrder(), pageable)
+    public List<ConcertListDto.Response> getConcertList(String searchValue, String sortBy, String sortOrder, Pageable pageable) {
+        List<ConcertListDto.Response> concertList = concertService.getConcertList(searchValue, sortBy, sortOrder, pageable)
                 .stream()
                 .map(ConcertListDto.Response::from).toList();
         return concertList;

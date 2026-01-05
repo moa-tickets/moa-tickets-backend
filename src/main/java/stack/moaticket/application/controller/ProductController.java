@@ -1,6 +1,7 @@
 package stack.moaticket.application.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -39,15 +40,14 @@ public class ProductController {
     }
 
     @GetMapping("/concertList")
-    public ResponseEntity<List<ConcertListDto.Response>> getConcertList(ConcertListDto.Request request, @PageableDefault(size = 10, sort = "date", direction = Sort.Direction.DESC) Pageable pageable){
+    public ResponseEntity<List<ConcertListDto.Response>> getConcertList(
+            @RequestParam(value = "searchValue", required = false, defaultValue = "") String searchValue,
+            @RequestParam(value = "sortBy", required = false, defaultValue = "date") String sortBy,
+            @RequestParam(value = "sortOrder", required = false, defaultValue = "desc") String sortOrder,
+            @PageableDefault(size = 10, sort = "date", direction = Sort.Direction.DESC) Pageable pageable){
 
-        return ResponseEntity.ok(productService.getConcertList(request, pageable));
+        return ResponseEntity.ok(productService.getConcertList(searchValue, sortBy, sortOrder, pageable));
     }
 
 
-//    @PostMapping("/hall")
-//    public ResponseEntity<Long> hallSave(@RequestBody HallDto.HallRequest request){
-////        long hallId = hallService.upsertHall("hallName", HallType.LARGE).getId();
-////        return ResponseEntity.status(HttpStatus.CREATED).body(hallId);
-//    }
 }

@@ -66,10 +66,9 @@ public class SecurityConfig {
 
         //JWTFilter 추가
         http
-                .addFilterBefore(new JwtFilter(jwtUtil, memberService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtFilter(memberService, jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-
-//        oauth2
+        //oauth2
         http
                 .oauth2Login((oauth2) -> oauth2
                         .authorizationEndpoint(auth -> auth

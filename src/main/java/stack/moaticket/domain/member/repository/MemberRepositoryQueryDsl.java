@@ -19,4 +19,10 @@ public class MemberRepositoryQueryDsl {
                 .where(member.id.eq(id))
                 .fetchOne();
     }
+
+    public Member findByEmail(String email) {
+        return jpaQueryFactory.selectFrom(member)
+                .where(member.email.eq(email))
+                .fetchOne();
+    }
 }

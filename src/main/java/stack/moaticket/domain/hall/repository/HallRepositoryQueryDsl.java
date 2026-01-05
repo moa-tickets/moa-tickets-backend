@@ -4,10 +4,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import stack.moaticket.domain.hall.entity.Hall;
+import static stack.moaticket.domain.hall.entity.QHall.hall;
 
 import java.util.List;
-
-import static stack.moaticket.domain.hall.entity.QHall.hall;
 
 @Repository
 @RequiredArgsConstructor

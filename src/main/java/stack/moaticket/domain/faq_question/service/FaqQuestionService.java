@@ -25,7 +25,7 @@ public class FaqQuestionService {
     public static void checkAuth(Member member) {
         // 인가 기능
         if(member.getId() == null) {
-            throw new MoaException(MoaExceptionType.NOT_AUTH);
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
     }
 

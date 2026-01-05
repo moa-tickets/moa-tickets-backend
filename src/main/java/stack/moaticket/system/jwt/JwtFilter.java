@@ -14,6 +14,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.entity.Member;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,6 +24,7 @@ import java.util.Arrays;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final MemberService memberService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -50,8 +53,9 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = authorization;
 
             long memberId = jwtUtil.getSubject(token);
+            Member member = memberService.findById(memberId); // TODO
 
-            Authentication authToken = new UsernamePasswordAuthenticationToken(memberId, null, null);
+            Authentication authToken = new UsernamePasswordAuthenticationToken(member, null, null);
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
             filterChain.doFilter(request, response);

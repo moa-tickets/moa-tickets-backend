@@ -11,6 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.system.jwt.JwtFilter;
 import stack.moaticket.system.jwt.JwtUtil;
 import stack.moaticket.system.oauth.component.Oauth2SuccessHandler;
@@ -23,7 +24,7 @@ import java.util.Collections;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
+    private final MemberService memberService;
     private final OauthService oauthService;
     private final Oauth2SuccessHandler oauth2SuccessHandler;
     private final JwtUtil jwtUtil;
@@ -65,10 +66,10 @@ public class SecurityConfig {
 
         //JWTFilter 추가
         http
-                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtFilter(jwtUtil, memberService), UsernamePasswordAuthenticationFilter.class);
 
 
-        //oauth2
+//        oauth2
         http
                 .oauth2Login((oauth2) -> oauth2
                         .authorizationEndpoint(auth -> auth

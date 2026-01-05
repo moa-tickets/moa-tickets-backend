@@ -70,12 +70,10 @@ public class FaqQuestionService {
             faqQuestionById.setContents(rqdto.getContent());
         }
 
-        if(rqdto.getOption() != faqQuestionById.getFaqType()) {
+        if(rqdto.getOption() != null) {
             faqQuestionById.setFaqType(rqdto.getOption());
         }
 
-        // save
-        faqQuestionRepository.save(faqQuestionById);
 
         return FaqQuestionResponseDTO.fromEntity(faqQuestionById);
     }

@@ -34,13 +34,13 @@ public class ProductService {
 
     @Transactional
     public CreateConcertDto.Response createConcert(Member member, CreateConcertDto.Request request) {
-        if(!member.isSeller()) throw new MoaException(MoaExceptionType.NOT_SELLER);
+        if(!member.isSeller()) throw new MoaException(MoaExceptionType.FORBIDDEN);
 
         Hall hall = hallService.getHallById(request.getHallId());
         int totalSeats = hall.getType().total();
 
         Concert concert = concertService.createConcert(request.toConcert(member, hall));
-        List<Session> sessions = sessionService.insertSessions(concert.getId(), request.getSessions());
+        List<Session> sessions = sessionService.insertSessions(concert, request.getSessions());
 
         List<Ticket> ticketList = new ArrayList<>();
         List<SessionDto.SessionResponse> sessionResponseList = new ArrayList<>();

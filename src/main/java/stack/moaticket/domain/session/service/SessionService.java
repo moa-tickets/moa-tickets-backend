@@ -18,8 +18,7 @@ public class SessionService {
     private final SessionRepository sessionRepository;
     private final SessionRepositoryQueryDsl sessionRepositoryQueryDsl;
 
-    public List<Session> insertSessions(long concertId, List<SessionDto.SessionRequest> requests){
-        Concert concert = concertRepositoryQueryDsl.getConcert(concertId);
+    public List<Session> insertSessions(Concert concert, List<SessionDto.SessionRequest> requests){
 
         List<Session> sessions = requests.stream()
                 .map(request -> request.toEntity(concert))

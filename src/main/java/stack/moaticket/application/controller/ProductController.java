@@ -1,7 +1,6 @@
 package stack.moaticket.application.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -23,7 +22,6 @@ import java.util.List;
 @RequestMapping("/api/product")
 public class ProductController {
     private final ProductService productService;
-    private final ConcertService concertService;
 
     @PostMapping("/concert")
     public ResponseEntity<CreateConcertDto.Response> concertSave(

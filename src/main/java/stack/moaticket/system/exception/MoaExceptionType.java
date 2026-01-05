@@ -16,7 +16,6 @@ public enum MoaExceptionType {
 
     // 401
     UNAUTHORIZED("인증되지 않은 사용자입니다.", 401),
-    NOT_SELLER("권한이 없는 사용자입니다", 401),
 
     // 403
     INVALID_STREAM_REQUEST("유효하지 않은 스트림 요청입니다.", 403),

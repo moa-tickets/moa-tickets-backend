@@ -39,19 +39,9 @@ public class HallService {
         return hallRepository.save(hall);
     }
 
-    public HallDto.HallResponse getHallById(Long id) {
+    public Hall getHallById(Long id) {
+        return hallRepositoryQueryDsl.getHall(id);
 
-        Hall hall = hallRepositoryQueryDsl.getHall(id);
-
-        if (hall == null){
-            throw new MoaException(MoaExceptionType.NOT_FOUND); //TODO
-        }
-
-        return HallDto.HallResponse.builder()
-                .hallName(hall.getName())
-                .hallState(hall.getState())
-                .hallType(hall.getType())
-                .build();
     }
 
     public List<HallDto.HallResponse> getHalls(){

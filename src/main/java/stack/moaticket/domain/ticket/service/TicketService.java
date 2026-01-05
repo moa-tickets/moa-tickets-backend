@@ -15,21 +15,17 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TicketService {
-
     private final TicketRepository ticketRepository;
 
-    @Transactional
-    public void insertTickets(Session session){
-        HallType hallType = session.getConcert().getHall().getType();
-        List<Ticket> tickets = new ArrayList<>();
-        int totalTickets = hallType.getCol() * hallType.getRow();
-        for (int i = 1; i <= totalTickets; i++){
-            tickets.add(Ticket.builder()
-                            .session(session)
-                            .num(i)
-                            .state(TicketState.AVAILABLE)
-                    .build());
-        }
-        ticketRepository.saveAll(tickets);
+    public Ticket createTicket(Session session, int num){
+        return Ticket.builder()
+                .session(session)
+                .num(num)
+                .state(TicketState.AVAILABLE)
+                .build();
+    }
+
+    public void saveAll(List<Ticket> ticketList) {
+        ticketRepository.saveAll(ticketList);
     }
 }

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import stack.moaticket.application.dto.ConcertDto;
 import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.hall.entity.Hall;
 import stack.moaticket.domain.member.entity.Member;
@@ -54,14 +53,5 @@ public class Concert extends Base {
     @Column(name = "concert_thumbnail", nullable = true)
     private String thumbnail;
 
-    public void updateConcert(ConcertDto.ConcertRequest request, Hall hall){
-        this.name = request.getConcertName();
-        this.duration = request.getConcertDuration();
-        this.age = request.getConcertAge();
-        this.bookingOpen = request.getConcertBookingOpen();
-        this.start = request.getConcertStart();
-        this.end = request.getConcertEnd();
-        this.thumbnail = request.getConcertThumbnail();
-        this.hall = hall;
-    }
+
 }

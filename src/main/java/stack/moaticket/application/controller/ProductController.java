@@ -1,45 +1,47 @@
 package stack.moaticket.application.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import stack.moaticket.application.dto.ConcertDto;
-import stack.moaticket.application.dto.HallDto;
+import stack.moaticket.application.dto.ConcertDetailDto;
+import stack.moaticket.application.dto.ConcertListDto;
+import stack.moaticket.application.dto.CreateConcertDto;
 import stack.moaticket.application.service.ProductService;
-import stack.moaticket.domain.concert.service.ConcertService;
-import stack.moaticket.domain.hall.service.HallService;
-import stack.moaticket.domain.session.service.SessionService;
-import stack.moaticket.domain.concert.entity.Concert;
-import stack.moaticket.domain.hall.type.HallType;
-import stack.moaticket.domain.session.entity.Session;
+import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
 
-import static stack.moaticket.domain.concert.entity.QConcert.concert;
-
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/product")
+@RequestMapping("/api/product")
 public class ProductController {
     private final ProductService productService;
-    private final ConcertService concertService;
 
     @PostMapping("/concert")
-    public ResponseEntity<Long> concertSave(@RequestBody ConcertDto.ConcertRequest request){
-        long concertId = productService.createConcert(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(concertId);
+    public ResponseEntity<CreateConcertDto.Response> concertSave(
+            @AuthenticationPrincipal Member member,
+            @RequestBody CreateConcertDto.Request request){
+        CreateConcertDto.Response response = productService.createConcert(member, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-//    @GetMapping("/concert")
-//    public ResponseEntity<ConcertDto.ConcertResponse> searchConcerts(){
-//
-////        return ResponseEntity.ok(productService.search(condition, pageable));
-//    }
+
 
     @GetMapping("/detail/{id}")
-    public ResponseEntity<ConcertDto.ConcertDetailResponse> getConcertDetail(@PathVariable("id") Long id){
-        ConcertDto.ConcertDetailResponse response = productService.getConcertDetail(id);
+    public ResponseEntity<ConcertDetailDto.Response> getConcertDetail(@PathVariable Long id){
+        ConcertDetailDto.Response response = productService.getConcertDetail(id);   //TODO
+
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/concertList")
+    public ResponseEntity<List<ConcertListDto.Response>> getConcertList(ConcertListDto.Request request, @PageableDefault(size = 10, sort = "date", direction = Sort.Direction.DESC) Pageable pageable){
+
+        return ResponseEntity.ok(productService.getConcertList(request, pageable));
     }
 
 

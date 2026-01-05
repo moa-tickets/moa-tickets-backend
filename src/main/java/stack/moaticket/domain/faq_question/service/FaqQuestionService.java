@@ -1,7 +1,9 @@
 package stack.moaticket.domain.faq_question.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -57,11 +59,12 @@ public class FaqQuestionService {
 
     // 글 조회
     @Transactional(readOnly = true)
-    public Page<FaqQuestionResponseDTO> readQuestionList(Member member, Pageable pageable) {
+    public Page<FaqQuestionResponseDTO> readQuestionList(Member member, int pageNo, String criteria) {
+        int PAGE_SIZE = 10;
         checkAuth(member);
-        Page<FaqQuestion> optFaqQuestionList = faqQuestionRepository.findAll(pageable);
-        Page<FaqQuestionResponseDTO> convertFaqQuestionList = optFaqQuestionList.map(FaqQuestionResponseDTO::fromEntity);
-        return convertFaqQuestionList;
+        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, criteria));
+        Page<FaqQuestionResponseDTO> page = faqQuestionRepository.findAll(pageable).map(FaqQuestionResponseDTO::fromEntity);
+        return page;
     }
 
     // 글 수정
@@ -90,5 +93,17 @@ public class FaqQuestionService {
 
 
         return FaqQuestionResponseDTO.fromEntity(faqQuestionById);
+    }
+
+    // 글 삭제
+    public FaqQuestionResponseDTO deleteQuestion(Member member, Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
+        checkAuth(member);
+
+        FaqQuestion deletedQuestion = FaqQuestion.builder().title(rqdto.getTitle())
+                                        .contents(rqdto.getContent()).faqType(rqdto.getOption()).build();
+
+        faqQuestionRepository.deleteById(id);
+
+        return FaqQuestionResponseDTO.fromEntity(deletedQuestion);
     }
 }

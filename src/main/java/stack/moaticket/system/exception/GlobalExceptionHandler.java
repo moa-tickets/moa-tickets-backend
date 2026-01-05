@@ -10,8 +10,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 @RestControllerAdvice
 @Slf4j
@@ -22,25 +22,35 @@ public class GlobalExceptionHandler {
 
     // 비즈니스 예외 처리
     @ExceptionHandler(MoaException.class)
-    public ResponseEntity<ExceptionDto> handleCustomException(MoaExceptionType ex) {
-
-        ExceptionDto response = new ExceptionDto(ex);
-
-        return ResponseEntity
-                .status(ex.getStatusCode())
-                .body(response);
+    public ResponseEntity<ExceptionDto> handleCustomException(MoaException ex) {
+        log.error("MoaException 발생: type={}, message={}",
+                ex.getType(), ex.getMessage(), ex);
+        return ex.toResponse();
     }
 
     // 검증 실패 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionDto> handleValidationException(MethodArgumentNotValidException ex) {
-        String validationMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+    public ResponseEntity<ExceptionDto> handleValidationException(
+            MethodArgumentNotValidException ex
+    ) {
+        // 모든 검증 실패 메시지 수집
+        List<String> errors = ex.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .map(error -> error.getDefaultMessage())
+                .toList();
 
-        log.error("ValidationException 발생: 메시지 = {}", validationMessage);
+        log.error("ValidationException 발생: errors = {}", errors);
+
+        // details에 모든 에러 포함
+        ExceptionDto response = new ExceptionDto(
+                MoaExceptionType.VALIDATION_FAILED,
+                errors  // 여러 검증 실패 메시지 모두 전달
+        );
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ExceptionDto(MoaExceptionType.MISMATCH_ARGUMENT));
+                .body(response);
     }
 
     // 404 예외 처리 (존재하지 않는 엔드포인트 요청)
@@ -56,17 +66,20 @@ public class GlobalExceptionHandler {
     // 그 외 모든 예외 처리 (Fallback)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionDto> handleUnexpectedException(Exception ex) {
-        // 상세 로그는 항상 남김
-        log.error("알 수 없는 예외 발생", ex);
+        log.error("예상치 못한 예외 발생: type={}, message={}",
+                ex.getClass().getName(), ex.getMessage(), ex);
 
-        // 메시지 결정: prod 환경이면 일반 메시지, dev 환경이면 상세 메시지
-        String message = isProdProfile()
-                ? "서버 내부 오류"
-                : ex.getMessage();
+        // prod 환경이면 일반 메시지, dev 환경이면 상세 메시지
+        Object details = isProdProfile() ? null : ex.getMessage();
+
+        ExceptionDto response = new ExceptionDto(
+                MoaExceptionType.INTERNAL_SERVER_ERROR,
+                details  // ← dev에서는 ex.getMessage(), prod에서는 null
+        );
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ExceptionDto(MoaExceptionType.INTERNAL_SERVER_ERROR));
+                .body(response);
     }
 
     private boolean isProdProfile() {

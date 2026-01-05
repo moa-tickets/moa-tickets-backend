@@ -1,8 +1,11 @@
 package stack.moaticket.domain.faq_question.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
@@ -19,14 +22,18 @@ import java.util.List;
 public class FaqQuestionService {
     private final FaqQuestionRepository faqQuestionRepository;
 
-    // 글 생성
-    @Transactional
-    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto, MultipartFile file) {
-
+    public static void checkAuth(Member member) {
         // 인가 기능
         if(member.getId() == null) {
             throw new MoaException(MoaExceptionType.NOT_AUTH);
         }
+    }
+
+    // 글 생성
+    @Transactional
+    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto, MultipartFile file) {
+
+        checkAuth(member);
 
         // 중복 체크
         if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {
@@ -49,10 +56,11 @@ public class FaqQuestionService {
     }
 
     // 글 조회
-    @Transactional
-    public List<FaqQuestionResponseDTO> readQuestionList() {
-        List<FaqQuestion> optFaqQuestionList = faqQuestionRepository.findAll();
-        List<FaqQuestionResponseDTO> convertFaqQuestionList = optFaqQuestionList.stream().map(FaqQuestionResponseDTO::fromEntity).toList();
+    @Transactional(readOnly = true)
+    public Page<FaqQuestionResponseDTO> readQuestionList(Member member, Pageable pageable) {
+        checkAuth(member);
+        Page<FaqQuestion> optFaqQuestionList = faqQuestionRepository.findAll(pageable);
+        Page<FaqQuestionResponseDTO> convertFaqQuestionList = optFaqQuestionList.map(FaqQuestionResponseDTO::fromEntity);
         return convertFaqQuestionList;
     }
 

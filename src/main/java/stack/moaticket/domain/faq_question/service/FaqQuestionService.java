@@ -99,7 +99,7 @@ public class FaqQuestionService {
     public FaqQuestionResponseDTO deleteQuestion(Member member, Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
         checkAuth(member);
 
-        FaqQuestion deletedQuestion = FaqQuestion.builder().title(rqdto.getTitle())
+        FaqQuestion deletedQuestion = FaqQuestion.builder().id(id).title(rqdto.getTitle())
                                         .contents(rqdto.getContent()).faqType(rqdto.getOption()).build();
 
         faqQuestionRepository.deleteById(id);

@@ -1,6 +1,6 @@
 package stack.moaticket.domain.faq_question.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,12 +8,10 @@ import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
 import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
-import stack.moaticket.system.exception.ExceptionDto;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

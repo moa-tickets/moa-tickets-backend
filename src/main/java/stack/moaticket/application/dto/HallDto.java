@@ -7,7 +7,7 @@ import stack.moaticket.domain.hall.entity.Hall;
 import stack.moaticket.domain.hall.type.HallState;
 import stack.moaticket.domain.hall.type.HallType;
 
-public class HallDto {
+public abstract class HallDto {
 
     @Getter
     @NoArgsConstructor

@@ -8,7 +8,7 @@ import stack.moaticket.domain.session.entity.Session;
 
 import java.time.LocalDateTime;
 
-public class SessionDto {
+public abstract class SessionDto {
 
     @Getter
     @NoArgsConstructor

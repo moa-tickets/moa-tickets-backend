@@ -12,12 +12,12 @@ import stack.moaticket.domain.ticket_hold.repository.TicketHoldCommand;
 import stack.moaticket.domain.ticket_hold.repository.TicketHoldRepositoryQueryDsl;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
+import stack.moaticket.system.util.TokenGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,7 +75,7 @@ public class BookingService {
         }
 
         // HOLD 토큰/만료시간 생성
-        String holdToken = "hold_" + UUID.randomUUID();
+        String holdToken = TokenGenerator.generateHoldToken();
         LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
         List<TicketHold> holds = tickets.stream()

@@ -8,6 +8,7 @@ import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
 import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
+import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
@@ -20,7 +21,7 @@ public class FaqQuestionService {
 
     // 글 생성
     @Transactional
-    public FaqQuestionResponseDTO createQuestion(FaqQuestionRequestDTO rqdto, MultipartFile file) {
+    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto, MultipartFile file) {
 
         // 중복 체크
         if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {
@@ -29,7 +30,7 @@ public class FaqQuestionService {
 
         // 엔티티 생성
         FaqQuestion faqQuestion = FaqQuestion.builder().title(rqdto.getTitle()).contents(rqdto.getContent())
-                .faqType(rqdto.getOption()).build();
+                .faqType(rqdto.getOption()).member(member).build();
 
         // 파일 처리
         if(file != null && !file.isEmpty()) {

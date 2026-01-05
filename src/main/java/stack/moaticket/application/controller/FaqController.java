@@ -1,11 +1,13 @@
 package stack.moaticket.application.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
 import stack.moaticket.domain.faq_question.service.FaqQuestionService;
+import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.common.MessageType;
 import stack.moaticket.system.common.ResponseApiDTO;
 
@@ -18,8 +20,8 @@ public class FaqController {
     private final FaqQuestionService faqQuestionService;
 
     @PostMapping(value= "/api/faq")
-    public ResponseApiDTO<FaqQuestionResponseDTO> createFaqQuestion(@RequestPart FaqQuestionRequestDTO rdto, @RequestPart(value = "file", required = false) MultipartFile file) {
-        FaqQuestionResponseDTO finalDTO = faqQuestionService.createQuestion(rdto, file);
+    public ResponseApiDTO<FaqQuestionResponseDTO> createFaqQuestion(@AuthenticationPrincipal Member member, @RequestPart FaqQuestionRequestDTO rdto, @RequestPart(value = "file", required = false) MultipartFile file) {
+        FaqQuestionResponseDTO finalDTO = faqQuestionService.createQuestion(member, rdto, file);
         return ResponseApiDTO.success(MessageType.CREATE, finalDTO);
     }
 
@@ -30,7 +32,10 @@ public class FaqController {
     }
 
     @PutMapping(value = "/api/faq/{id}")
-    public ResponseApiDTO<FaqQuestionResponseDTO> updateFaqQuestion(@PathVariable Long id, @RequestPart FaqQuestionRequestDTO rqdto, @RequestPart(value = "file", required = false) MultipartFile file) {
+    public ResponseApiDTO<FaqQuestionResponseDTO> updateFaqQuestion(
+            @PathVariable Long id,
+            @RequestPart FaqQuestionRequestDTO rqdto,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
         FaqQuestionResponseDTO updateFinalDTO = faqQuestionService.updateQuestion(id, rqdto, file);
         return ResponseApiDTO.success(MessageType.UPDATE, updateFinalDTO);
     }

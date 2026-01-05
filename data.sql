@@ -103,15 +103,12 @@ FROM ins_concert
 -- 5) 티켓 생성: 각 session_id마다 seat_num 1~80
 -- =========================================================
 INSERT INTO ticket (
-    session_id, seat_num, ticket_state, hold_token, hold_expired,
-    created_at, updated_at
+    session_id, seat_num, ticket_state, created_at, updated_at
 )
 SELECT
     ins_session.session_id,
     gs AS seat_num,
     'AVAILABLE' AS ticket_state,
-    NULL AS hold_token,
-    NULL AS hold_expired,
     now(), now()
 FROM ins_session
          CROSS JOIN generate_series(1, 80) AS gs;

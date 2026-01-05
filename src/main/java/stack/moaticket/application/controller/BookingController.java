@@ -2,6 +2,7 @@ package stack.moaticket.application.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.application.service.BookingService;
@@ -37,10 +38,11 @@ public class BookingController {
      */
     @PostMapping("/tickets/hold")
     public ResponseEntity<BookingDto.HoldResponse> holdTickets(
+            @AuthenticationPrincipal Long memberId,
             @RequestBody BookingDto.HoldRequest request
     ) {
         BookingService.HoldResult result =
-                bookingService.holdTickets(request.getSessionId(), request.getTicketIds());
+                bookingService.holdTickets(memberId, request.getSessionId(), request.getTicketIds());
 
         BookingDto.HoldResponse response = BookingDto.HoldResponse.builder()
                 .holdToken(result.holdToken())
@@ -55,9 +57,10 @@ public class BookingController {
      */
     @PostMapping("/holds/{holdToken}/confirm")
     public ResponseEntity<Void> confirmHold(
+            @AuthenticationPrincipal Long memberId,
             @PathVariable String holdToken
     ) {
-        bookingService.confirmHold(holdToken);
+        bookingService.confirmHold(memberId, holdToken);
         return ResponseEntity.ok().build();
     }
 
@@ -67,9 +70,10 @@ public class BookingController {
      */
     @PostMapping("/holds/{holdToken}/release")
     public ResponseEntity<Void> releaseHold(
+            @AuthenticationPrincipal Long memberId,
             @PathVariable String holdToken
     ) {
-        bookingService.releaseHold(holdToken);
+        bookingService.releaseHold(memberId, holdToken);
         return ResponseEntity.ok().build();
     }
 

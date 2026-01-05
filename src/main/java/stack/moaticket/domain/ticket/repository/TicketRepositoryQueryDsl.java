@@ -25,16 +25,6 @@ public class TicketRepositoryQueryDsl {
                 .fetch();
     }
 
-    // CONFIRM / RELEASE 처리용 : holdToken으로 점유된 티켓 묶음을 락과 함께 조회
-    public List<Ticket> getTicketsByHoldTokenWithLock(String holdToken) {
-        return jpaQueryFactory.selectFrom(ticket)
-                .where(ticket.holdToken.eq(holdToken))
-                .orderBy(ticket.id.asc())
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                .fetch();
-    }
-
-
     // 회차별 티켓 목록 조회(좌석 배치도용)
     public List<Ticket> getTicketsBySession(Long sessionId) {
         return jpaQueryFactory.selectFrom(ticket)
@@ -42,4 +32,5 @@ public class TicketRepositoryQueryDsl {
                 .orderBy(ticket.num.asc())
                 .fetch();
     }
+
 }

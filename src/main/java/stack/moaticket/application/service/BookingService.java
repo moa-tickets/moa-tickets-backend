@@ -7,12 +7,18 @@ import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.domain.ticket.type.TicketState;
+import stack.moaticket.domain.ticket_hold.entity.TicketHold;
+import stack.moaticket.domain.ticket_hold.repository.TicketHoldCommand;
+import stack.moaticket.domain.ticket_hold.repository.TicketHoldRepositoryQueryDsl;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,18 +26,29 @@ import java.util.UUID;
 public class BookingService {
 
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
+    private final TicketHoldRepositoryQueryDsl ticketHoldRepositoryQueryDsl;
+    private final TicketHoldCommand ticketHoldCommand;
 
     private static final int HOLD_MINUTES = 10;
     private static final int MAX_TICKETS_PER_HOLD = 4;
 
-    /**
-     * 좌석 임시 점유 (HOLD)
-     * - sessionId의 좌석(ticketIds)을 최대 4개까지 한 번에 점유
-     * - 락으로 조회하여 동시 점유를 방지
-     */
+
+    // 좌석 임시 점유 (최대 4개)
     @Transactional
-    public HoldResult holdTickets(Long sessionId, List<Long> ticketIds) {
+    public HoldResult holdTickets(Long memberId, Long sessionId, List<Long> ticketIds) {
         validateHoldRequest(sessionId, ticketIds);
+
+        if(memberId == null) {
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 변이 요청에서만 만료 정리(요청 기반 정책 유지)
+        ticketHoldRepositoryQueryDsl.deleteExpired(now);
+
+        // 자동 교체: 같은 멤버+세션 기존 hold 즉시 해제
+        ticketHoldRepositoryQueryDsl.deleteByMemberAndSession(memberId, sessionId);
 
         // 데드락 방지: 항상 같은 순서로 락 획득
         List<Long> sortedIds = ticketIds.stream().sorted().toList();
@@ -50,19 +67,10 @@ public class BookingService {
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
 
-        LocalDateTime now = LocalDateTime.now();
-
-        // 만료된 HOLD는 AVAILABLE로 정리
-        tickets.forEach(t -> normalizeExpiredHold(t, now));
-
         // 상태별로 명확하게 409 처리
         for (Ticket t : tickets) {
             if (t.getState() == TicketState.SOLD) {
                 throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
-            }
-            if (t.getState() == TicketState.HOLD) {
-                // 만료된 HOLD는 위에서 AVAILABLE로 풀렸으니 여기서 HOLD면 "만료 전 다른 사람이 선점중"
-                throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
             }
         }
 
@@ -70,130 +78,152 @@ public class BookingService {
         String holdToken = "hold_" + UUID.randomUUID();
         LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
-        // 상태 변경 (dirty checking으로 UPDATE)
-        for (Ticket t : tickets) {
-            t.setState(TicketState.HOLD);
-            t.setHoldToken(holdToken);
-            t.setHoldExpired(expiresAt);
+        List<TicketHold> holds = tickets.stream()
+                .map(t -> TicketHold.builder()
+                        .ticketId(t.getId())
+                        .holdToken(holdToken)
+                        .memberId(memberId)
+                        .sessionId(sessionId)
+                        .expiresAt(expiresAt)
+                        .build()
+                )
+                .collect(Collectors.toList());
+
+        try {
+            ticketHoldCommand.insertAll(holds);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // 부분 insert 되었을 수 있으니 토큰 단위로 정리
+            throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
         }
 
         return new HoldResult(holdToken, expiresAt);
     }
 
-    /**
-     * 점유 확정 (HOLD -> SOLD)
-     * - holdToken만으로 처리
-     */
+    // 점유 확정 (SOLD)
+    // 결제 전 임시로 SOLD 처리, 소유자(memberId) 검증
     @Transactional
-    public void confirmHold(String holdToken) {
+    public void confirmHold(Long memberId, String holdToken) {
         validateHoldToken(holdToken);
 
-        // 토큰으로 묶인 티켓들 락 조회
-        List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsByHoldTokenWithLock(holdToken);
-
-        if (tickets.isEmpty()) {
-            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+        if (memberId == null) {
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
         }
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 만료된 HOLD는 AVAILABLE로 정리(이 경우 confirm은 실패해야 함)
-        tickets.forEach(t -> normalizeExpiredHold(t, now));
+        // hold 조회
+        List<TicketHold> holds = ticketHoldRepositoryQueryDsl.findByHoldToken(holdToken);
 
-        boolean allHeldByToken = tickets.stream().allMatch(t ->
-                t.getState() == TicketState.HOLD
-                        && !now.isAfter(t.getHoldExpired())
-        );
-
-        if (!allHeldByToken) {
+        if (holds.isEmpty()) {
             throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
-        // SOLD 확정 + HOLD 정보 정리
+        // 만료 처리 : 만료된 게 섞여 있으면 토큰 단위로 정리하고 실패
+        boolean expired = holds.stream().anyMatch(h -> !h.getExpiresAt().isAfter(now));
+        if (expired) {
+            ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
+            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+        }
+
+        // 소유자 검증
+        boolean owner = holds.stream().allMatch(h -> h.getMemberId().equals(memberId));
+        if (!owner) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
+
+        // 해당 ticket들을 락 잡고 SOLD 처리
+        List<Long> ticketIds = holds.stream()
+                .map(TicketHold::getTicketId)
+                .sorted()
+                .toList();
+
+        List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsWithLock(ticketIds);
+
+        for (Ticket t : tickets) {
+            if (t.getState() == TicketState.SOLD) {
+                throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
+            }
+        }
+
         for (Ticket t : tickets) {
             t.setState(TicketState.SOLD);
-            t.setHoldToken(null);
-            t.setHoldExpired(null);
         }
+
+        // hold 제거
+        ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
+
     }
 
-    /**
-     * 점유 해제 (HOLD -> AVAILABLE)
-     * - holdToken만으로 처리
-     */
+
+    // 좌석 점유 해제
+    // 이미 만료되었을 경우 성공처리(200), 소유자(memberId) 검증
     @Transactional
-    public void releaseHold(String holdToken) {
+    public void releaseHold(Long memberId, String holdToken) {
         // 없거나 빈 토큰 그냥 성공 처리
         if (holdToken == null || holdToken.isBlank()) {
             return;
         }
 
-        // 토큰으로 묶인 티켓들 락 조회
-        List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsByHoldTokenWithLock(holdToken);
-
-        // 토큰이 원래 없으면 그냥 성공 처리
-        if (tickets.isEmpty()) {
-            return;
+        if (memberId == null) {
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
         }
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 만료된 HOLD는 AVAILABLE로 정리
-        tickets.forEach(t -> normalizeExpiredHold(t, now));
+        List<TicketHold> holds = ticketHoldRepositoryQueryDsl.findByHoldToken(holdToken);
 
-        // HOLD 토큰/만료가 이상할 경우 토큰 소유가 아니므로 403 처리해야하지만 인증 붙으면 변경
-        boolean allReleasable = tickets.stream().allMatch(t ->
-                t.getState() == TicketState.AVAILABLE
-                        || (t.getState() == TicketState.HOLD
-                        && !now.isAfter(t.getHoldExpired()))
-        );
-
-        if (!allReleasable) {
-            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+        // 토큰이 원래 없으면 그냥 성공 처리
+        if (holds.isEmpty()) {
+            return;
         }
 
-        for (Ticket t : tickets) {
-            if (t.getState() == TicketState.HOLD) {
-                t.setState(TicketState.AVAILABLE);
-                t.setHoldToken(null);
-                t.setHoldExpired(null);
-            }
+        // 만료면 그냥 삭제하고 성공
+        boolean expired = holds.stream().anyMatch(h -> !h.getExpiresAt().isAfter(now));
+        if (expired) {
+            ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
+            return;
         }
+
+        // 소유자 검증
+        boolean owner = holds.stream().allMatch(h -> h.getMemberId().equals(memberId));
+        if (!owner) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
+
+        // 해제: hold row 삭제만 하면 됨
+        ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
+
     }
 
+    // 회차별 좌석 목록 조회
+    // hold 판단은 ticket_hold(expires_at > now) 존재 여부로 처리
+    // sold는 ticket_state 기준
     public List<BookingDto.TicketResponse> getTicketsBySession(Long sessionId) {
         LocalDateTime now = LocalDateTime.now();
 
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsBySession(sessionId);
+        List<Long> heldTicketIds = ticketHoldRepositoryQueryDsl.findHeldTicketIdsBySession(sessionId, now);
+        Set<Long> heldSet = new HashSet<>(heldTicketIds);
 
         return tickets.stream()
                 .map(t -> BookingDto.TicketResponse.builder()
                         .ticketId(t.getId())
                         .seatNum(t.getNum())
-                        .state(resolveStateForView(t, now))
+                        .state(resolveStateForView(t, heldSet))
                         .build())
                 .toList();
     }
 
-    private String resolveStateForView(Ticket ticket, LocalDateTime now) {
-        if (ticket.getState() == TicketState.HOLD
-                && ticket.getHoldExpired() != null
-                && now.isAfter(ticket.getHoldExpired())) {
-            return TicketState.AVAILABLE.name();
+    private String resolveStateForView(Ticket ticket, Set<Long> heldTicketIds) {
+        if (ticket.getState() == TicketState.SOLD) {
+            return TicketState.SOLD.name();
         }
-        return ticket.getState().name();
+        if (heldTicketIds.contains(ticket.getId())) {
+            return TicketState.HOLD.name();
+        }
+        return TicketState.AVAILABLE.name();
     }
 
-
-    private void normalizeExpiredHold(Ticket t, LocalDateTime now) {
-        if (t.getState() == TicketState.HOLD
-                && t.getHoldExpired() != null
-                && now.isAfter(t.getHoldExpired())) {
-            t.setState(TicketState.AVAILABLE);
-            t.setHoldToken(null);
-            t.setHoldExpired(null);
-        }
-    }
 
     private void validateHoldRequest(Long sessionId, List<Long> ticketIds) {
         if (sessionId == null) {
@@ -214,8 +244,6 @@ public class BookingService {
 
     }
 
-    /**
-     * Service 내부 전용 결과 객체
-     */
+    //Service 내부 전용 결과 객체
     public record HoldResult(String holdToken, LocalDateTime expiresAt) {}
 }

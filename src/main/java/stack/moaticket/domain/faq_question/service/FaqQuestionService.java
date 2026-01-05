@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
+import stack.moaticket.domain.faq_question.entity.Ownable;
 import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.exception.MoaException;
@@ -24,9 +25,23 @@ import java.util.List;
 public class FaqQuestionService {
     private final FaqQuestionRepository faqQuestionRepository;
 
-    public static void checkAuth(Member member) {
-        // 인가 기능
-        if(member.getId() == null) {
+    public final class AuthValidator {
+
+        private AuthValidator() {}
+
+        public static void checkAuthenticated(Member member) {
+            if (member == null || member.getId() == null) {
+                throw new MoaException(MoaExceptionType.FORBIDDEN);
+            }
+        }
+    }
+
+    public static <T extends Ownable> void checkOwner(T data, Member member) {
+        if(member == null || member.getId() == null) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
+
+        if(data.getMember() == null || !data.getMember().getId().equals(member.getId())) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
     }
@@ -34,8 +49,6 @@ public class FaqQuestionService {
     // 글 생성
     @Transactional
     public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto, MultipartFile file) {
-
-        checkAuth(member);
 
         // 중복 체크
         if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {
@@ -45,6 +58,8 @@ public class FaqQuestionService {
         // 엔티티 생성
         FaqQuestion faqQuestion = FaqQuestion.builder().title(rqdto.getTitle()).contents(rqdto.getContent())
                 .faqType(rqdto.getOption()).member(member).build();
+
+        checkOwner(faqQuestion, member);
 
         // 파일 처리
         if(file != null && !file.isEmpty()) {
@@ -61,7 +76,7 @@ public class FaqQuestionService {
     @Transactional(readOnly = true)
     public Page<FaqQuestionResponseDTO> readQuestionList(Member member, int pageNo, String criteria) {
         int PAGE_SIZE = 10;
-        checkAuth(member);
+        AuthValidator.checkAuthenticated(member);
         Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, criteria));
         Page<FaqQuestionResponseDTO> page = faqQuestionRepository.findAll(pageable).map(FaqQuestionResponseDTO::fromEntity);
         return page;
@@ -71,12 +86,12 @@ public class FaqQuestionService {
     @Transactional
     public FaqQuestionResponseDTO updateQuestion(Member member, Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
 
-        checkAuth(member);
-
         // 기존의 엔티티 조회
         FaqQuestion faqQuestionById = faqQuestionRepository.findById(id).orElseThrow(() -> {
             return new MoaException(MoaExceptionType.NOT_FOUND);
         });
+
+        checkOwner(faqQuestionById, member);
 
         // 값 변경하기(null이면 변경하지 않는다.)
         if(rqdto.getTitle() != null) {
@@ -96,11 +111,11 @@ public class FaqQuestionService {
     }
 
     // 글 삭제
-    public FaqQuestionResponseDTO deleteQuestion(Member member, Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
-        checkAuth(member);
+    public FaqQuestionResponseDTO deleteQuestion(Member member, Long id) {
 
-        FaqQuestion deletedQuestion = FaqQuestion.builder().id(id).title(rqdto.getTitle())
-                                        .contents(rqdto.getContent()).faqType(rqdto.getOption()).build();
+        FaqQuestion deletedQuestion = FaqQuestion.builder().id(id).build();
+
+        checkOwner(deletedQuestion, member);
 
         faqQuestionRepository.deleteById(id);
 

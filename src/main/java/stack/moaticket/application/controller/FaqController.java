@@ -45,10 +45,9 @@ public class FaqController {
 
     @DeleteMapping(value = "/api/inquiry/{id}")
     public ResponseApiDTO<FaqQuestionResponseDTO> deleteFaqQuestion(@AuthenticationPrincipal Member member,
-                                                                    @PathVariable Long id,
-                                                                    @RequestPart("dto") FaqQuestionRequestDTO rqdto,
-                                                                    @RequestPart(value = "file", required = false) MultipartFile file) {
-        FaqQuestionResponseDTO deleteFinalDTO = faqQuestionService.deleteQuestion(member, id, rqdto, file);
+                                                                    @PathVariable Long id
+                                                                    ) {
+        FaqQuestionResponseDTO deleteFinalDTO = faqQuestionService.deleteQuestion(member, id);
         return ResponseApiDTO.success(MessageType.DELETE, deleteFinalDTO);
     }
 

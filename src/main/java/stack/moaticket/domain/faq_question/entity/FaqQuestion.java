@@ -16,7 +16,7 @@ import stack.moaticket.domain.member.entity.Member;
 @SuperBuilder
 @Entity
 @Table(name = "faq_question")
-public class FaqQuestion extends Base {
+public class FaqQuestion extends Base implements Ownable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "faq_id")

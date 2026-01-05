@@ -92,7 +92,6 @@ public class BookingService {
         try {
             ticketHoldCommand.insertAll(holds);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            // 부분 insert 되었을 수 있으니 토큰 단위로 정리
             throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
         }
 
@@ -234,6 +233,9 @@ public class BookingService {
         }
         if (ticketIds.size() > MAX_TICKETS_PER_HOLD) {
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (new HashSet<>(ticketIds).size() != ticketIds.size()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED, "중복된 티켓 ID가 포함되어 있습니다.");
         }
     }
 

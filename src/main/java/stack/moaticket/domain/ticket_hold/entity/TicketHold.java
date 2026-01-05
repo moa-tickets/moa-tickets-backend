@@ -8,7 +8,6 @@ import stack.moaticket.domain.base.Base;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

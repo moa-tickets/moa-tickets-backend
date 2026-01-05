@@ -26,15 +26,13 @@ import java.util.List;
 public class FaqQuestionService {
     private final FaqQuestionRepository faqQuestionRepository;
     private static final int PAGE_SIZE = 10;
-
+  
     public static <T extends Ownable> void checkOwner(T data, Member member) {
         if(member == null || member.getId() == null) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
 
         if(data.getMember() == null || !data.getMember().getId().equals(member.getId())) {
-            throw new MoaException(MoaExceptionType.FORBIDDEN);
-        }
     }
 
     // 글 생성

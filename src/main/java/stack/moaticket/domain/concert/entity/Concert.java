@@ -52,4 +52,6 @@ public class Concert extends Base {
 
     @Column(name = "concert_thumbnail", nullable = true)
     private String thumbnail;
+
+
 }

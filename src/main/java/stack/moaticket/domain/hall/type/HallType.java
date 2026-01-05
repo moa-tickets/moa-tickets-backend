@@ -10,4 +10,8 @@ public enum HallType {
 
     private final int row;
     private final int col;
+
+    public int total() {
+        return row * col;
+    }
 }

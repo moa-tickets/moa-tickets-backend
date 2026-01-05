@@ -14,6 +14,11 @@ public class FaqQuestionResponseDTO {
     private String option;
 
     public static FaqQuestionResponseDTO fromEntity(FaqQuestion faqQuestion) {
-        return FaqQuestionResponseDTO.builder().id(faqQuestion.getId()).title(faqQuestion.getTitle()).content(faqQuestion.getContents()).option(faqQuestion.getFaqType()).build();
+        return FaqQuestionResponseDTO.builder()
+                .id(faqQuestion.getId())
+                .title(faqQuestion.getTitle())
+                .content(faqQuestion.getContents())
+                .option(faqQuestion.getFaqType())
+                .build();
     }
 }

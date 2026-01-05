@@ -17,6 +17,7 @@ import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
+import stack.moaticket.system.util.AuthValidator;
 
 import java.util.List;
 
@@ -24,17 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FaqQuestionService {
     private final FaqQuestionRepository faqQuestionRepository;
-
-    public final class AuthValidator {
-
-        private AuthValidator() {}
-
-        public static void checkAuthenticated(Member member) {
-            if (member == null || member.getId() == null) {
-                throw new MoaException(MoaExceptionType.FORBIDDEN);
-            }
-        }
-    }
+    private static final int PAGE_SIZE = 10;
 
     public static <T extends Ownable> void checkOwner(T data, Member member) {
         if(member == null || member.getId() == null) {
@@ -75,7 +66,6 @@ public class FaqQuestionService {
     // 글 조회
     @Transactional(readOnly = true)
     public Page<FaqQuestionResponseDTO> readQuestionList(Member member, int pageNo, String criteria) {
-        int PAGE_SIZE = 10;
         AuthValidator.checkAuthenticated(member);
         Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, criteria));
         Page<FaqQuestionResponseDTO> page = faqQuestionRepository.findAll(pageable).map(FaqQuestionResponseDTO::fromEntity);
@@ -111,14 +101,16 @@ public class FaqQuestionService {
     }
 
     // 글 삭제
+    @Transactional
     public FaqQuestionResponseDTO deleteQuestion(Member member, Long id) {
 
-        FaqQuestion deletedQuestion = FaqQuestion.builder().id(id).build();
+        FaqQuestion questionToDelete = faqQuestionRepository.findById(id)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
 
-        checkOwner(deletedQuestion, member);
+        checkOwner(questionToDelete, member);
 
-        faqQuestionRepository.deleteById(id);
+        faqQuestionRepository.delete(questionToDelete);
 
-        return FaqQuestionResponseDTO.fromEntity(deletedQuestion);
+        return FaqQuestionResponseDTO.fromEntity(questionToDelete);
     }
 }

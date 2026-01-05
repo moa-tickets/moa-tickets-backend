@@ -11,12 +11,15 @@ import stack.moaticket.application.dto.CreateConcertDto;
 import stack.moaticket.application.dto.SessionDto;
 import stack.moaticket.domain.concert.entity.Concert;
 import stack.moaticket.domain.concert.service.ConcertService;
+import stack.moaticket.domain.hall.entity.Hall;
 import stack.moaticket.domain.hall.service.HallService;
 import stack.moaticket.domain.session.entity.Session;
 import stack.moaticket.domain.session.service.SessionService;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.service.TicketService;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +34,12 @@ public class ProductService {
 
     @Transactional
     public CreateConcertDto.Response createConcert(Member member, CreateConcertDto.Request request) {
-        if(!member.isSeller()) throw new RuntimeException(); // TODO
+        if(!member.isSeller()) throw new MoaException(MoaExceptionType.NOT_SELLER);
 
-        int totalSeats = hallService.getHallById(request.getHallId()).getType().total();
+        Hall hall = hallService.getHallById(request.getHallId());
+        int totalSeats = hall.getType().total();
 
-        Concert concert = concertService.createConcert(request.toConcert(member, hallService.getHallById(request.getHallId())));
+        Concert concert = concertService.createConcert(request.toConcert(member, hall));
         List<Session> sessions = sessionService.insertSessions(concert.getId(), request.getSessions());
 
         List<Ticket> ticketList = new ArrayList<>();
@@ -61,4 +65,5 @@ public class ProductService {
                 .map(ConcertListDto.Response::from).toList();
         return concertList;
     }
+
 }

@@ -13,6 +13,7 @@ import stack.moaticket.application.dto.ConcertDetailDto;
 import stack.moaticket.application.dto.ConcertListDto;
 import stack.moaticket.application.dto.CreateConcertDto;
 import stack.moaticket.application.service.ProductService;
+import stack.moaticket.domain.concert.service.ConcertService;
 import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
 @RequestMapping("/api/product")
 public class ProductController {
     private final ProductService productService;
+    private final ConcertService concertService;
 
     @PostMapping("/concert")
     public ResponseEntity<CreateConcertDto.Response> concertSave(
@@ -48,6 +50,7 @@ public class ProductController {
 
         return ResponseEntity.ok(productService.getConcertList(searchValue, sortBy, sortOrder, pageable));
     }
+
 
 
 }

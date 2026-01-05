@@ -15,10 +15,13 @@ public enum MoaExceptionType {
 
     VALIDATION_FAILED("요청 값이 올바르지 않습니다.", 400),
 
+    // 401
+    UNAUTHORIZED("인증되지 않은 사용자입니다.", 401),
+
     // 403
     INVALID_STREAM_REQUEST("유효하지 않은 스트림 요청입니다.", 403),
     HOLD_TOKEN_MISMATCH("선점 토큰이 일치하지 않습니다.", 403),
-    NOT_AUTH("인증되지 않은 사용자입니다",403),
+    FORBIDDEN("권한이 없습니다.", 403),
 
     // 404
     NOT_FOUND("요청한 리소스를 찾을 수 없습니다.", 404),

@@ -25,6 +25,7 @@ import java.util.Arrays;
 public class JwtFilter extends OncePerRequestFilter {
     private final MemberService memberService;
     private final JwtUtil jwtUtil;
+    private final MemberService memberService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

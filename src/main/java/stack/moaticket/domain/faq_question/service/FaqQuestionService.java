@@ -1,0 +1,82 @@
+package stack.moaticket.domain.faq_question.service;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
+import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
+import stack.moaticket.domain.faq_question.entity.FaqQuestion;
+import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
+import stack.moaticket.system.exception.ExceptionDto;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class FaqQuestionService {
+    private final FaqQuestionRepository faqQuestionRepository;
+
+    // 글 생성
+    @Transactional
+    public FaqQuestionResponseDTO createQuestion(FaqQuestionRequestDTO rqdto, MultipartFile file) {
+
+        // 중복 체크
+        if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {
+            throw new MoaException(MoaExceptionType.ALREADY_QUESTION);
+        }
+
+        // 엔티티 생성
+        FaqQuestion faqQuestion = FaqQuestion.builder().title(rqdto.getTitle()).contents(rqdto.getContent())
+                .faqType(rqdto.getOption()).build();
+
+        // 파일 처리
+        if(file != null && !file.isEmpty()) {
+            // 파일 처리 비즈니스 로직
+        }
+
+        // 저장
+        FaqQuestion savedQuestionData = faqQuestionRepository.save(faqQuestion);
+
+        return FaqQuestionResponseDTO.fromEntity(savedQuestionData);
+    }
+
+    // 글 조회
+    @Transactional
+    public List<FaqQuestionResponseDTO> readQuestionList() {
+        List<FaqQuestion> optFaqQuestionList = faqQuestionRepository.findAll();
+        List<FaqQuestionResponseDTO> convertFaqQuestionList = optFaqQuestionList.stream().map(FaqQuestionResponseDTO::fromEntity).toList();
+        return convertFaqQuestionList;
+    }
+
+    // 글 수정
+    @Transactional
+    public FaqQuestionResponseDTO updateQuestion(Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
+
+        // 기존의 엔티티 조회
+        FaqQuestion faqQuestionById = faqQuestionRepository.findById(id).orElseThrow(() -> {
+            return new MoaException(MoaExceptionType.NOT_FOUND);
+        });
+
+        // 값 변경하기(null이면 변경하지 않는다.)
+        if(rqdto.getTitle() != null) {
+            faqQuestionById.setTitle(rqdto.getTitle());
+        }
+
+        if(rqdto.getContent() != null) {
+            faqQuestionById.setContents(rqdto.getContent());
+        }
+
+        if(rqdto.getOption() != faqQuestionById.getFaqType()) {
+            faqQuestionById.setFaqType(rqdto.getOption());
+        }
+
+        // save
+        faqQuestionRepository.save(faqQuestionById);
+
+        return FaqQuestionResponseDTO.fromEntity(faqQuestionById);
+    }
+}

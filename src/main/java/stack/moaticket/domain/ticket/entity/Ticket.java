@@ -42,9 +42,4 @@ public class Ticket extends Base {
     @Column(name = "ticket_state", nullable = false)
     private TicketState state;
 
-    @Column(name = "hold_token", nullable = true)
-    private String holdToken;
-
-    @Column(name = "hold_expired", nullable = true)
-    private LocalDateTime holdExpired;
 }

@@ -40,7 +40,6 @@ public class PaymentService {
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
     private final PaymentTicketRepository paymentTicketRepository;
     private final TossPaymentsFacade tossPaymentsFacade;
-    private final PaymentFailWriter paymentFailWriter;
 
     @Transactional
     public PaymentDto.PrepareResponse prepare(Long memberId, PaymentDto.PrepareRequest request) {
@@ -109,8 +108,8 @@ public class PaymentService {
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
 
-        // Payment 조회
-        Payment payment = paymentRepositoryQueryDsl.findByOrderId(orderId);
+        // Payment 조회(멱등/상태전이 보호를 위해 락)
+        Payment payment = paymentRepositoryQueryDsl.findByOrderIdForUpdate(orderId);
         if (payment == null) {
             throw new MoaException(MoaExceptionType.PAYMENT_NOT_FOUND);
         }
@@ -147,15 +146,8 @@ public class PaymentService {
         }
 
         // tossRes.getPaymentKey()를 신뢰(응답값을 최종값으로)
-        // finalize에서 어떤 예외가 터져도 FAILED가 “별도 트랜잭션”으로 DB에 남기기
-        try {
-            finalizeSoldAndPersist(payment, tossResponse.getPaymentKey(), holds, now);
-        } catch (Exception e) {
-            String reason = (e.getMessage() == null) ? e.getClass().getSimpleName() : e.getMessage();
-            paymentFailWriter.markFailed(payment.getId(),
-                    "Finalize failed after toss confirm. orderId=" + orderId + ", reason=" + reason);
-            throw e;
-        }
+        // TODO TOSS 결제는 했는데 서버 DB 쪽에 READY로 남는 문제 해결해야함 (보정 전략)
+        finalizeSoldAndPersist(payment, tossResponse.getPaymentKey(), holds, now);
 
         return PaymentDto.ConfirmResponse.builder()
                 .paymentId(payment.getId())
@@ -228,11 +220,18 @@ public class PaymentService {
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsWithLock(ticketIds);
 
         if (tickets.size() != ticketIds.size()) {
+            payment.setState(PaymentState.FAILED);
+            payment.setFailReason("Ticket not found while confirming payment.");
+            paymentRepository.save(payment);
             throw new MoaException(MoaExceptionType.TICKET_NOT_FOUND);
         }
 
         for (Ticket t : tickets) {
             if (t.getState() == TicketState.SOLD) {
+                // 여기 들어오면 데이터 꼬임. 멱등은 Payment=PAID에서 처리함.
+                payment.setState(PaymentState.FAILED);
+                payment.setFailReason("Ticket already sold.");
+                paymentRepository.save(payment);
                 throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
             }
         }
@@ -257,6 +256,10 @@ public class PaymentService {
         try {
             paymentTicketRepository.saveAll(paymentTickets);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // 중복 confirm 등으로 이미 매핑된 경우
+            payment.setState(PaymentState.FAILED);
+            payment.setFailReason("Duplicate payment_ticket insert.");
+            paymentRepository.save(payment);
             throw new MoaException(MoaExceptionType.CONFLICT);
         }
 

@@ -22,7 +22,7 @@ public class MemberController {
             @AuthenticationPrincipal Member member
     ) {
         if (member == null) {
-            throw new MoaException(MoaExceptionType.NOT_FOUND);
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
         }
         return ResponseEntity.ok(memberInfoService.getMember(member));
     }

@@ -7,7 +7,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
@@ -38,7 +37,7 @@ public class FaqQuestionService {
 
     // 글 생성
     @Transactional
-    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto, MultipartFile file) {
+    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto) {
 
         // 중복 체크
         if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {
@@ -50,11 +49,6 @@ public class FaqQuestionService {
                 .faqType(rqdto.getOption()).member(member).build();
 
         checkOwner(faqQuestion, member);
-
-        // 파일 처리
-        if(file != null && !file.isEmpty()) {
-            // 파일 처리 비즈니스 로직
-        }
 
         // 저장
         FaqQuestion savedQuestionData = faqQuestionRepository.save(faqQuestion);
@@ -111,5 +105,15 @@ public class FaqQuestionService {
         faqQuestionRepository.delete(questionToDelete);
 
         return FaqQuestionResponseDTO.fromEntity(questionToDelete);
+    }
+
+    // 상세 조회
+    @Transactional
+    public FaqQuestionResponseDTO getDetailQuestion(Member member, Long id) {
+        FaqQuestion detailQuestion = faqQuestionRepository.findById(id)
+                                        .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
+        checkOwner(detailQuestion, member);
+
+        return FaqQuestionResponseDTO.fromEntity(detailQuestion);
     }
 }

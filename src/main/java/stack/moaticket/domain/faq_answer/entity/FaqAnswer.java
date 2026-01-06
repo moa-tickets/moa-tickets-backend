@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.faq_answer.type.AnswerState;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
+import stack.moaticket.domain.faq_question.entity.Ownable;
 import stack.moaticket.domain.member.entity.Member;
 
 @Entity
@@ -17,7 +18,7 @@ import stack.moaticket.domain.member.entity.Member;
 @AllArgsConstructor
 @SuperBuilder
 @Table(name = "faq_answer")
-public class FaqAnswer extends Base {
+public class FaqAnswer extends Base implements Ownable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "answer_id")
     private Long id;

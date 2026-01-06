@@ -32,7 +32,7 @@ public class FaqQuestion extends Base implements Ownable {
     @Column(name = "faq_contents", columnDefinition = "TEXT")
     private String contents;
 
-    @Column(name = "faq_file")
+    @Column(name = "faq_file",nullable = true)
     private String fileURL;
 
     @Column(name = "faq_type")

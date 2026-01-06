@@ -7,12 +7,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class LoginService {
+public class MemberInfoService {
     public GetMemberDto.Response getMember(Member member){
-        return GetMemberDto.Response.builder()
-                .nickname(member.getNickname())
-                .isSeller(member.isSeller())
-                .email(member.getEmail())
-                .build();
+        return GetMemberDto.Response.from(member);
     }
 }

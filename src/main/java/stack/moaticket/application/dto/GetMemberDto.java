@@ -11,12 +11,17 @@ public abstract class GetMemberDto {
         private String nickname;
         private boolean isSeller;
         private String email;
+
+
+
+        public static Response from(Member member){
+            return Response.builder()
+                    .nickname(member.getNickname())
+                    .isSeller(member.isSeller())
+                    .email(member.getEmail())
+                    .build();
+        }
     }
-    public static Response from(Member member){
-        return Response.builder()
-                .nickname(member.getNickname())
-                .isSeller(member.isSeller())
-                .email(member.getEmail())
-                .build();
-    }
+
+
 }

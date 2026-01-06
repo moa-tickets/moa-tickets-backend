@@ -6,17 +6,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import stack.moaticket.application.dto.GetMemberDto;
-import stack.moaticket.application.service.LoginService;
+import stack.moaticket.application.service.MemberInfoService;
 import stack.moaticket.domain.member.entity.Member;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.health.ExceptionTestController;
 
 @RestController
 @RequiredArgsConstructor
 public class MemberController {
 
-    private final LoginService loginService;
+    private final MemberInfoService loginService;
 
     @GetMapping("/member")
     public ResponseEntity<GetMemberDto.Response> getMember(

@@ -13,12 +13,12 @@ import stack.moaticket.domain.member.entity.Member;
 @RequiredArgsConstructor
 public class MemberController {
 
-    private final MemberInfoService loginService;
+    private final MemberInfoService memberInfoService;
 
     @GetMapping("/member")
     public ResponseEntity<GetMemberDto.Response> getMember(
             @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(loginService.getMember(member));
+        return ResponseEntity.ok(memberInfoService.getMember(member));
     }
 }

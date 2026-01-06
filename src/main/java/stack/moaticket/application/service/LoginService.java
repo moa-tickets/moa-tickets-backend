@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
+public class LoginService {
     public GetMemberDto.Response getMember(Member member){
         return GetMemberDto.Response.builder()
                 .nickname(member.getNickname())

@@ -58,7 +58,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addCookie(createCookie("Authorization", token));
         //로그인 성공 후 리다이렉트 되는 페이지
-        response.sendRedirect("/");
+        response.sendRedirect("http://localhost:5173/login-callback");
 
 
     }

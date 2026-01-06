@@ -1,17 +1,14 @@
-package stack.moaticket.domain.faq_question.dto;
+package stack.moaticket.domain.faq_answer.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FaqQuestionRequestDTO {
+public class FaqAnswerRequestDTO {
+    private Long id;
     private String title;
     private String content;
-    private String option;
-    private String fileUrl;
 }

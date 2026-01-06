@@ -19,6 +19,7 @@ import stack.moaticket.system.oauth.service.OauthService;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -42,7 +43,7 @@ public class SecurityConfig {
                         CorsConfiguration configuration = new CorsConfiguration();
 
                         //front가 떠있는 서버 주소
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));

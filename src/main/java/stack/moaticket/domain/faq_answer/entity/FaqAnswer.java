@@ -25,7 +25,7 @@ public class FaqAnswer extends Base implements Ownable {
 
     @OneToOne
     @JoinColumn(name = "faq_id")
-    private FaqQuestion faqQuestion;
+    private FaqQuestion question;
 
     @OneToOne
     @JoinColumn(name = "member_id")

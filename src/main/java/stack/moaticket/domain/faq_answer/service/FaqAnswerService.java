@@ -50,7 +50,7 @@ public class FaqAnswerService {
         }
 
         // 4. 엔티티 작성
-        FaqAnswer faqAnswer = FaqAnswer.builder().member(member).faqQuestion(question).id(dto.getId()).content(dto.getContent()).build();
+        FaqAnswer faqAnswer = FaqAnswer.builder().member(member).question(question).id(dto.getId()).content(dto.getContent()).build();
 
         checkOwner(faqAnswer, member);
 

@@ -11,21 +11,25 @@ public final class TokenGenerator {
 
     private TokenGenerator() {}
 
-    // hold 토큰 생성 (27자)
-    // 128-bit random opaque token (Base64 URL-safe, no padding)
-    public static String generateHoldToken() {
-        return generate(secureRandom);
-    }
-
-    static String generate(java.util.Random random) {
-        byte[] bytes = new byte[16]; // 128-bit
-        random.nextBytes(bytes);
+    // prefix + 128-bit random opaque token
+    // Base64 URL-safe, no padding
+    public static String generateToken(String prefix) {
+        byte[] bytes = new byte[16];
+        secureRandom.nextBytes(bytes);
 
         String encoded = Base64.getUrlEncoder()
                 .withoutPadding()
                 .encodeToString(bytes);
 
-        return HOLD_TOKEN_PREFIX + encoded;
+        return prefix + encoded;
+    }
+
+    public static String generateHoldToken() {
+        return generateToken("hold_");
+    }
+
+    public static String generateOrderId() {
+        return generateToken("order_");
     }
 
 }

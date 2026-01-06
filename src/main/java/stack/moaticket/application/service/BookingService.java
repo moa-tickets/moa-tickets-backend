@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.BookingDto;
+import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.repository.MemberRepository;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.domain.ticket.type.TicketState;
@@ -28,6 +30,7 @@ public class BookingService {
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
     private final TicketHoldRepositoryQueryDsl ticketHoldRepositoryQueryDsl;
     private final TicketHoldCommand ticketHoldCommand;
+    private final MemberRepository memberRepository;
 
     private static final int HOLD_MINUTES = 10;
     private static final int MAX_TICKETS_PER_HOLD = 4;
@@ -78,11 +81,13 @@ public class BookingService {
         String holdToken = TokenGenerator.generateHoldToken();
         LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
+        Member memberRef = memberRepository.getReferenceById(memberId);
+
         List<TicketHold> holds = tickets.stream()
                 .map(t -> TicketHold.builder()
-                        .ticketId(t.getId())
+                        .ticket(t)
                         .holdToken(holdToken)
-                        .memberId(memberId)
+                        .member(memberRef)
                         .sessionId(sessionId)
                         .expiresAt(expiresAt)
                         .build()
@@ -125,14 +130,14 @@ public class BookingService {
         }
 
         // 소유자 검증
-        boolean owner = holds.stream().allMatch(h -> h.getMemberId().equals(memberId));
+        boolean owner = holds.stream().allMatch(h -> h.getMember().getId().equals(memberId));
         if (!owner) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
 
         // 해당 ticket들을 락 잡고 SOLD 처리
         List<Long> ticketIds = holds.stream()
-                .map(TicketHold::getTicketId)
+                .map(TicketHold::getId)
                 .sorted()
                 .toList();
 
@@ -184,7 +189,7 @@ public class BookingService {
         }
 
         // 소유자 검증
-        boolean owner = holds.stream().allMatch(h -> h.getMemberId().equals(memberId));
+        boolean owner = holds.stream().allMatch(h -> h.getMember().getId().equals(memberId));
         if (!owner) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }

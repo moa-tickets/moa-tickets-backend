@@ -93,8 +93,8 @@ SELECT
     now(), now()
 FROM ins_concert
     CROSS JOIN (VALUES
-    ('2026-01-03 18:00:00'::timestamp, 110000),
-    ('2026-01-04 18:00:00'::timestamp, 110000)
+    ('2026-01-03 18:00:00'::timestamp, 1000),
+    ('2026-01-04 18:00:00'::timestamp, 1000)
     ) AS v(session_date, session_price)
     RETURNING session_id
     )

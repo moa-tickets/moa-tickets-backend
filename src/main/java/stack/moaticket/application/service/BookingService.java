@@ -105,58 +105,58 @@ public class BookingService {
 
     // 점유 확정 (SOLD)
     // 결제 전 임시로 SOLD 처리, 소유자(memberId) 검증
-    @Transactional
-    public void confirmHold(Long memberId, String holdToken) {
-        validateHoldToken(holdToken);
-
-        if (memberId == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-
-        // hold 조회
-        List<TicketHold> holds = ticketHoldRepositoryQueryDsl.findByHoldToken(holdToken);
-
-        if (holds.isEmpty()) {
-            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
-        }
-
-        // 만료 처리 : 만료된 게 섞여 있으면 토큰 단위로 정리하고 실패
-        boolean expired = holds.stream().anyMatch(h -> !h.getExpiresAt().isAfter(now));
-        if (expired) {
-            ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
-            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
-        }
-
-        // 소유자 검증
-        boolean owner = holds.stream().allMatch(h -> h.getMember().getId().equals(memberId));
-        if (!owner) {
-            throw new MoaException(MoaExceptionType.FORBIDDEN);
-        }
-
-        // 해당 ticket들을 락 잡고 SOLD 처리
-        List<Long> ticketIds = holds.stream()
-                .map(TicketHold::getId)
-                .sorted()
-                .toList();
-
-        List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsWithLock(ticketIds);
-
-        for (Ticket t : tickets) {
-            if (t.getState() == TicketState.SOLD) {
-                throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
-            }
-        }
-
-        for (Ticket t : tickets) {
-            t.setState(TicketState.SOLD);
-        }
-
-        // hold 제거
-        ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
-
-    }
+//    @Transactional
+//    public void confirmHold(Long memberId, String holdToken) {
+//        validateHoldToken(holdToken);
+//
+//        if (memberId == null) {
+//            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
+//        }
+//
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        // hold 조회
+//        List<TicketHold> holds = ticketHoldRepositoryQueryDsl.findByHoldToken(holdToken);
+//
+//        if (holds.isEmpty()) {
+//            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+//        }
+//
+//        // 만료 처리 : 만료된 게 섞여 있으면 토큰 단위로 정리하고 실패
+//        boolean expired = holds.stream().anyMatch(h -> !h.getExpiresAt().isAfter(now));
+//        if (expired) {
+//            ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
+//            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+//        }
+//
+//        // 소유자 검증
+//        boolean owner = holds.stream().allMatch(h -> h.getMember().getId().equals(memberId));
+//        if (!owner) {
+//            throw new MoaException(MoaExceptionType.FORBIDDEN);
+//        }
+//
+//        // 해당 ticket들을 락 잡고 SOLD 처리
+//        List<Long> ticketIds = holds.stream()
+//                .map(TicketHold::getId)
+//                .sorted()
+//                .toList();
+//
+//        List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsWithLock(ticketIds);
+//
+//        for (Ticket t : tickets) {
+//            if (t.getState() == TicketState.SOLD) {
+//                throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
+//            }
+//        }
+//
+//        for (Ticket t : tickets) {
+//            t.setState(TicketState.SOLD);
+//        }
+//
+//        // hold 제거
+//        ticketHoldRepositoryQueryDsl.deleteByHoldToken(holdToken);
+//
+//    }
 
 
     // 좌석 점유 해제

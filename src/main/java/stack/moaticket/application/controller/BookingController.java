@@ -47,15 +47,15 @@ public class BookingController {
     }
 
     //점유 확정 (HOLD -> SOLD)
-    @PostMapping("/holds/{holdToken}/confirm")
-    public ResponseEntity<Void> confirmHold(
-            @AuthenticationPrincipal Member member,
-            @PathVariable String holdToken
-    ) {
-        Long memberId = member.getId();
-        bookingService.confirmHold(memberId, holdToken);
-        return ResponseEntity.ok().build();
-    }
+//    @PostMapping("/holds/{holdToken}/confirm")
+//    public ResponseEntity<Void> confirmHold(
+//            @AuthenticationPrincipal Member member,
+//            @PathVariable String holdToken
+//    ) {
+//        Long memberId = member.getId();
+//        bookingService.confirmHold(memberId, holdToken);
+//        return ResponseEntity.ok().build();
+//    }
 
     //점유 해제 (HOLD -> AVAILABLE)
     // 이미 만료되어 AVAILABLE 상태여도 성공(200)으로 처리

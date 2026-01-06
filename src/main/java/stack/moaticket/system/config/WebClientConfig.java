@@ -33,6 +33,9 @@ public class WebClientConfig {
 
     @Bean
     public WebClient tossWebClient() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+                .responseTimeout(Duration.ofSeconds(5));
         return WebClient.builder()
                 .baseUrl("https://api.tosspayments.com")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

@@ -21,4 +21,11 @@ public class PaymentRepositoryQueryDsl {
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetchOne();
     }
+
+    public Payment findByOrderId(String orderId){
+        return queryFactory
+                .selectFrom(payment)
+                .where(payment.orderId.eq(orderId))
+                .fetchOne();
+    }
 }

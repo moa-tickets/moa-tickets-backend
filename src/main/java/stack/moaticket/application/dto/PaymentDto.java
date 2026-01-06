@@ -3,6 +3,9 @@ package stack.moaticket.application.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import stack.moaticket.domain.payment.type.PaymentState;
+
+import java.time.LocalDateTime;
 
 public abstract class PaymentDto {
 
@@ -19,4 +22,24 @@ public abstract class PaymentDto {
         private String orderName;
         private long amount;
     }
+    @Getter
+    @NoArgsConstructor
+    public static class ConfirmRequest {
+        private String orderId;
+        private String paymentKey;
+        private long amount;
+    }
+
+    @Getter
+    @Builder
+    public static class ConfirmResponse {
+        private Long paymentId;
+        private String orderId;
+        private PaymentState paymentState;
+        private LocalDateTime paidAt;
+        private long amount;
+        private String orderName;
+    }
+
+
 }

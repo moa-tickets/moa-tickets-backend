@@ -25,4 +25,17 @@ public class PaymentController {
                 paymentService.prepare(member.getId(), request)
         );
     }
+
+    // 결제 승인 (Toss confirm 호출)
+    // 성공시 Payment = PAID, Ticket = SOLD, PaymentTicket 생성, hold 정리
+    // 실패시 MoaException
+    @PostMapping("/confirm")
+    public ResponseEntity<PaymentDto.ConfirmResponse> confirm(
+            @AuthenticationPrincipal Member member,
+            @RequestBody PaymentDto.ConfirmRequest request
+    ) {
+        return ResponseEntity.ok(
+                paymentService.confirm(member.getId(), request)
+        );
+    }
 }

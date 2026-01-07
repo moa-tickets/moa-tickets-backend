@@ -95,11 +95,7 @@ public class PaymentController {
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "요청값이 올바르지 않음"
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "입력 매개변수가 올바르지 않음"
+                            description = "요청값이 올바르지 않음 또는 입력 매개변수가 올바르지 않음"
                     ),
                     @ApiResponse(
                             responseCode = "401",
@@ -111,27 +107,11 @@ public class PaymentController {
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "티켓 정보를 찾을 수 없음"
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "결제 정보를 찾을 수 없음"
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "세션 정보를 찾을 수 없음"
+                            description = "티켓, 결제, 세션 정보를 찾을 수 없음"
                     ),
                     @ApiResponse(
                             responseCode = "409",
-                            description = "결제상태가 유효하지 않음"
-                    ),
-                    @ApiResponse(
-                            responseCode = "409",
-                            description = "결제 금액이 일치하지 않음"
-                    ),
-                    @ApiResponse(
-                            responseCode = "409",
-                            description = "이미 판매된 좌석"
+                            description = "결제상태가 유효하지 않음 또는 결제 금액이 일치하지 않음 또는 이미 판매된 좌석"
                     ),
                     @ApiResponse(
                             responseCode = "410",

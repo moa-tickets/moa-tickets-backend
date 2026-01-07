@@ -31,13 +31,13 @@ import java.util.List;
 
 @Tag(name = "Product API", description = "상품(콘서트)예약 도메인 API")
 @SecurityScheme(
-        name = "cookie",
+        name = "Authorization",
         type = SecuritySchemeType.APIKEY,
         in = SecuritySchemeIn.COOKIE,
         paramName = "Authorization",
         description = "JWT를 쿠키로 전달"
 )
-@SecurityRequirement(name = "cookie")
+@SecurityRequirement(name = "Authorization")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/product")

@@ -75,13 +75,14 @@ public class SecurityConfig {
                         .authorizationEndpoint(auth -> auth
                                 .baseUri("/login"))
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+
                                 .userService(oauthService))
                         .successHandler(oauth2SuccessHandler)
                 );
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/favicon.ico", "/error", "/login/**", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**").permitAll()
+                        .requestMatchers("/", "/favicon.ico", "/error", "/login/**", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/health").permitAll()
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS

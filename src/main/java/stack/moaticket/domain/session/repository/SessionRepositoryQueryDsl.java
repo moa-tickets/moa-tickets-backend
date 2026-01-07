@@ -1,5 +1,6 @@
 package stack.moaticket.domain.session.repository;
 
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -28,5 +29,27 @@ public class SessionRepositoryQueryDsl {
                 .where(session.id.eq(sessionId))
                 .fetchOne();
     }
+
+    public Integer getPriceById(long sessionId) {
+        return jpaQueryFactory
+                .select(session.price)
+                .from(session)
+                .where(session.id.eq(sessionId))
+                .fetchOne();
+    }
+
+    public SessionPaymentInfo getPaymentInfo(long sessionId) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        SessionPaymentInfo.class,
+                        session.price,
+                        session.concert.name
+                ))
+                .from(session)
+                .where(session.id.eq(sessionId))
+                .fetchOne();
+    }
+
+    public record SessionPaymentInfo(Integer price, String concertName) {}
 
 }

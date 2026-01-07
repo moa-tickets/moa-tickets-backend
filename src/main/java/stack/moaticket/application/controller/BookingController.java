@@ -121,50 +121,15 @@ public class BookingController {
     }
 
     //점유 확정 (HOLD -> SOLD)
-    @Operation(
-            summary = "좌석 점유 확정(HOLD > SOLD)",
-            description = "결제전 임시로 SOLD처리",
-            parameters = {
-                    @Parameter(
-                            name = "holdToken",
-                            description = "결제 하기 전 점유한 좌석 토큰",
-                            required = true,
-                            in = ParameterIn.PATH
-                    )
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "성공"
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "인증되지 않은 사용자"
-                    ),
-                    @ApiResponse(
-                            responseCode = "410",
-                            description = "좌석 선점시간 만료"
-                    ),
-                    @ApiResponse(
-                            responseCode = "403",
-                            description = "권한이 없음"
-                    ),
-                    @ApiResponse(
-                            responseCode = "409",
-                            description = "이미 판매된 좌석"
-                    )
-            }
-
-    )
-    @PostMapping("/holds/{holdToken}/confirm")
-    public ResponseEntity<Void> confirmHold(
-            @AuthenticationPrincipal Member member,
-            @PathVariable String holdToken
-    ) {
-        Long memberId = member.getId();
-        bookingService.confirmHold(memberId, holdToken);
-        return ResponseEntity.ok().build();
-    }
+//    @PostMapping("/holds/{holdToken}/confirm")
+//    public ResponseEntity<Void> confirmHold(
+//            @AuthenticationPrincipal Member member,
+//            @PathVariable String holdToken
+//    ) {
+//        Long memberId = member.getId();
+//        bookingService.confirmHold(memberId, holdToken);
+//        return ResponseEntity.ok().build();
+//    }
 
     //점유 해제 (HOLD -> AVAILABLE)
     // 이미 만료되어 AVAILABLE 상태여도 성공(200)으로 처리

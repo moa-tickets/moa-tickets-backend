@@ -1,4 +1,4 @@
-FROM openjdk:21
-COPY ./moaticket.jar moaticket
+FROM amazoncorretto:21
+COPY ./moaticket.jar moaticket.jar
 EXPOSE 8080
-CMD ["java", "-jar", "moa-server"]
+CMD ["java", "-jar", "moaticket.jar"]

@@ -24,7 +24,7 @@ public class TicketHoldRepositoryQueryDsl {
 
     public long deleteByMemberAndSession(Long memberId, Long sessionId) {
         return queryFactory.delete(ticketHold)
-                .where(ticketHold.memberId.eq(memberId)
+                .where(ticketHold.member.id.eq(memberId)
                         .and(ticketHold.sessionId.eq(sessionId)))
                 .execute();
     }
@@ -42,7 +42,7 @@ public class TicketHoldRepositoryQueryDsl {
     }
 
     public List<Long> findHeldTicketIdsBySession(Long sessionId, LocalDateTime now) {
-        return queryFactory.select(ticketHold.ticketId)
+        return queryFactory.select(ticketHold.id)
                 .from(ticketHold)
                 .where(ticketHold.sessionId.eq(sessionId)
                         .and(ticketHold.expiresAt.gt(now)))

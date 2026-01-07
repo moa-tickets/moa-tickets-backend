@@ -43,7 +43,7 @@ public class SecurityConfig {
                         CorsConfiguration configuration = new CorsConfiguration();
 
                         //front가 떠있는 서버 주소
-                        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173"));
+                        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173", "https://moatickets.dev"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -75,14 +75,13 @@ public class SecurityConfig {
                         .authorizationEndpoint(auth -> auth
                                 .baseUri("/login"))
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-
                                 .userService(oauthService))
                         .successHandler(oauth2SuccessHandler)
                 );
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/favicon.ico", "/error", "/login/**").permitAll()
+                        .requestMatchers("/", "/favicon.ico", "/error", "/login/**", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**").permitAll()
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS

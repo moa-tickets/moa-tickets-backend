@@ -26,6 +26,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
 // security 기본 password가 계속 생성되어서 우선 주석처리
     implementation 'org.springframework.boot:spring-boot-starter-security:4.0.1'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
 
 // 기존 JWT (JWT 라이브러리 버전 업데이트 필요 (보안 이슈로 0.12.6으로 변경 추천))
 //    implementation 'io.jsonwebtoken:jjwt:0.9.1'
@@ -52,6 +53,8 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
 }
 
 tasks.named('test') {

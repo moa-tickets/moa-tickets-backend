@@ -33,6 +33,7 @@ public class PaymentTicket extends Base {
     @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
+    // TODO 결제취소(재판매) 기능을 개발할 경우 payment_ticket.ticket_id의 UK 제약을 제거하고 취소/재판매시 Ticket row에 락을 걸어서 정합성 유지하기
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ticket_id", nullable = false, unique = true)
     private Ticket ticket;

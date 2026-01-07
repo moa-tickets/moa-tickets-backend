@@ -32,6 +32,9 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${spring.profiles.active}")
     private String profile;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
@@ -60,15 +63,17 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.createJwt(memberId,60*60*1000*24L);
 
         response.addHeader("Set-Cookie", createCookie(token).toString());
+
         //로그인 성공 후 리다이렉트 되는 페이지
-        response.sendRedirect("https://moatickets.dev/login-callback");
+        response.sendRedirect(frontendUrl + "/login-callback");
+
 
 
     }
     private ResponseCookie createCookie(String token){
         if(profile.equals("dev")) {
             return ResponseCookie.from("Authorization", token)
-                    .httpOnly(true)
+                    .httpOnly(false)
                     .path("/")
                     .maxAge(60 * 60 * 24)
                     .build();

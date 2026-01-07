@@ -82,7 +82,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/favicon.ico", "/error", "/login/**").permitAll()
+                        .requestMatchers("/", "/favicon.ico", "/error", "/login/**", "/health").permitAll()
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS

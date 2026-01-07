@@ -10,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,7 +21,7 @@ import stack.moaticket.domain.member.service.MemberService;
 
 import java.io.IOException;
 import java.util.Arrays;
-
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
     private final MemberService memberService;
@@ -60,13 +61,20 @@ public class JwtFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (MalformedJwtException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
         } catch (ExpiredJwtException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
         } catch (UnsupportedJwtException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
         } catch (SignatureException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
+        } catch (RuntimeException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

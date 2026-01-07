@@ -8,7 +8,12 @@ public class FilterUtil {
     private static final Set<String> API_FILTER_SET = Set.of(
             "/login",
             "/rtmp/on-publish",
-            "/rtmp/on-done"
+            "/rtmp/on-done",
+            "/favicon.ico",
+            "/error",
+            "/swagger-ui.html",
+            "/api-docs",
+            "/health"
     );
 
     public static boolean checkFilter(String uri) {

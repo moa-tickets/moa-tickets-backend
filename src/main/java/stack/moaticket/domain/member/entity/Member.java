@@ -40,4 +40,11 @@ public class Member extends Base {
     @Column(name = "member_email", nullable = false, updatable = false)
     private String email;
 
+    public void promoteToSeller() {
+        this.isSeller = true;
+    }
+
+    public void demoteFromSeller() {
+        this.isSeller = false;
+    }
 }

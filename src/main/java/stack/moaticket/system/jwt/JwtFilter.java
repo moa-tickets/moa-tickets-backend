@@ -10,17 +10,19 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
+import stack.moaticket.application.util.FilterUtil;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 
 import java.io.IOException;
 import java.util.Arrays;
-
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
     private final MemberService memberService;
@@ -29,7 +31,10 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            if(request.getRequestURL().toString().endsWith("/login")) {
+            String requestUri = request.getRequestURI();
+            boolean isPass = FilterUtil.checkFilter(requestUri);
+
+            if(isPass) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -60,13 +65,22 @@ public class JwtFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (MalformedJwtException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
         } catch (ExpiredJwtException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
         } catch (UnsupportedJwtException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
         } catch (SignatureException e) {
+            log.error(e.getMessage());
             throw new RuntimeException(); // TODO
+        } catch (RuntimeException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
+
+
 }

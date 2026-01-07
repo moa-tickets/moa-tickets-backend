@@ -2,10 +2,11 @@ package stack.moaticket.system.oauth.component;
 
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -18,7 +19,6 @@ import stack.moaticket.domain.oauth_info.service.OauthInfoService;
 import stack.moaticket.system.oauth.facade.OauthFacade;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +28,12 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final MemberService memberService;
     private final JwtUtil jwtUtil;
     private final OauthFacade oauthFacade;
+
+    @Value("${spring.profiles.active}")
+    private String profile;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -56,19 +62,31 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         //24시간동안 토큰 발행
         String token = jwtUtil.createJwt(memberId,60*60*1000*24L);
 
-        response.addCookie(createCookie("Authorization", token));
+        response.addHeader("Set-Cookie", createCookie(token).toString());
+
         //로그인 성공 후 리다이렉트 되는 페이지
-        response.sendRedirect("http://localhost:5173/login-callback");
+        response.sendRedirect(frontendUrl + "/login-callback");
+
 
 
     }
-    private Cookie createCookie(String key, String value){
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        //cookie.setSecure(true);
-        return cookie;
+    private ResponseCookie createCookie(String token){
+        if(profile.equals("dev")) {
+            return ResponseCookie.from("Authorization", token)
+                    .httpOnly(false)
+                    .path("/")
+                    .maxAge(60 * 60 * 24)
+                    .build();
+        }
+        else {
+            return ResponseCookie.from("Authorization", token)
+                    .secure(true)
+                    .sameSite("Lax")
+                    .path("/")
+                    .domain("moatickets.dev")
+                    .maxAge(60 * 60 * 24)
+                    .build();
+        }
     }
 
 }

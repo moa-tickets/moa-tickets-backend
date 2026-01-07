@@ -43,7 +43,7 @@ public class SecurityConfig {
                         CorsConfiguration configuration = new CorsConfiguration();
 
                         //front가 떠있는 서버 주소
-                        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173"));
+                        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173", "https://moatickets.dev"));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));

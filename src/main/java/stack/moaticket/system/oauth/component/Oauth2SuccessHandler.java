@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -28,6 +29,9 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final MemberService memberService;
     private final JwtUtil jwtUtil;
     private final OauthFacade oauthFacade;
+
+    @Value("${spring.profiles.active}")
+    private String profile;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -58,7 +62,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addCookie(createCookie("Authorization", token));
         //로그인 성공 후 리다이렉트 되는 페이지
-        response.sendRedirect("http://localhost:5173/login-callback");
+        response.sendRedirect("https://moatickets.dev/login-callback");
 
 
     }
@@ -66,8 +70,10 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(60 * 60 * 24);
         cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        //cookie.setSecure(true);
+
+        if(profile.equals("dev")) cookie.setHttpOnly(true);
+        else cookie.setSecure(true);
+
         return cookie;
     }
 

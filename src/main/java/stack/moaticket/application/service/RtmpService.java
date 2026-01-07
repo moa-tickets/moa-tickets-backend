@@ -19,7 +19,7 @@ public class RtmpService {
     private final WebClient webClient;
 
     private static final String HTTP_SCHEME = "http";
-    private static final String WORKER_HOST = "stream-stream-worker";
+    private static final String WORKER_HOST = "stream-worker";
     private static final int WORKER_PORT = 8000;
     private static final String STREAM_START_PATH = "/streams/{streamKey}/start";
     private static final String STREAM_TERMINATE_PATH = "/streams/{streamKey}/stop";

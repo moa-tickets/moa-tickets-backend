@@ -72,7 +72,10 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         cookie.setPath("/");
 
         if(profile.equals("dev")) cookie.setHttpOnly(true);
-        else cookie.setSecure(true);
+        else {
+            cookie.setSecure(true);
+            cookie.setDomain(".moatickets.dev");
+        }
 
         return cookie;
     }

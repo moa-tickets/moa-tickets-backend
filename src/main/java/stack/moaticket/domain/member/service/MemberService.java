@@ -32,4 +32,10 @@ public class MemberService {
         member.promoteToSeller();
         return memberRepository.save(member);
     }
+
+    public Member convertToBuyer(long memberId){
+        Member member = memberRepositoryQueryDsl.findById(memberId);
+        member.demoteFromSeller();
+        return memberRepository.save(member);
+    }
 }

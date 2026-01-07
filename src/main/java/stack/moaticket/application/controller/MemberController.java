@@ -40,4 +40,15 @@ public class MemberController {
         Member updatedMember = memberService.convertToSeller(member.getId());
         return ResponseEntity.ok(updatedMember);
     }
+
+    @PostMapping("/api/members/buyer")
+    public ResponseEntity<Member> convertToBuyer(
+            @AuthenticationPrincipal Member member
+    ) {
+        if (member == null) {
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
+        }
+        Member updatedMember = memberService.convertToBuyer(member.getId());
+        return ResponseEntity.ok(updatedMember);
+    }
 }

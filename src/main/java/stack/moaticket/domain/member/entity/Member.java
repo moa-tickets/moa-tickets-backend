@@ -44,4 +44,7 @@ public class Member extends Base {
         this.isSeller = true;
     }
 
+    public void demoteFromSeller() {
+        this.isSeller = false;
+    }
 }

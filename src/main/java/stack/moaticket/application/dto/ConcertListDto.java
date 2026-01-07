@@ -22,6 +22,7 @@ public abstract class ConcertListDto {
     @Getter
     @Builder
     public static class Response{
+        private Long concertId;
         private String concertName;
         private String concertDuration;
         private LocalDateTime bookingOpen;
@@ -31,6 +32,7 @@ public abstract class ConcertListDto {
 
         public static Response from(Concert concert){
             return Response.builder()
+                    .concertId(concert.getId())
                     .concertName(concert.getName())
                     .concertDuration(concert.getDuration())
                     .bookingOpen(concert.getBookingOpen())

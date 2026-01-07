@@ -26,4 +26,10 @@ public class MemberService {
     public Member findById(long memberId){
         return memberRepositoryQueryDsl.findById(memberId);
     }
+
+    public Member convertToSeller(long memberId){
+        Member member = memberRepositoryQueryDsl.findById(memberId);
+        member.promoteToSeller();
+        return memberRepository.save(member);
+    }
 }

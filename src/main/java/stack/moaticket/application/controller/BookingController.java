@@ -7,15 +7,14 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.BookingDto;
-import stack.moaticket.application.dto.ConcertListDto;
 import stack.moaticket.application.service.BookingService;
 import stack.moaticket.domain.member.entity.Member;
 
@@ -33,6 +32,7 @@ public class BookingController {
     // 회차별 좌석 목록 조회 (좌석 배치도용)
     // HOLD 상태라도 holdExpired가 지난 좌석은 AVAILABLE로 내려준다
     @Operation(
+            security = {},
             summary = "회차별 좌석 목록 Read",
             description = "sessionId를 받으면 해당 세션에 맞는 좌석(티켓)들을 조회",
             parameters = {
@@ -67,7 +67,7 @@ public class BookingController {
     @Operation(
             summary = "좌석 임시 점유",
             description = "sessionId, ticketIds(최대 4개)를 입력 받아 해당 세션과 티켓들에 임시로 tickethold 생성",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            requestBody = @RequestBody(
                     description = "sessionId, List<ticketIds>(최대 4개)",
                     required = true,
                     content = @Content(

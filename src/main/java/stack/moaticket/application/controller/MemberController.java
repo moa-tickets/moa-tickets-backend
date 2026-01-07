@@ -33,13 +33,6 @@ public class MemberController {
     @Operation(
             summary = "로그인 유저 정보 조회",
             description = "로그인 된 유저 정보를 조회 함",
-            parameters = {
-                    @Parameter(
-                            name = "member",
-                            description = "로그인된 유저",
-                            required = true
-                    )
-            },
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -62,6 +55,10 @@ public class MemberController {
         return ResponseEntity.ok(memberInfoService.getMember(member));
     }
 
+    @Operation(
+            summary = "테스트용 seller",
+            description = "로그인 된 유저를 seller로 변경"
+    )
     @PostMapping("/api/members/seller")
     public ResponseEntity<Member> convertToSeller(
             @AuthenticationPrincipal Member member
@@ -73,6 +70,10 @@ public class MemberController {
         return ResponseEntity.ok(updatedMember);
     }
 
+    @Operation(
+            summary = "테스트용 buyer",
+            description = "로그인 된 유저를 buyer로 변경"
+    )
     @PostMapping("/api/members/buyer")
     public ResponseEntity<Member> convertToBuyer(
             @AuthenticationPrincipal Member member

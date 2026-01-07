@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,7 +37,7 @@ import java.util.List;
         paramName = "Authorization",
         description = "JWT를 쿠키로 전달"
 )
-@SecurityRequirement(name = "Authorization")
+@SecurityRequirement(name = "cookie")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/product")
@@ -46,7 +47,7 @@ public class ProductController {
     @Operation(
             summary = "콘서트 Create",
             description = "콘서트와 세션 List를 받아 create 후 반환",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            requestBody = @RequestBody(
                     description = "콘서트, 세션 list 데이터",
                     required = true,
                     content = @Content(
@@ -75,6 +76,7 @@ public class ProductController {
     }
 
     @Operation(
+            security = {},
             summary = "콘서트 Read",
             description = "콘서트 id를 받아 해당하는 콘서트 조회",
             parameters = {
@@ -106,6 +108,7 @@ public class ProductController {
 
 
     @Operation(
+            security = {},
             summary = "콘서트 list Read",
             description = "검색어와 정렬방식을 받으면 해당 조건에 맞게 list를 조회",
             parameters = {

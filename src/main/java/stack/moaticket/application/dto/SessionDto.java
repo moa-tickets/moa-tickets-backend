@@ -28,11 +28,13 @@ public abstract class SessionDto {
     @Getter
     @Builder
     public static class SessionResponse{
+        private Long sessionId;
         private LocalDateTime date;
         private int price;
 
         public static SessionResponse from(Session session){
             return SessionResponse.builder()
+                    .sessionId(session.getId())
                     .date(session.getDate())
                     .price(session.getPrice())
                     .build();

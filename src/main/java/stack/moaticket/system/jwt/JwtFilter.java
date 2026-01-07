@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
+import stack.moaticket.application.util.FilterUtil;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 
@@ -30,8 +31,10 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            log.error(request.getRequestURL().toString());
-            if(request.getRequestURL().toString().endsWith("/login")) {
+            String requestUri = request.getRequestURI();
+            boolean isPass = FilterUtil.checkFilter(requestUri);
+
+            if(isPass) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -78,4 +81,6 @@ public class JwtFilter extends OncePerRequestFilter {
             throw new RuntimeException(e);
         }
     }
+
+
 }

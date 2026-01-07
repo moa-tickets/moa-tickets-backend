@@ -20,6 +20,9 @@ public class Review extends Base {
     @Column(name = "review_id")
     private Long id;
 
+    @Column(name = "product_id", nullable = false)
+    private Long productId;
+
     @Column(name = "review_score", nullable = false)
     private double score;
 

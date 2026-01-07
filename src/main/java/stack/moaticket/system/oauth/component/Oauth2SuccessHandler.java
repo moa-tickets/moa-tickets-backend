@@ -61,14 +61,14 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addHeader("Set-Cookie", createCookie(token).toString());
         //로그인 성공 후 리다이렉트 되는 페이지
-        response.sendRedirect("https://moatickets.dev/login-callback");
+        response.sendRedirect("http://localhost:5173/login-callback");
 
 
     }
     private ResponseCookie createCookie(String token){
         if(profile.equals("dev")) {
             return ResponseCookie.from("Authorization", token)
-                    .httpOnly(true)
+                    .httpOnly(false)
                     .path("/")
                     .maxAge(60 * 60 * 24)
                     .build();

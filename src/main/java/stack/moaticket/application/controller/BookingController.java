@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -67,7 +66,7 @@ public class BookingController {
     @Operation(
             summary = "좌석 임시 점유",
             description = "sessionId, ticketIds(최대 4개)를 입력 받아 해당 세션과 티켓들에 임시로 tickethold 생성",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "sessionId, List<ticketIds>(최대 4개)",
                     required = true,
                     content = @Content(

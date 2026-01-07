@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,7 +46,7 @@ public class ProductController {
     @Operation(
             summary = "콘서트 Create",
             description = "콘서트와 세션 List를 받아 create 후 반환",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "콘서트, 세션 list 데이터",
                     required = true,
                     content = @Content(
@@ -66,7 +65,6 @@ public class ProductController {
                     )
             }
     )
-
     @PostMapping("/concert")
     public ResponseEntity<CreateConcertDto.Response> concertSave(
             @AuthenticationPrincipal Member member,

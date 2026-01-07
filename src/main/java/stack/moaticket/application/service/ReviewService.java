@@ -6,6 +6,8 @@ import stack.moaticket.application.dto.ReviewDto;
 import stack.moaticket.domain.review.entity.Review;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.domain.review.repository.ReviewRepository;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,26 +60,26 @@ public class ReviewService {
 
     private void validateCreateRequest(ReviewDto.ReviewRequestDto request) {
         if (request == null) {
-            throw new IllegalArgumentException("요청이 비어있습니다.");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
 
         validateProductId(request.getProductId());
 
         if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new IllegalArgumentException("리뷰 내용은 필수입니다.");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
 
         if (request.getScore() < 1 || request.getScore() > 5) {
-            throw new IllegalArgumentException("평점은 1~5 사이여야 합니다.");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
     }
 
     private void validateProductId(Long productId) {
         if (productId == null) {
-            throw new IllegalArgumentException("productId는 필수입니다.");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
         if (productId <= 0) {
-            throw new IllegalArgumentException("productId는 1 이상이어야 합니다.");
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }
     }
 }

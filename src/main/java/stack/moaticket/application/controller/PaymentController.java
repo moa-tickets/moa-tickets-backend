@@ -3,16 +3,13 @@ package stack.moaticket.application.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.application.dto.PaymentDto;
 import stack.moaticket.application.service.PaymentService;
 import stack.moaticket.domain.member.entity.Member;
@@ -30,7 +27,7 @@ public class PaymentController {
     @Operation(
             summary = "Payment(READY)생성",
             description = "구매하려는 token을 검증하고 payment생성",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "구매하려는 ticket을 점유한 holdToken",
                     required = true,
                     content = @Content(
@@ -77,7 +74,7 @@ public class PaymentController {
     @Operation(
             summary = "결제 승인",
             description = "준비된 결제를 토스를 이용해 결제를 진행",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "구매하려는 ticket들의 orderId, paymentKey, amount",
                     required = true,
                     content = @Content(

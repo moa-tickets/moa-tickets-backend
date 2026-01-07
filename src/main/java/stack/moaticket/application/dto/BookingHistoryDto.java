@@ -53,4 +53,27 @@ public abstract class BookingHistoryDto {
             this.seatNum = seatNum;
         }
     }
+
+    @Getter
+    @Builder
+    public static class ListResponse {
+        private int page;          // 0-based
+        private int size;          // 항상 10
+        private long totalElements;
+        private int totalPages;
+
+        private List<Item> items;
+    }
+
+    @Getter
+    @Builder
+    public static class Item {
+        private String orderId;            // 예매번호
+        private String concertName;        // 티켓명
+        private LocalDateTime sessionDate; // 관람일시
+        private int ticketCount;           // 매수
+    }
+
+    public enum MonthBasis { BOOKED_AT, VIEWED_AT }
+    public enum RangeFilter { D15, M1, M2, M3 }
 }

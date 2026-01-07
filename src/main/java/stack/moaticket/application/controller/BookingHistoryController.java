@@ -25,4 +25,21 @@ public class BookingHistoryController {
                 bookingHistoryService.getDetail(member.getId(), orderId)
         );
     }
+
+    // 예매내역 목록 조회 (10개 offset pagination)
+    // - 기간필터: range=D15|M1|M2|M3
+    // - 월별필터: basis=BOOKED_AT|VIEWED_AT & year=YYYY & month=1~12
+    @GetMapping("/me")
+    public ResponseEntity<BookingHistoryDto.ListResponse> getList(
+            @AuthenticationPrincipal Member member,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) BookingHistoryDto.RangeFilter range,
+            @RequestParam(required = false) BookingHistoryDto.MonthBasis basis,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month
+    ) {
+        return ResponseEntity.ok(
+                bookingHistoryService.getList(member.getId(), page, range, basis, year, month)
+        );
+    }
 }

@@ -29,13 +29,6 @@ import stack.moaticket.domain.member.entity.Member;
 import java.util.List;
 
 @Tag(name = "Product API", description = "상품(콘서트)예약 도메인 API")
-@SecurityScheme(
-        name = "Authorization",
-        type = SecuritySchemeType.APIKEY,
-        in = SecuritySchemeIn.COOKIE,
-        paramName = "Authorization",
-        description = "JWT를 쿠키로 전달"
-)
 @SecurityRequirement(name = "Authorization")
 @RestController
 @RequiredArgsConstructor

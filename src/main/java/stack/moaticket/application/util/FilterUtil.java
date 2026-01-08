@@ -11,12 +11,15 @@ public class FilterUtil {
             "/rtmp/on-done",
             "/favicon.ico",
             "/error",
-            "/swagger-ui.html",
-            "/api-docs",
             "/health"
+    );
+    private static final Set<String> PREFIX_FILTER_SET = Set.of(
+            "/swagger-ui",
+            "/api-docs",
+            "/v3/api-docs"
     );
 
     public static boolean checkFilter(String uri) {
-        return API_FILTER_SET.contains(uri);
+        return API_FILTER_SET.contains(uri) || PREFIX_FILTER_SET.stream().anyMatch(uri::startsWith);
     }
 }

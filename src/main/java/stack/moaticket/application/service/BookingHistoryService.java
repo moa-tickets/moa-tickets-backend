@@ -28,9 +28,6 @@ public class BookingHistoryService {
     // 상세 조회
     // =========================
     public BookingHistoryDto.DetailResponse getDetail(Long memberId, String orderId) {
-        if (memberId == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
         if (orderId == null || orderId.isBlank()) {
             throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
         }
@@ -79,9 +76,7 @@ public class BookingHistoryService {
             Integer year,
             Integer month
     ) {
-        if (memberId == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
+
         if (page < 0) {
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
         }

@@ -3,12 +3,11 @@ package stack.moaticket.domain.faq_answer.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import stack.moaticket.domain.faq_answer.dto.FaqAnswerRequestDTO;
-import stack.moaticket.domain.faq_answer.dto.FaqAnswerResponseDTO;
+import stack.moaticket.application.dto.FaqAnswerDto;
 import stack.moaticket.domain.faq_answer.entity.FaqAnswer;
+import stack.moaticket.domain.faq_question.entity.Ownable;
 import stack.moaticket.domain.faq_answer.repository.FaqAnswerRepository;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
-import stack.moaticket.domain.faq_question.entity.Ownable;
 import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.repository.MemberRepository;
@@ -16,102 +15,102 @@ import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class FaqAnswerService {
 
     private final FaqAnswerRepository faqAnswerRepository;
-    private final MemberRepository memberRepository;
     private final FaqQuestionRepository faqQuestionRepository;
+    private final MemberRepository memberRepository;
 
-    public static <T extends Ownable> void checkOwner(T data, Member member) {
-        if (member == null || member.getId() == null || !member.isSeller()) {
-            throw new MoaException(MoaExceptionType.FORBIDDEN);
+    @Transactional
+    public FaqAnswerDto.Response createAnswer(FaqAnswerDto.CreateRequest request, Long memberId) {
+        validateCreateRequest(request);
+
+        FaqQuestion question = faqQuestionRepository.findById(request.getQuestionId())
+                .orElseThrow(() -> new MoaException(MoaExceptionType.FAQ_QUESTION_NOT_FOUND));
+
+        if (question.isAnswered()) {
+            throw new MoaException(MoaExceptionType.FAQ_QUESTION_ALREADY_ANSWERED);
         }
 
-        if (data.getMember() == null || !data.getMember().getId().equals(member.getId())) {
-            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        // 이미 답변이 있는지 확인
+        if (faqAnswerRepository.findByQuestion(question).isPresent()) {
+            throw new MoaException(MoaExceptionType.FAQ_QUESTION_ALREADY_ANSWERED);
         }
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+
+        FaqAnswer answer = new FaqAnswer(question, member, request.getContent());
+        FaqAnswer saved = faqAnswerRepository.save(answer);
+
+        return FaqAnswerDto.Response.from(saved);
+    }
+
+    public FaqAnswerDto.Response getAnswerById(Long answerId) {
+        FaqAnswer answer = faqAnswerRepository.findById(answerId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.FAQ_ANSWER_NOT_FOUND));
+
+        // 연관된 엔티티들을 로드하기 위해 LAZY 로딩 트리거
+        answer.getQuestion().getId();
+        answer.getMember().getId();
+
+        return FaqAnswerDto.Response.from(answer);
     }
 
     @Transactional
-    public FaqAnswerResponseDTO answerToQuestionPost(FaqAnswerRequestDTO dto, Member member, Long questionId) {
-        // 1. 질문 조회
-        FaqQuestion question = faqQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
+    public FaqAnswerDto.Response updateAnswer(Long answerId, FaqAnswerDto.UpdateRequest request, Long memberId) {
+        validateUpdateRequest(request);
 
-        // 2. 이미 답변했는지 확인 (질문 기준)
-        boolean answerExist = faqAnswerRepository.existsByMemberAndQuestion(member, question);
+        FaqAnswer answer = faqAnswerRepository.findById(answerId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.FAQ_ANSWER_NOT_FOUND));
 
+        validateOwnership(answer, memberId);
 
+        answer.setContent(request.getContent());
 
-        // 3. 답변이 이미 작성된 경우
-        if(answerExist) {
-            throw new MoaException(MoaExceptionType.ALREADY_QUESTION);
-        }
-
-        // 4. 엔티티 작성
-        FaqAnswer faqAnswer = FaqAnswer.builder().member(member).question(question).id(dto.getId()).content(dto.getContent()).build();
-
-        checkOwner(faqAnswer, member);
-
-        return FaqAnswerResponseDTO.fromEntity(faqAnswer);
-    }
-
-    @Transactional(readOnly = true)
-    public FaqAnswerResponseDTO getAnswerData(Member member, Long questionId) {
-        // 1. 질문 존재 여부 확인
-        FaqQuestion question = faqQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
-
-        // 2. 답변 조회
-        FaqAnswer answer = faqAnswerRepository.findByQuestion(question)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
-
-        checkOwner(answer,member);
-
-        // 3. DTO 변환 후 반환
-        return FaqAnswerResponseDTO.fromEntity(answer);
+        FaqAnswer saved = faqAnswerRepository.save(answer);
+        return FaqAnswerDto.Response.from(saved);
     }
 
     @Transactional
-    public FaqAnswerResponseDTO updateAnswerData(FaqAnswerRequestDTO dto, Member member, Long questionId) {
+    public void deleteAnswer(Long answerId, Long memberId) {
+        FaqAnswer answer = faqAnswerRepository.findById(answerId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.FAQ_ANSWER_NOT_FOUND));
 
-        // 1. 질문 존재 여부 확인
-        FaqQuestion question = faqQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
+        validateOwnership(answer, memberId);
 
-        // 2. 기존 답변 찾기
-        FaqAnswer answer = faqAnswerRepository.findByQuestion(question)
-                .orElseThrow(() ->new MoaException(MoaExceptionType.NOT_FOUND));
+        FaqQuestion question = answer.getQuestion();
+        question.setAnswered(false); // 질문의 답변 상태를 false로 변경
 
-        // 3. 답변에서 수정하기
-        FaqAnswer updatedAnswer = FaqAnswer.builder()
-                .id(dto.getId()).title(dto.getTitle()).content(dto.getContent()).build();
-
-        checkOwner(updatedAnswer, member);
-
-        // 변환
-        return FaqAnswerResponseDTO.fromEntity(updatedAnswer);
-    }
-
-    @Transactional
-    public FaqAnswerResponseDTO deleteAnswerData(Member member, Long questionId) {
-
-        // 1. 질문 조회
-        FaqQuestion question = faqQuestionRepository.findById(questionId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
-
-        // 2. 답변 조회
-        FaqAnswer answer = faqAnswerRepository.findByQuestion(question)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
-
-        // 3. 권한 체크 (작성자 or 판매자)
-        checkOwner(answer, member);
-
-        // 4. 삭제
         faqAnswerRepository.delete(answer);
+    }
 
-        // 5. 삭제된 데이터 반환 (선택)
-        return FaqAnswerResponseDTO.fromEntity(answer);
+    private void validateCreateRequest(FaqAnswerDto.CreateRequest request) {
+        if (request == null) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getQuestionId() == null || request.getQuestionId() <= 0) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+    }
+
+    private void validateUpdateRequest(FaqAnswerDto.UpdateRequest request) {
+        if (request == null) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+    }
+
+    private void validateOwnership(Ownable ownable, Long memberId) {
+        if (!ownable.getMember().getId().equals(memberId)) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
     }
 }

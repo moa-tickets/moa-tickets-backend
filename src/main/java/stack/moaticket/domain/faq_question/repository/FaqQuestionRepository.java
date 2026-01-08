@@ -14,4 +14,6 @@ public interface FaqQuestionRepository extends JpaRepository<FaqQuestion, Long> 
     List<FaqQuestion> findAll();
     Page<FaqQuestion> findAll(Pageable pageable);
 
+
+
 }

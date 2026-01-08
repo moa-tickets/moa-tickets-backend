@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import stack.moaticket.domain.base.Base;
+import stack.moaticket.domain.faq_answer.entity.FaqAnswer;
 import stack.moaticket.domain.member.entity.Member;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,25 +22,27 @@ import stack.moaticket.domain.member.entity.Member;
 public class FaqQuestion extends Base implements Ownable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "faq_id")
+    @Column(name = "question_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(name = "faq_title")
+    @Column(nullable = false, length = 100)
     private String title;
 
-    @Column(name = "faq_contents", columnDefinition = "TEXT")
-    private String contents;
+    @Column(nullable = false, length = 255)
+    private String content;
 
-    @Column(name = "faq_file",nullable = true)
-    private String fileURL;
+    @Column(nullable = false)
+    private boolean answered = false;
 
-    @Column(name = "faq_type")
-    private String faqType;
+    @OneToOne(mappedBy = "question", fetch = FetchType.LAZY)
+    private FaqAnswer faqAnswer;
 
-    @Column(name = "faq_statement")
-    private boolean faqStatement;
+    public void markAnswered() {
+        this.answered = true;
+        super.setUpdatedAt(LocalDateTime.now());
+    }
 }

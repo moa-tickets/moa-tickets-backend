@@ -1,119 +1,133 @@
 package stack.moaticket.domain.faq_question.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
-import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
+import org.springframework.transaction.annotation.Transactional;
+import stack.moaticket.application.dto.FaqQuestionDto;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
 import stack.moaticket.domain.faq_question.entity.Ownable;
 import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.repository.MemberRepository;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.util.AuthValidator;
-
-import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class FaqQuestionService {
+
     private final FaqQuestionRepository faqQuestionRepository;
-    private static final int PAGE_SIZE = 10;
-  
-    public static <T extends Ownable> void checkOwner(T data, Member member) {
-        if (member == null || member.getId() == null) {
+    private final MemberRepository memberRepository;
+
+    @Transactional
+    public FaqQuestionDto.Response createQuestion(FaqQuestionDto.CreateRequest request, Long memberId) {
+        validateCreateRequest(request);
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+
+        FaqQuestion question = FaqQuestion.builder()
+                .member(member)
+                .title(request.getTitle())
+                .content(request.getContent())
+                .answered(false)
+                .build();
+
+        FaqQuestion saved = faqQuestionRepository.save(question);
+        return FaqQuestionDto.Response.from(saved);
+    }
+
+    public Page<FaqQuestionDto.SimpleResponse> getAllQuestions(Pageable pageable) {
+        Page<FaqQuestion> questions = faqQuestionRepository.findAll(pageable);
+        return questions.map(FaqQuestionDto.SimpleResponse::from);
+    }
+
+    public FaqQuestionDto.Response getQuestionById(Long questionId) {
+        FaqQuestion question = faqQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.FAQ_QUESTION_NOT_FOUND));
+
+        // 답변을 함께 로드하기 위해 명시적으로 로드
+        if (question.getFaqAnswer() != null) {
+            question.getFaqAnswer().getContent(); // LAZY 로딩 트리거
+        }
+
+        return FaqQuestionDto.Response.from(question);
+    }
+
+    @Transactional
+    public FaqQuestionDto.Response updateQuestion(Long questionId, FaqQuestionDto.UpdateRequest request, Long memberId) {
+        validateUpdateRequest(request);
+
+        FaqQuestion question = faqQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.FAQ_QUESTION_NOT_FOUND));
+
+        validateOwnership(question, memberId);
+
+        question.setTitle(request.getTitle());
+        question.setContent(request.getContent());
+
+        FaqQuestion saved = faqQuestionRepository.save(question);
+        return FaqQuestionDto.Response.from(saved);
+    }
+
+    @Transactional
+    public void deleteQuestion(Long questionId, Long memberId) {
+        FaqQuestion question = faqQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.FAQ_QUESTION_NOT_FOUND));
+
+        validateOwnership(question, memberId);
+
+        // 답변이 있는 경우 답변도 함께 삭제해야 할 수 있음
+        // 현재는 CASCADE 설정이 없으므로 수동으로 확인
+        if (question.getFaqAnswer() != null) {
+            throw new MoaException(MoaExceptionType.CONFLICT, "답변이 있는 질문은 삭제할 수 없습니다.");
+        }
+
+        faqQuestionRepository.delete(question);
+    }
+
+    private void validateCreateRequest(FaqQuestionDto.CreateRequest request) {
+        if (request == null) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getTitle().length() > 100) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getContent().length() > 255) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+    }
+
+    private void validateUpdateRequest(FaqQuestionDto.UpdateRequest request) {
+        if (request == null) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getTitle().length() > 100) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (request.getContent().length() > 255) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+    }
+
+    private void validateOwnership(Ownable ownable, Long memberId) {
+        if (!ownable.getMember().getId().equals(memberId)) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
-
-        if (data.getMember() == null || !data.getMember().getId().equals(member.getId())) {
-        }
-    }
-
-    // 글 생성
-    @Transactional
-    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto) {
-
-        // 중복 체크
-        if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {
-            throw new MoaException(MoaExceptionType.ALREADY_QUESTION);
-        }
-
-        // 엔티티 생성
-        FaqQuestion faqQuestion = FaqQuestion.builder().title(rqdto.getTitle()).contents(rqdto.getContent())
-                .faqType(rqdto.getOption()).member(member).build();
-
-        checkOwner(faqQuestion, member);
-
-        // 저장
-        FaqQuestion savedQuestionData = faqQuestionRepository.save(faqQuestion);
-
-        return FaqQuestionResponseDTO.fromEntity(savedQuestionData);
-    }
-
-    // 글 조회
-    @Transactional(readOnly = true)
-    public Page<FaqQuestionResponseDTO> readQuestionList(Member member, int pageNo, String criteria) {
-        AuthValidator.checkAuthenticated(member);
-        Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, criteria));
-        Page<FaqQuestionResponseDTO> page = faqQuestionRepository.findAll(pageable).map(FaqQuestionResponseDTO::fromEntity);
-        return page;
-    }
-
-    // 글 수정
-    @Transactional
-    public FaqQuestionResponseDTO updateQuestion(Member member, Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
-
-        // 기존의 엔티티 조회
-        FaqQuestion faqQuestionById = faqQuestionRepository.findById(id).orElseThrow(() -> {
-            return new MoaException(MoaExceptionType.NOT_FOUND);
-        });
-
-        checkOwner(faqQuestionById, member);
-
-        // 값 변경하기(null이면 변경하지 않는다.)
-        if(rqdto.getTitle() != null) {
-            faqQuestionById.setTitle(rqdto.getTitle());
-        }
-
-        if(rqdto.getContent() != null) {
-            faqQuestionById.setContents(rqdto.getContent());
-        }
-
-        if(rqdto.getOption() != null) {
-            faqQuestionById.setFaqType(rqdto.getOption());
-        }
-
-
-        return FaqQuestionResponseDTO.fromEntity(faqQuestionById);
-    }
-
-    // 글 삭제
-    @Transactional
-    public FaqQuestionResponseDTO deleteQuestion(Member member, Long id) {
-
-        FaqQuestion questionToDelete = faqQuestionRepository.findById(id)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
-
-        checkOwner(questionToDelete, member);
-
-        faqQuestionRepository.delete(questionToDelete);
-
-        return FaqQuestionResponseDTO.fromEntity(questionToDelete);
-    }
-
-    // 상세 조회
-    @Transactional
-    public FaqQuestionResponseDTO getDetailQuestion(Member member, Long id) {
-        FaqQuestion detailQuestion = faqQuestionRepository.findById(id)
-                                        .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
-        checkOwner(detailQuestion, member);
-
-        return FaqQuestionResponseDTO.fromEntity(detailQuestion);
     }
 }

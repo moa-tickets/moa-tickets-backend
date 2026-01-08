@@ -28,12 +28,15 @@ public enum MoaExceptionType {
     SEAT_NOT_FOUND("좌석 정보를 찾을 수 없습니다.", 404),
     MEMBER_NOT_FOUND("올바른 사용자를 찾을 수 없습니다", 404),
     PAYMENT_NOT_FOUND("결제 정보를 찾을 수 없습니다.", 404),
+    FAQ_QUESTION_NOT_FOUND("FAQ 질문을 찾을 수 없습니다.", 404),
+    FAQ_ANSWER_NOT_FOUND("FAQ 답변을 찾을 수 없습니다.", 404),
 
     // 409
     CONFLICT("요청이 현재 상태와 충돌합니다.", 409),
     TICKET_ALREADY_SOLD("이미 판매 완료된 좌석입니다.", 409),
     TICKET_ALREADY_HELD("이미 다른 사용자가 선점한 좌석입니다.", 409),
     ALREADY_QUESTION("이미 등록된 질문입니다.", 409),
+    FAQ_QUESTION_ALREADY_ANSWERED("이미 답변된 질문입니다.", 409),
     PAYMENT_STATE_INVALID("결제 상태가 유효하지 않습니다.", 409),
     INVALID_PAYMENT_AMOUNT("결제 금액이 일치하지 않습니다.", 409),
 

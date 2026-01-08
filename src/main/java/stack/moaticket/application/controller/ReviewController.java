@@ -1,35 +1,35 @@
 package stack.moaticket.application.controller;
 
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.ReviewDto;
 import stack.moaticket.application.service.ReviewService;
+import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
+@RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
 
-    public ReviewController(ReviewService reviewService) {
-        this.reviewService = reviewService;
-    }
-
     // 리뷰 생성
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ReviewDto.ReviewResponseDto createReview(
+    public ResponseEntity<ReviewDto.ReviewResponseDto> createReview(
+            @AuthenticationPrincipal Member member,
             @RequestBody ReviewDto.ReviewRequestDto request
     ) {
-        return reviewService.createReview(request);
+        return ResponseEntity.ok(reviewService.createReview(member, request));
     }
 
     // 상품별 리뷰 조회
     @GetMapping
-    public List<ReviewDto.ReviewResponseDto> getReviews(
-            @RequestParam Long productId
+    public ResponseEntity<List<ReviewDto.ReviewResponseDto>> getReviews(
+            @RequestParam Long concertId
     ) {
-        return reviewService.getReviewsByProductId(productId);
+        return ResponseEntity.ok(reviewService.getByConcertId(concertId));
     }
 }

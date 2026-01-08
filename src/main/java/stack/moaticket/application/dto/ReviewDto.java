@@ -11,7 +11,7 @@ public abstract class ReviewDto {
     //    =============Request==============
     //    CreateRequest
     public static class ReviewRequestDto {
-        private Long productId;
+        private Long concertId;
         private double score;
         private String content;
     }
@@ -21,13 +21,15 @@ public abstract class ReviewDto {
     public static class ReviewResponseDto {
 
         private final Long reviewId;
-        private final Long productId;
+        private final String memberNickname;
+        private final String concertName;
         private final double score;
         private final String content;
 
-        public ReviewResponseDto(Long reviewId, Long productId, double score, String content) {
+        public ReviewResponseDto(Long reviewId, String memberNickname, String concertName, double score, String content) {
             this.reviewId = reviewId;
-            this.productId = productId;
+            this.memberNickname = memberNickname;
+            this.concertName = concertName;
             this.score = score;
             this.content = content;
         }

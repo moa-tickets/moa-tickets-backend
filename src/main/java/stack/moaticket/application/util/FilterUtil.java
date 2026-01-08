@@ -20,16 +20,6 @@ public class FilterUtil {
     );
 
     public static boolean checkFilter(String uri) {
-
-        if (API_FILTER_SET.contains(uri)){
-            return true;
-        }
-
-        for (String prefix : PREFIX_FILTER_SET) {
-            if (uri.startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false;
+        return API_FILTER_SET.contains(uri) || PREFIX_FILTER_SET.stream().anyMatch(uri::startsWith);
     }
 }

@@ -15,8 +15,23 @@ public class FilterUtil {
             "/api-docs",
             "/health"
     );
+    private static final Set<String> PREFIX_FILTER_SET = Set.of(
+            "/swagger-ui",
+            "/api-docs",
+            "/v3/api-docs"
+    );
 
     public static boolean checkFilter(String uri) {
-        return API_FILTER_SET.contains(uri);
+
+        if (API_FILTER_SET.contains(uri)){
+            return true;
+        }
+
+        for (String prefix : PREFIX_FILTER_SET) {
+            if (uri.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

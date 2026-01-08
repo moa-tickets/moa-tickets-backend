@@ -36,9 +36,3 @@ server:
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
-
-ai:
-  webhook:
-    base-url: http://localhost:8000
-    reviews-path: /webhook/reviews
-    api-key:

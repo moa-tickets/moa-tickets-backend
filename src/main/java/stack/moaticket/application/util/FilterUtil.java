@@ -11,8 +11,6 @@ public class FilterUtil {
             "/rtmp/on-done",
             "/favicon.ico",
             "/error",
-            "/swagger-ui.html",
-            "/api-docs",
             "/health"
     );
     private static final Set<String> PREFIX_FILTER_SET = Set.of(

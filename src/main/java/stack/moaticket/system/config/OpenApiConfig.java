@@ -28,7 +28,7 @@ public class OpenApiConfig {
                                 .description("API 테스트")
                 ))
                 .components(new Components()
-                        .addSecuritySchemes("JWT", new SecurityScheme()
+                        .addSecuritySchemes("Authorization", new SecurityScheme()
                                 .type(SecurityScheme.Type.APIKEY)
                                 .in(SecurityScheme.In.COOKIE)
                                 .name("Authorization")

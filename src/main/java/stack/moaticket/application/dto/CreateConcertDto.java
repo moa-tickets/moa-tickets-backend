@@ -23,6 +23,7 @@ public abstract class CreateConcertDto {
         private LocalDateTime concertStart;
         private LocalDateTime concertEnd;
         private String thumbnail;
+        private String detail;
         private List<SessionDto.SessionRequest> sessions;
 
         public Concert toConcert(Member member, Hall hall){
@@ -35,6 +36,7 @@ public abstract class CreateConcertDto {
                     .bookingOpen(this.bookingOpen)
                     .start(this.concertStart)
                     .end(this.concertEnd)
+                    .detail(this.detail)
                     .thumbnail(this.thumbnail)
                     .build();
         }
@@ -51,6 +53,7 @@ public abstract class CreateConcertDto {
         private LocalDateTime concertStart;
         private LocalDateTime concertEnd;
         private String thumbnail;
+        private String detail;
         private List<SessionDto.SessionResponse> sessions;
 
         public static Response from(Concert concert, List<SessionDto.SessionResponse> sessions){
@@ -65,6 +68,7 @@ public abstract class CreateConcertDto {
                     .concertEnd(concert.getEnd())
                     .thumbnail(concert.getThumbnail())
                     .sessions(sessions)
+                    .detail(concert.getDetail())
                     .build();
         }
     }

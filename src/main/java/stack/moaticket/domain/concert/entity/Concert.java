@@ -29,7 +29,7 @@ public class Concert extends Base {
     private Member member;
 
     @ManyToOne
-    @JoinColumn(name = "hall_id")
+    @JoinColumn(name = "hall_id", nullable = false)
     private Hall hall;
 
     @Column(name = "concert_name", nullable = false)
@@ -52,6 +52,9 @@ public class Concert extends Base {
 
     @Column(name = "concert_thumbnail", nullable = true)
     private String thumbnail;
+
+    @Column(name = "concert_detail", nullable = true)
+    private String detail;
 
 
 }

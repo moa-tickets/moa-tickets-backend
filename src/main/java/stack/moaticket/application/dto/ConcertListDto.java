@@ -29,6 +29,7 @@ public abstract class ConcertListDto {
         private LocalDateTime concertStart;
         private LocalDateTime concertEnd;
         private String concertThumbnail;
+        private String hallName;
 
         public static Response from(Concert concert){
             return Response.builder()
@@ -39,6 +40,7 @@ public abstract class ConcertListDto {
                     .concertStart(concert.getStart())
                     .concertEnd(concert.getEnd())
                     .concertThumbnail(concert.getThumbnail())
+                    .hallName(concert.getHall().getName())
                     .build();
         }
     }

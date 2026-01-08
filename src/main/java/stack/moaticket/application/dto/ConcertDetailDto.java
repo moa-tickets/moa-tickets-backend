@@ -27,10 +27,12 @@ public abstract class ConcertDetailDto {
         private LocalDateTime concertStart;
         private LocalDateTime concertEnd;
         private String thumbnail;
+        private String detail;
+        private String hallName;
 
         private List<SessionDto.SessionResponse> sessions;
         public static ConcertDetailDto.Response from(Concert concert, List<SessionDto.SessionResponse> sessions){
-            return ConcertDetailDto.Response.builder()
+            return Response.builder()
                     .concertId(concert.getId())
                     .concertName(concert.getName())
                     .concertDuration(concert.getDuration())
@@ -39,7 +41,9 @@ public abstract class ConcertDetailDto {
                     .concertStart(concert.getStart())
                     .concertEnd(concert.getEnd())
                     .thumbnail(concert.getThumbnail())
+                    .detail(concert.getDetail())
                     .sessions(sessions)
+                    .hallName(concert.getHall().getName())
                     .build();
         }
     }

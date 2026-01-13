@@ -1,0 +1,90 @@
+package stack.moaticket.application.service;
+
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import stack.moaticket.application.dto.ReviewDto;
+import stack.moaticket.domain.concert.entity.Concert;
+import stack.moaticket.domain.concert.service.ConcertService;
+import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.review.entity.Review;
+import org.springframework.transaction.annotation.Transactional;
+import stack.moaticket.domain.review.repository.ReviewRepository;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ReviewService {
+    private final ReviewRepository reviewRepository;
+    private final ConcertService concertService;
+
+    @Transactional
+    public ReviewDto.ReviewResponseDto createReview(Member member, ReviewDto.ReviewRequestDto request) {
+        validateCreateRequest(request);
+
+        Review review = Review.builder()
+                .member(member)
+                .concert(concertService.getConcertById(request.getConcertId()))
+                .score(request.getScore())
+                .content(request.getContent())
+                .build();
+
+        Review saved = reviewRepository.save(review);
+
+        return toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReviewDto.ReviewResponseDto> getByConcertId(Long concertId) {
+        validateProductId(concertId);
+
+        Concert concert = concertService.getConcertById(concertId);
+
+        List<Review> reviews = reviewRepository.findAllByConcert(concert);
+
+        List<ReviewDto.ReviewResponseDto> responses = new ArrayList<>();
+        for (Review review : reviews) {
+            responses.add(toResponse(review));
+        }
+        return responses;
+    }
+
+    private ReviewDto.ReviewResponseDto toResponse(Review review) {
+        return new ReviewDto.ReviewResponseDto(
+                review.getId(),
+                review.getMember().getNickname(),
+                review.getConcert().getName(),
+                review.getScore(),
+                review.getContent()
+        );
+    }
+
+    private void validateCreateRequest(ReviewDto.ReviewRequestDto request) {
+        if (request == null) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+
+        validateProductId(request.getConcertId());
+
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+
+        if (request.getScore() < 1 || request.getScore() > 5) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+    }
+
+    private void validateProductId(Long productId) {
+        if (productId == null) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+        if (productId <= 0) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
+    }
+}

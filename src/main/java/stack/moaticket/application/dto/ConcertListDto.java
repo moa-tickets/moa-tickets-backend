@@ -22,21 +22,25 @@ public abstract class ConcertListDto {
     @Getter
     @Builder
     public static class Response{
+        private Long concertId;
         private String concertName;
         private String concertDuration;
         private LocalDateTime bookingOpen;
         private LocalDateTime concertStart;
         private LocalDateTime concertEnd;
         private String concertThumbnail;
+        private String hallName;
 
         public static Response from(Concert concert){
             return Response.builder()
+                    .concertId(concert.getId())
                     .concertName(concert.getName())
                     .concertDuration(concert.getDuration())
                     .bookingOpen(concert.getBookingOpen())
                     .concertStart(concert.getStart())
                     .concertEnd(concert.getEnd())
                     .concertThumbnail(concert.getThumbnail())
+                    .hallName(concert.getHall().getName())
                     .build();
         }
     }

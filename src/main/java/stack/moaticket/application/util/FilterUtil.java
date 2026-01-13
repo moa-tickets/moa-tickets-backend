@@ -1,6 +1,5 @@
 package stack.moaticket.application.util;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class FilterUtil {
@@ -11,7 +10,8 @@ public class FilterUtil {
             "/rtmp/on-done",
             "/favicon.ico",
             "/error",
-            "/health"
+            "/health",
+            "/actuator/prometheus"
     );
     private static final Set<String> PREFIX_FILTER_SET = Set.of(
             "/swagger-ui",

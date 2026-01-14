@@ -27,7 +27,7 @@ public class StompEventListener {
     public void connectHandle(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        Long userId = Long.valueOf(accessor.getSessionAttributes().get("userId").toString());
+        Long userId = (Long) accessor.getSessionAttributes().get("userId");
         String roomId = accessor.getFirstNativeHeader("roomId");
         String newSessionId = accessor.getSessionId();
 

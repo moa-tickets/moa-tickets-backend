@@ -45,7 +45,8 @@ public class StompHandshakeInterceptor implements HandshakeInterceptor {
                             String userNickname = memberService.findById(Long.parseLong(claims.getSubject())).getNickname();
                             attributes.put("userNickname", userNickname);
                             attributes.put("jwt", token);
-                        } catch (MoaException e) {
+                            return true;
+                        } catch (Exception e) {
                             log.error("웹소켓 인증 실패 : " + e.getMessage());
                             return false;
                         }
@@ -53,7 +54,7 @@ public class StompHandshakeInterceptor implements HandshakeInterceptor {
                 }
             }
         }
-        return true;
+        return false;
     }
 
     @Override

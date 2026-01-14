@@ -25,8 +25,6 @@ public class ChatController {
 
 
     @MessageMapping("/send/{roomId}")
-//    @SendTo("/sub/{roomId}/messages")
-    //@DestinationVariable : @MessageMapping어노테이션으로 정의 된websocket controller 내에서만 사용
     public void sendMessage(
             @Header("simpSessionAttributes") Map<String, Object> sessionAttributes,
             ChattingDto request,

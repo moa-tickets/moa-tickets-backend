@@ -55,7 +55,8 @@ public class StompRoomRegistry {
     /* ================= 조회 ================= */
 
     public int roomSize(String roomId) {
-        return roomUserSessionMap.getOrDefault(roomId, new ConcurrentHashMap<>()).size();
+        ConcurrentHashMap<Long, SessionInfo> room = roomUserSessionMap.get(roomId);
+        return room != null ? room.size() : 0;
     }
 
     /* ================= lastSeen 갱신 ================= */

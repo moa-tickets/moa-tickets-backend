@@ -37,7 +37,7 @@ public class ChatController {
                 .senderNickname(userNickname)
                 .build();
 
-        log.info("방 아이디 : " + roomId + " 메세지 : " + chattingDto.getMessage() + " nick : " + userNickname);
+        log.info("방 아이디: {}, 메세지: {}, nick: {}", roomId, chattingDto.getMessage(), userNickname);
         messagingTemplate.convertAndSend("/sub/" + roomId + "/messages", chattingDto);
     }
 }

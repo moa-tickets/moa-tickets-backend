@@ -37,7 +37,7 @@ public class StompEventListener {
 
         if (oldSessionId != null && !oldSessionId.equals(newSessionId)) {
 
-            log.info("같은 방 중복 접속 차단 userId={}, roomId={}, oldeSessionId={}", userId, roomId, oldSessionId);
+            log.info("같은 방 중복 접속 차단 userId={}, roomId={}, oldSessionId={}", userId, roomId, oldSessionId);
 
             SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
             headerAccessor.setLeaveMutable(true);

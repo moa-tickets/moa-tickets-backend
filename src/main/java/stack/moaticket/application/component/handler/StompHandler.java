@@ -31,12 +31,7 @@ public class StompHandler  implements ChannelInterceptor {
             log.info("connect 요청시 토큰 유효성 검증");
             Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
             String jwt = (String) sessionAttributes.get("jwt");
-            if (jwt != null) {
-                // 토큰 검증 로직 수행  TODO
-                log.info("쿠키에서 가져온 JWT: " + jwt);
-            } else {
-                throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-            }
+
         }
 
         if (accessor.getSessionId() != null && accessor.getCommand() != null) {

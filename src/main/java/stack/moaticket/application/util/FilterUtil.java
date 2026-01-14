@@ -16,7 +16,13 @@ public class FilterUtil {
     private static final Set<String> PREFIX_FILTER_SET = Set.of(
             "/swagger-ui",
             "/api-docs",
-            "/v3/api-docs"
+            "/v3/api-docs",
+            "/api/product/detail",
+            "/api/product/concertList",
+            "/ws",
+            "/send",
+            "/sub",
+            "/pub"
     );
 
     public static boolean checkFilter(String uri) {

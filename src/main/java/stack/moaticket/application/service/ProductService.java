@@ -1,6 +1,7 @@
 package stack.moaticket.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +12,7 @@ import stack.moaticket.application.dto.SessionDto;
 import stack.moaticket.domain.concert.entity.Concert;
 import stack.moaticket.domain.concert.service.ConcertService;
 import stack.moaticket.domain.hall.entity.Hall;
-import stack.moaticket.domain.hall.type.HallRegion;
+import stack.moaticket.domain.hall.service.HallService;
 import stack.moaticket.domain.session.entity.Session;
 import stack.moaticket.domain.session.service.SessionService;
 import stack.moaticket.domain.ticket.entity.Ticket;
@@ -58,7 +59,7 @@ public class ProductService {
         return response;
     }
 
-    public List<ConcertListDto.Response> getConcertList(String searchValue, String sortBy, String sortOrder, HallRegion region, Pageable pageable) {
+    public List<ConcertListDto.Response> getConcertList(String searchValue, String sortBy, String sortOrder, Pageable pageable) {
         List<ConcertListDto.Response> concertList = concertService.getConcertList(searchValue, sortBy, sortOrder, pageable)
                 .stream()
                 .map(ConcertListDto.Response::from).toList();

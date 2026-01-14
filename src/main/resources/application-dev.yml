@@ -14,5 +14,3 @@ logging:
 app:
   frontend:
     url: http://localhost:5173
-  ai:
-    url: http://localhost:8000

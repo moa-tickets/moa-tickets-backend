@@ -14,5 +14,3 @@ logging:
 app:
   frontend:
     url: https://moatickets.dev
-  ai:
-    url: https://web.moa-ticket.com

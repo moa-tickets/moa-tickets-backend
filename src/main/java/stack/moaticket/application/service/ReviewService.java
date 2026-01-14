@@ -2,7 +2,9 @@ package stack.moaticket.application.service;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import stack.moaticket.application.dto.ReviewDto;
 import stack.moaticket.domain.concert.entity.Concert;
 import stack.moaticket.domain.concert.service.ConcertService;
@@ -19,6 +21,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+    @Value("${app.ai.url}")
+    private String AI_SERVER_URL;
+
     private final ReviewRepository reviewRepository;
     private final ConcertService concertService;
 
@@ -35,8 +40,16 @@ public class ReviewService {
 
         Review saved = reviewRepository.save(review);
 
+//        ai 서버의 api랑 통신(HTTP, RestAPI)을 하면된다
+        RestTemplate restTemplate = new RestTemplate();
+        String url = AI_SERVER_URL + "/api/reviews";
+        restTemplate.postForEntity(url, request, ReviewDto.class);
+
         return toResponse(saved);
     }
+
+
+
 
     @Transactional(readOnly = true)
     public List<ReviewDto.ReviewResponseDto> getByConcertId(Long concertId) {

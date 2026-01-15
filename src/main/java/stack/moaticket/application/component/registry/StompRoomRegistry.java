@@ -1,5 +1,6 @@
 package stack.moaticket.application.component.registry;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
@@ -7,6 +8,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@Slf4j
 public class StompRoomRegistry {
 
     private final ConcurrentHashMap<String, ConcurrentHashMap<Long, SessionInfo>> roomMemberSessionMap = new ConcurrentHashMap<>();
@@ -30,7 +32,9 @@ public class StompRoomRegistry {
         if (ws != null && ws.isOpen()) {
             try {
                 ws.close(status);
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                log.error("웹소켓 세션 종료중 오류 발생 . sessionId : {}, status : {}, {}", sessionId, status, e);
+            }
         }
     }
 

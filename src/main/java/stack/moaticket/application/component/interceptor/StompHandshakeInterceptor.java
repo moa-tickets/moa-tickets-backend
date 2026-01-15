@@ -1,25 +1,16 @@
 package stack.moaticket.application.component.interceptor;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
-import stack.moaticket.domain.member.service.MemberService;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.jwt.JwtUtil;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 
@@ -28,7 +19,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StompHandshakeInterceptor implements HandshakeInterceptor {
 
-    private final MemberService memberService;
     private final JwtUtil jwtUtil;
 
 
@@ -47,7 +37,7 @@ public class StompHandshakeInterceptor implements HandshakeInterceptor {
                             Long memberId = jwtUtil.getSubject(token);
                             attributes.put("X-Member-Id", memberId);
                             return true;
-                        } catch (Exception e) {
+                        } catch (io.jsonwebtoken.JwtException e) {
                             log.error("웹소켓 인증 실패 : " + e.getMessage());
                             return false;
                         }

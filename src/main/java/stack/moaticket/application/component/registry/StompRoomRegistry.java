@@ -64,14 +64,13 @@ public class StompRoomRegistry {
 
         if (roomId == null || memberId == null) return;
 
-        ConcurrentHashMap<Long, SessionInfo> userSessionMap = roomMemberSessionMap.get(roomId);
-        if (userSessionMap != null) {
+        roomMemberSessionMap.computeIfPresent(roomId, (rId, userSessionMap) -> {
             userSessionMap.remove(memberId);
-
             if (userSessionMap.isEmpty()) {
-                roomMemberSessionMap.remove(roomId);
+                return null; // 맵이 비었으면 roomMemberSessionMap에서 해당 roomId 항목을 제거
             }
-        }
+            return userSessionMap;
+        });
     }
 
     /* ================= 조회 ================= */

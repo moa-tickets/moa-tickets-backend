@@ -25,8 +25,6 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
     private final StompHandler stompHandler;
     private final StompHandshakeInterceptor stompHandshakeInterceptor;
     private final StompRoomRegistry stompRoomRegistry;
-//    private final WebsocketHandshakeInterceptor websocketHandshakeInterceptor;
-//    private final StompChannelInterceptor stompChannelInterceptor;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {

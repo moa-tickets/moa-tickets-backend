@@ -46,7 +46,7 @@ public class StompHandler  implements ChannelInterceptor {
                     String roomId = accessor.getFirstNativeHeader("roomId");
                     Long memberId = (Long) sessionAttributes.get("X-Member-Id");
                     if (memberId == null || roomId == null) {
-                        throw new MoaException(MoaExceptionType.NOT_FOUND);
+                        throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
                     }
 
                     // 사용 후 보안 및 깔끔한 관리를 위해 제거

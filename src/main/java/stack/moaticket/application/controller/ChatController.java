@@ -30,6 +30,10 @@ public class ChatController {
             ChattingDto request,
             @DestinationVariable String roomId) {
         String userNickname = (String) sessionAttributes.get("userNickname");
+        if (userNickname == null) {
+            log.error("세션에서 userNickname을 찾을 수 없습니다. roomId: {}", roomId);
+            return;
+        }
         ChattingDto chattingDto = ChattingDto.builder()
                 .message(request.getMessage())
                 .senderNickname(userNickname)

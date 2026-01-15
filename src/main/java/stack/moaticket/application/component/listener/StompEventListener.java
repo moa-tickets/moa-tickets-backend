@@ -21,39 +21,7 @@ import stack.moaticket.application.component.registry.StompRoomRegistry;
 public class StompEventListener {
 
     private final StompRoomRegistry registry;
-    private final SimpMessageSendingOperations messagingTemplate;
 
-    @EventListener
-    public void connectHandle(SessionConnectEvent event) {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-
-        Long userId = (Long) accessor.getSessionAttributes().get("userId");
-        String roomId = accessor.getFirstNativeHeader("roomId");
-        String newSessionId = accessor.getSessionId();
-
-        if (userId == null || roomId == null) return;
-
-        String oldSessionId = registry.register(userId, newSessionId, roomId);
-
-        if (oldSessionId != null && !oldSessionId.equals(newSessionId)) {
-
-            log.info("같은 방 중복 접속 차단 userId={}, roomId={}, oldSessionId={}", userId, roomId, oldSessionId);
-
-            SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
-            headerAccessor.setLeaveMutable(true);
-            headerAccessor.setSessionId(oldSessionId);
-            // 기존 세션에게 종료 통보
-            messagingTemplate.convertAndSend(
-                    "/queue/disconnect",
-                    "DUPLICATE_SESSION",
-                    headerAccessor.getMessageHeaders()
-            );
-        }
-
-        log.info("roomId : " + roomId);
-        log.info("connect session Id : " + accessor.getSessionId());
-        log.info("total sessions : " + registry.roomSize(roomId));
-    }
 
     @EventListener
     public void disconnectHandle(SessionDisconnectEvent event) {

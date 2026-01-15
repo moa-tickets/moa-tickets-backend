@@ -61,7 +61,6 @@ public class StompHandler  implements ChannelInterceptor {
                     }
 
                     String oldSessionId = registry.register(memberId, newSessionId, roomId);
-                    log.info(oldSessionId + "=================");
                     if (oldSessionId != null && !oldSessionId.equals(newSessionId)) {
 
                         registry.closeSession(oldSessionId, CloseStatus.POLICY_VIOLATION);
@@ -91,8 +90,6 @@ public class StompHandler  implements ChannelInterceptor {
             case DISCONNECT:
                 log.info("[WS] DISCONNECT 요청 - sessionId: {}", newSessionId);
                 // 명시적 연결 종료 처리
-                String roomId = accessor.getFirstNativeHeader("roomId");
-                registry.unregisterBySession(accessor.getSessionId());
 
                 break;
 

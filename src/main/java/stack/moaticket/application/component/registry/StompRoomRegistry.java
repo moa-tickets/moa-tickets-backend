@@ -65,11 +65,12 @@ public class StompRoomRegistry {
         if (roomId == null || memberId == null) return;
 
         roomMemberSessionMap.computeIfPresent(roomId, (rId, userSessionMap) -> {
-            userSessionMap.remove(memberId);
-            if (userSessionMap.isEmpty()) {
-                return null; // 맵이 비었으면 roomMemberSessionMap에서 해당 roomId 항목을 제거
-            }
-            return userSessionMap;
+
+            userSessionMap.computeIfPresent(memberId, (mId, info) -> {
+                return sessionId.equals(info.getSessionId()) ? null : info;
+            });
+
+            return userSessionMap.isEmpty() ? null : userSessionMap;
         });
     }
 

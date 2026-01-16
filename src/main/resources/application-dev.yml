@@ -15,4 +15,4 @@ app:
   frontend:
     url: http://localhost:5173
   ai:
-    url: htpp://localhost:8000
+    url: ${AI_URL}

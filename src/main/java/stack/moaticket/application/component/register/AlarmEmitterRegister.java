@@ -22,17 +22,19 @@ public class AlarmEmitterRegister {
     }
 
     public List<SseEmitter> getSseEmitters(Long memberId) {
-        if(memberEmitterMap.get(memberId) == null) return null;
-        return new ArrayList<>(memberEmitterMap.get(memberId));
+        Set<SseEmitter> emitters = memberEmitterMap.get(memberId);
+        if(emitters == null) return null;
+        return new ArrayList<>(emitters);
     }
 
     public void remove(Long memberId, SseEmitter emitter) {
-        Set<SseEmitter> emitterList = memberEmitterMap.get(memberId);
-        if(emitterList == null) return;
-
-        emitterList.remove(emitter);
-
-        if(emitterList.isEmpty()) memberEmitterMap.remove(memberId, emitterList);
+        memberEmitterMap.computeIfPresent(memberId, (id, emitters) -> {
+            emitters.remove(emitter);
+            if(emitters.isEmpty()) {
+                return null;
+            }
+            return emitters;
+        });
 
         log.info("AlarmEmitterRegister: {}-{} is removed", memberId, emitter.toString());
     }

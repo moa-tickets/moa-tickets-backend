@@ -79,7 +79,7 @@ public class SessionStartAlarmRepositoryQueryDsl {
                 .execute();
     }
 
-    public void updateClaimedSessionStartAlarmToError(LocalDateTime now) {
+    public void updateClaimedSessionStartAlarmToCleaned(LocalDateTime now) {
         BooleanExpression condition = sessionStartAlarm.state.eq(SessionStartAlarmState.CLAIMED)
                 .and(sessionStartAlarm.claimedAt.isNotNull())
                 .and(sessionStartAlarm.claimedAt.loe(now.minusSeconds(10)));

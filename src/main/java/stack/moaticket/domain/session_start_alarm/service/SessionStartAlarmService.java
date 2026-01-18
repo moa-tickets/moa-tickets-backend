@@ -48,7 +48,7 @@ public class SessionStartAlarmService {
     }
 
     public void cleanupTerminatedClaimedAlarm(LocalDateTime now) {
-        sessionStartAlarmRepositoryQueryDsl.updateClaimedSessionStartAlarmToError(now);
+        sessionStartAlarmRepositoryQueryDsl.updateClaimedSessionStartAlarmToCleaned(now);
     }
 
     public void updateClaimedToSent(List<SessionStartAlarm> succeededList) {

@@ -87,7 +87,7 @@ public class BookingHistoryService {
             Integer month) {
         validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
-                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.FORBIDDEN);
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED);
 
         if (page < 0) {
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED);

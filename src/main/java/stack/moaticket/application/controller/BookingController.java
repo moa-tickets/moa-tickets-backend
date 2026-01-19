@@ -104,10 +104,8 @@ public class BookingController {
     )
     @PostMapping("/tickets/hold")
     public ResponseEntity<BookingDto.HoldResponse> holdTickets(
-            @AuthenticationPrincipal Member member,
-            @RequestBody BookingDto.HoldRequest request
-    ) {
-        Long memberId = member.getId();
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody BookingDto.HoldRequest request) {
         BookingService.HoldResult result =
                 bookingService.holdTickets(memberId, request.getSessionId(), request.getTicketIds());
 
@@ -150,10 +148,8 @@ public class BookingController {
     )
     @PostMapping("/holds/{holdToken}/release")
     public ResponseEntity<Void> releaseHold(
-            @AuthenticationPrincipal Member member,
-            @PathVariable String holdToken
-    ) {
-        Long memberId = member.getId();
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable String holdToken) {
         bookingService.releaseHold(memberId, holdToken);
         return ResponseEntity.ok().build();
     }

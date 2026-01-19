@@ -5,6 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.BookingHistoryDto;
 import stack.moaticket.domain.booking_history.repository.BookingHistoryRepositoryQueryDsl;
+import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.type.MemberState;
+import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
@@ -13,21 +17,28 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BookingHistoryService {
+    private final Validator validator;
 
     private static final int PAGE_SIZE = 10;
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
+    private final MemberService memberService;
     private final BookingHistoryRepositoryQueryDsl bookingHistoryQueryDsl;
 
     // =========================
     // 상세 조회
     // =========================
     public BookingHistoryDto.DetailResponse getDetail(Long memberId, String orderId) {
+        validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.FORBIDDEN);
+
         if (orderId == null || orderId.isBlank()) {
             throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
         }
@@ -74,8 +85,10 @@ public class BookingHistoryService {
             BookingHistoryDto.RangeFilter range,
             BookingHistoryDto.MonthBasis basis,
             Integer year,
-            Integer month
-    ) {
+            Integer month) {
+        validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.FORBIDDEN);
 
         if (page < 0) {
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED);

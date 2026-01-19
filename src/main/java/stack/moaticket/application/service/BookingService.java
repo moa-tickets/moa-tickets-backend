@@ -6,9 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.repository.MemberRepository;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.domain.ticket.type.TicketState;
+import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.util.TokenGenerator;
@@ -16,14 +19,17 @@ import stack.moaticket.system.util.TokenGenerator;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BookingService {
+    private final Validator validator;
 
+    private final MemberService memberService;
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
-    private final MemberRepository memberRepository;
+
 
     private static final int HOLD_MINUTES = 10;
     private static final int MAX_TICKETS_PER_HOLD = 4;
@@ -31,12 +37,11 @@ public class BookingService {
     // 좌석 임시 점유 (AVAILABLE -> HOLD)
     @Transactional
     public HoldResult holdTickets(Long memberId, Long sessionId, List<Long> ticketIds) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
         validateHoldRequest(sessionId, ticketIds);
-
-        if(memberId == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-
         LocalDateTime now = LocalDateTime.now();
 
         // 데드락 방지: 항상 같은 순서로 락 획득
@@ -78,9 +83,6 @@ public class BookingService {
         String holdToken = TokenGenerator.generateHoldToken();
         LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
-        // 점유하는 memberId 가져오기
-        Member member = memberRepository.getReferenceById(memberId);
-
         // 엔티티에 hold 정보 세팅
         for (Ticket t : tickets) {
             t.setState(TicketState.HOLD);
@@ -96,20 +98,17 @@ public class BookingService {
 
     // 좌석 점유 해제
     @Transactional
-    public boolean releaseHold(Long memberId, String holdToken) {
+    public void releaseHold(Long memberId, String holdToken) {
+        validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED);
         if (holdToken == null || holdToken.isBlank()) {
-            return false;
-        }
-
-        if (memberId == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
+            return;
         }
 
         LocalDateTime now = LocalDateTime.now();
 
-        long updated = ticketRepositoryQueryDsl.releaseHoldByTokenAndMember(holdToken, memberId, now);
-
-        return updated > 0;
+        ticketRepositoryQueryDsl.releaseHoldByTokenAndMember(holdToken, memberId, now);
     }
 
     // 회차별 좌석 목록 조회

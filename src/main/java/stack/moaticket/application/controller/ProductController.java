@@ -60,9 +60,9 @@ public class ProductController {
     )
     @PostMapping("/concert")
     public ResponseEntity<CreateConcertDto.Response> concertSave(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody CreateConcertDto.Request request){
-        CreateConcertDto.Response response = productService.createConcert(member, request);
+        CreateConcertDto.Response response = productService.createConcert(memberId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -90,13 +90,12 @@ public class ProductController {
             }
     )
     @GetMapping("/detail/{id}")
-    public ResponseEntity<ConcertDetailDto.Response> getConcertDetail(@PathVariable Long id){
+    public ResponseEntity<ConcertDetailDto.Response> getConcertDetail(
+            @PathVariable Long id){
         ConcertDetailDto.Response response = productService.getConcertDetail(id);   //TODO
 
         return ResponseEntity.ok(response);
     }
-
-
 
     @Operation(
             security = {},
@@ -146,7 +145,4 @@ public class ProductController {
 
         return ResponseEntity.ok(productService.getConcertList(searchValue, sortBy, sortOrder, pageable));
     }
-
-
-
 }

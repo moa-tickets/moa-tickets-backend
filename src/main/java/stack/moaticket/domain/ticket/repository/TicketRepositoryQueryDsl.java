@@ -49,8 +49,8 @@ public class TicketRepositoryQueryDsl {
     }
 
     // 같은 멤버 + 세션이고 만료되지 않은 hold token이 있는 경우 해제 (만료된 token은 스케줄러가 처리)
-    public long releaseActiveHoldsByMemberAndSession(Long memberId, Long sessionId, LocalDateTime now) {
-        return jpaQueryFactory.update(ticket)
+    public void releaseActiveHoldsByMemberAndSession(Long memberId, Long sessionId, LocalDateTime now) {
+        jpaQueryFactory.update(ticket)
                 .set(ticket.state, TicketState.AVAILABLE)
                 .set(ticket.holdToken, (String) null)
                 .set(ticket.expiresAt, (LocalDateTime) null)
@@ -90,10 +90,10 @@ public class TicketRepositoryQueryDsl {
                 .fetch();
     }
 
-    public long releaseHoldByTokenAndMember(String holdToken, Long memberId, LocalDateTime now) {
-        if (holdToken == null || holdToken.isBlank() || memberId == null) return 0;
+    public void releaseHoldByTokenAndMember(String holdToken, Long memberId, LocalDateTime now) {
+        if (holdToken == null || holdToken.isBlank() || memberId == null) return;
 
-        return jpaQueryFactory.update(ticket)
+        jpaQueryFactory.update(ticket)
                 .set(ticket.state, TicketState.AVAILABLE)
                 .set(ticket.holdToken, (String) null)
                 .set(ticket.expiresAt, (LocalDateTime) null)

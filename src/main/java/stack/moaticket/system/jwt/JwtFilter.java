@@ -60,13 +60,8 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = authorization;
 
             long memberId = jwtUtil.getSubject(token);
-            Member member = memberService.findById(memberId);
 
-            if(member == null) {
-                throw new MoaException(MoaExceptionType.MEMBER_NOT_FOUND);
-            }
-
-            Authentication authToken = new UsernamePasswordAuthenticationToken(member, null, null);
+            Authentication authToken = new UsernamePasswordAuthenticationToken(memberId, null, null);
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
             filterChain.doFilter(request, response);

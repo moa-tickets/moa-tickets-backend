@@ -19,10 +19,10 @@ public class ReviewController {
     // 리뷰 생성
     @PostMapping
     public ResponseEntity<ReviewDto.ReviewResponseDto> createReview(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody ReviewDto.ReviewRequestDto request
     ) {
-        return ResponseEntity.ok(reviewService.createReview(member, request));
+        return ResponseEntity.ok(reviewService.createReview(memberId, request));
     }
 
     // 상품별 리뷰 조회

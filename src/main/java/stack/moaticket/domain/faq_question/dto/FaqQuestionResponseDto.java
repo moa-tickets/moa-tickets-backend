@@ -2,8 +2,6 @@ package stack.moaticket.domain.faq_question.dto;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.cglib.core.Local;
-import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
 
 import java.time.LocalDateTime;
@@ -12,15 +10,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class FaqQuestionResponseDTO {
+public class FaqQuestionResponseDto {
     private Long id;
     private String title;
     private String content;
     private String faqType;
     private LocalDateTime createdAt;
 
-    public static FaqQuestionResponseDTO fromEntity(FaqQuestion faqQuestion) {
-        return FaqQuestionResponseDTO.builder()
+    public static FaqQuestionResponseDto fromEntity(FaqQuestion faqQuestion) {
+        return FaqQuestionResponseDto.builder()
                 .id(faqQuestion.getId())
                 .title(faqQuestion.getTitle())
                 .content(faqQuestion.getContents())

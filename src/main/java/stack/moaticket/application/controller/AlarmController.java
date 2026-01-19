@@ -15,7 +15,7 @@ public class AlarmController {
 
     @GetMapping(value = "/sub", produces = "text/event-stream")
     public SseEmitter subscribe(
-            @AuthenticationPrincipal Member member) {
-        return alarmService.subscribe(member);
+            @AuthenticationPrincipal Long memberId) {
+        return alarmService.subscribe(memberId);
     }
 }

@@ -47,12 +47,8 @@ public class MemberController {
     )
     @GetMapping("/api/members/me")
     public ResponseEntity<GetMemberDto.Response> getMember(
-            @AuthenticationPrincipal Member member
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-        return ResponseEntity.ok(memberInfoService.getMember(member));
+            @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(memberInfoService.getMember(memberId));
     }
 
     @Operation(
@@ -61,12 +57,8 @@ public class MemberController {
     )
     @PostMapping("/api/members/seller")
     public ResponseEntity<Member> convertToSeller(
-            @AuthenticationPrincipal Member member
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-        Member updatedMember = memberService.convertToSeller(member.getId());
+            @AuthenticationPrincipal Long memberId) {
+        Member updatedMember = memberService.convertToSeller(memberId);
         return ResponseEntity.ok(updatedMember);
     }
 
@@ -76,12 +68,8 @@ public class MemberController {
     )
     @PostMapping("/api/members/buyer")
     public ResponseEntity<Member> convertToBuyer(
-            @AuthenticationPrincipal Member member
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-        Member updatedMember = memberService.convertToBuyer(member.getId());
+            @AuthenticationPrincipal Long memberId) {
+        Member updatedMember = memberService.convertToBuyer(memberId);
         return ResponseEntity.ok(updatedMember);
     }
 }

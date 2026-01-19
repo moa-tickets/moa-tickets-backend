@@ -65,15 +65,11 @@ public class BookingHistoryController {
     )
     @GetMapping("/me/{orderId}")
     public ResponseEntity<BookingHistoryDto.DetailResponse> getDetail(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @PathVariable String orderId
     ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-
         return ResponseEntity.ok(
-                bookingHistoryService.getDetail(member.getId(), orderId)
+                bookingHistoryService.getDetail(memberId, orderId)
         );
     }
 
@@ -147,19 +143,14 @@ public class BookingHistoryController {
     )
     @GetMapping("/me")
     public ResponseEntity<BookingHistoryDto.ListResponse> getList(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) BookingHistoryDto.RangeFilter range,
             @RequestParam(required = false) BookingHistoryDto.MonthBasis basis,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-
+            @RequestParam(required = false) Integer month) {
         return ResponseEntity.ok(
-                bookingHistoryService.getList(member.getId(), page, range, basis, year, month)
+                bookingHistoryService.getList(memberId, page, range, basis, year, month)
         );
     }
 }

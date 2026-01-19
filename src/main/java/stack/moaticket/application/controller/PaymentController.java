@@ -60,11 +60,11 @@ public class PaymentController {
     )
     @PostMapping("/prepare")
     public ResponseEntity<PaymentDto.PrepareResponse> prepare(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody PaymentDto.PrepareRequest request
     ) {
         return ResponseEntity.ok(
-                paymentService.prepare(member, request)
+                paymentService.prepare(memberId, request)
         );
     }
 
@@ -123,11 +123,11 @@ public class PaymentController {
     )
     @PostMapping("/confirm")
     public ResponseEntity<PaymentDto.ConfirmResponse> confirm(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody PaymentDto.ConfirmRequest request
     ) {
         return ResponseEntity.ok(
-                paymentService.confirm(member.getId(), request)
+                paymentService.confirm(memberId, request)
         );
     }
 }

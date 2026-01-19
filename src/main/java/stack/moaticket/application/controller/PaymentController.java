@@ -64,7 +64,7 @@ public class PaymentController {
             @RequestBody PaymentDto.PrepareRequest request
     ) {
         return ResponseEntity.ok(
-                paymentService.prepare(member.getId(), request)
+                paymentService.prepare(member, request)
         );
     }
 

@@ -12,7 +12,6 @@ public enum MoaExceptionType {
     MISMATCH_PARAMETER("입력 매개변수 형식이 잘못되었습니다.", 400),
     MISMATCH_HEADER("입력 헤더 형식이 잘못되었습니다.", 400),
     VALIDATION_FAILED("요청 값이 올바르지 않습니다.", 400),
-    TICKET_LIMIT_EXCEEDED("한 회차당 최대 4장까지 구매할 수 있습니다.", 400),
 
     // 401
     UNAUTHORIZED("인증되지 않은 사용자입니다.", 401),
@@ -37,7 +36,7 @@ public enum MoaExceptionType {
     ALREADY_QUESTION("이미 등록된 질문입니다.", 409),
     PAYMENT_STATE_INVALID("결제 상태가 유효하지 않습니다.", 409),
     INVALID_PAYMENT_AMOUNT("결제 금액이 일치하지 않습니다.", 409),
-
+    TICKET_LIMIT_EXCEEDED("한 회차당 최대 4장까지 구매할 수 있습니다.", 409),
 
     // 410
     HOLD_EXPIRED("좌석 선점 시간이 만료되었습니다.", 410),

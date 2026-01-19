@@ -43,11 +43,17 @@ public class ReviewService {
 //        ai 서버의 api랑 통신(HTTP, RestAPI)을 하면된다
         RestTemplate restTemplate = new RestTemplate();
         String url = AI_SERVER_URL + "/api/reviews";
-        restTemplate.postForEntity(url, request, ReviewDto.class);
+        restTemplate.postForEntity(
+                url,
+                new ReviewDto.SpringReviewItemDto(
+                        review.getId(),
+                        review.getContent(),
+                        member.getId(),
+                        review.getConcert().getId()),
+                ReviewDto.SpringReviewItemDto.class);
 
         return toResponse(saved);
     }
-
 
 
 

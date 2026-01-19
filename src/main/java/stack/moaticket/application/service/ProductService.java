@@ -1,7 +1,6 @@
 package stack.moaticket.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,6 @@ import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.service.TicketService;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.component.Validator;
-import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.ArrayList;

@@ -15,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.application.service.BookingService;
-import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
 

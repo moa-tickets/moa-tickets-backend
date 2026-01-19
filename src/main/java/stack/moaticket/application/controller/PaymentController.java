@@ -12,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.PaymentDto;
 import stack.moaticket.application.service.PaymentService;
-import stack.moaticket.domain.member.entity.Member;
 
 @Tag(name = "Payment API", description = "상품 결제 도메인 API")
 @SecurityRequirement(name = "Authorization")

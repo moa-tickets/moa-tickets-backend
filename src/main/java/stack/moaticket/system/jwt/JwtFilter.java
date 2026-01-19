@@ -14,13 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 import stack.moaticket.application.util.FilterUtil;
-import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.io.IOException;
 import java.util.Arrays;

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.application.component.register.AlarmEmitterRegister;
-import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.session_start_alarm.entity.SessionStartAlarm;

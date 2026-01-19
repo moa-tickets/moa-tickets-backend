@@ -6,7 +6,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.ReviewDto;
 import stack.moaticket.application.service.ReviewService;
-import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
 

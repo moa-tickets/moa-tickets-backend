@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.BookingHistoryDto;
 import stack.moaticket.domain.booking_history.repository.BookingHistoryRepositoryQueryDsl;
-import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.system.component.Validator;

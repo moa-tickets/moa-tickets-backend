@@ -1,8 +1,6 @@
 package stack.moaticket.application.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,8 +16,6 @@ import stack.moaticket.application.dto.GetMemberDto;
 import stack.moaticket.application.service.MemberInfoService;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
 
 @Tag(name = "Member API", description = "유저 정보 조회 API")
 @SecurityRequirement(name = "Authorization")

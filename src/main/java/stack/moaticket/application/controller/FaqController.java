@@ -13,7 +13,6 @@ import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDto;
 import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDto;
 import stack.moaticket.domain.faq_question.dto.PageResponseDto;
 import stack.moaticket.domain.faq_question.service.FaqQuestionService;
-import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.common.MessageType;
 import stack.moaticket.system.common.ResponseApiDto;
 

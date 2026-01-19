@@ -56,7 +56,7 @@ public class Ticket extends Base {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(name = "expires_at", nullable = false)
+    @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
     public boolean isHoldExpired(LocalDateTime now) {
@@ -66,7 +66,7 @@ public class Ticket extends Base {
     public void clearHold() {
         this.holdToken = null;
         this.expiresAt = null;
-        this.member = null; // 정책상 hold 해제 시 점유자도 제거
+        this.member = null;
         this.state = TicketState.AVAILABLE;
     }
 }

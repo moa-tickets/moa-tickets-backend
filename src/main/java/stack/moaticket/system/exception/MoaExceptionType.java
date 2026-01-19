@@ -12,6 +12,7 @@ public enum MoaExceptionType {
     MISMATCH_PARAMETER("입력 매개변수 형식이 잘못되었습니다.", 400),
     MISMATCH_HEADER("입력 헤더 형식이 잘못되었습니다.", 400),
     VALIDATION_FAILED("요청 값이 올바르지 않습니다.", 400),
+    TICKET_LIMIT_EXCEEDED("한 회차당 최대 4장까지 구매할 수 있습니다.", 400),
 
     // 401
     UNAUTHORIZED("인증되지 않은 사용자입니다.", 401),

@@ -5,23 +5,34 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.application.component.register.AlarmEmitterRegister;
-import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.session_start_alarm.entity.SessionStartAlarm;
+import stack.moaticket.system.component.Validator;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlarmService {
+    private final Validator validator;
+
+    private final MemberService memberService;
+
     private final AlarmEmitterRegister alarmEmitterRegister;
     private static final Long EXPIRE_TIME = 24 * 60 * 60 * 1000L;
 
-    public SseEmitter subscribe(Member member) {
-        Long memberId = member.getId();
+    public SseEmitter subscribe(Long memberId) {
+        validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED);
+
         SseEmitter emitter = new SseEmitter(EXPIRE_TIME);
         alarmEmitterRegister.insert(memberId, emitter);
 

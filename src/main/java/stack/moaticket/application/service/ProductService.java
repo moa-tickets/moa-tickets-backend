@@ -1,7 +1,6 @@
 package stack.moaticket.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,28 +12,38 @@ import stack.moaticket.domain.concert.entity.Concert;
 import stack.moaticket.domain.concert.service.ConcertService;
 import stack.moaticket.domain.hall.entity.Hall;
 import stack.moaticket.domain.hall.service.HallService;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.session.entity.Session;
 import stack.moaticket.domain.session.service.SessionService;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.service.TicketService;
 import stack.moaticket.domain.member.entity.Member;
-import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
+    private final Validator validator;
+
+    private final MemberService memberService;
     private final ConcertService concertService;
     private final HallService hallService;
     private final SessionService sessionService;
     private final TicketService ticketService;
 
     @Transactional
-    public CreateConcertDto.Response createConcert(Member member, CreateConcertDto.Request request) {
-        if(!member.isSeller()) throw new MoaException(MoaExceptionType.FORBIDDEN);
+    public CreateConcertDto.Response createConcert(Long memberId, CreateConcertDto.Request request) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .validateOrThrow(m -> !m.isSeller(), MoaExceptionType.FORBIDDEN)
+                .get();
 
         Hall hall = hallService.getHallById(request.getHallId());
         int totalSeats = hall.getType().total();

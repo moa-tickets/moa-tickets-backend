@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.PaymentDto;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.payment.entity.Payment;
 import stack.moaticket.domain.payment.repository.PaymentRepository;
 import stack.moaticket.domain.payment.repository.PaymentRepositoryQueryDsl;
@@ -15,6 +17,7 @@ import stack.moaticket.domain.payment_ticket.repository.PaymentTicketRepository;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.domain.ticket.type.TicketState;
+import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.toss.dto.TossConfirmResponse;
@@ -23,6 +26,7 @@ import stack.moaticket.system.util.TokenGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,6 +34,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PaymentService {
+    private final Validator validator;
+
+    private final MemberService memberService;
 
     private final PaymentRepository paymentRepository;
     private final PaymentRepositoryQueryDsl paymentRepositoryQueryDsl;
@@ -38,11 +45,11 @@ public class PaymentService {
     private final TossPaymentsFacade tossPaymentsFacade;
 
     @Transactional
-    public PaymentDto.PrepareResponse prepare(Member member, PaymentDto.PrepareRequest request) {
-
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
+    public PaymentDto.PrepareResponse prepare(Long memberId, PaymentDto.PrepareRequest request) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
 
         if (request == null || request.getHoldToken() == null || request.getHoldToken().isBlank()) {
             throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
@@ -82,9 +89,10 @@ public class PaymentService {
 
     @Transactional
     public PaymentDto.ConfirmResponse confirm(Long memberId, PaymentDto.ConfirmRequest request) {
-        if (memberId == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
+        validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED);
+
         if (request == null
                 || request.getOrderId() == null || request.getOrderId().isBlank()
                 || request.getPaymentKey() == null || request.getPaymentKey().isBlank()) {

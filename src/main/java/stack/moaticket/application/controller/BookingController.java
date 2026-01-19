@@ -15,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.application.service.BookingService;
-import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
 
@@ -104,10 +103,8 @@ public class BookingController {
     )
     @PostMapping("/tickets/hold")
     public ResponseEntity<BookingDto.HoldResponse> holdTickets(
-            @AuthenticationPrincipal Member member,
-            @RequestBody BookingDto.HoldRequest request
-    ) {
-        Long memberId = member.getId();
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody BookingDto.HoldRequest request) {
         BookingService.HoldResult result =
                 bookingService.holdTickets(memberId, request.getSessionId(), request.getTicketIds());
 
@@ -150,10 +147,8 @@ public class BookingController {
     )
     @PostMapping("/holds/{holdToken}/release")
     public ResponseEntity<Void> releaseHold(
-            @AuthenticationPrincipal Member member,
-            @PathVariable String holdToken
-    ) {
-        Long memberId = member.getId();
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable String holdToken) {
         bookingService.releaseHold(memberId, holdToken);
         return ResponseEntity.ok().build();
     }

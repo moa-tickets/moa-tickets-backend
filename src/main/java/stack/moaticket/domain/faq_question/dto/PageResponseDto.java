@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 @Getter
-public class PageResponseDTO<T> {
+public class PageResponseDto<T> {
 
     private final List<T> contents;
     private final int page;
@@ -16,7 +16,7 @@ public class PageResponseDTO<T> {
     private final boolean isFirst;
     private final boolean isLast;
 
-    public PageResponseDTO(Page<T> pageData) {
+    public PageResponseDto(Page<T> pageData) {
         this.contents = pageData.getContent();
         this.page = pageData.getNumber();
         this.size = pageData.getSize();

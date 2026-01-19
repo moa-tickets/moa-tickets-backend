@@ -5,7 +5,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.application.service.AlarmService;
-import stack.moaticket.domain.member.entity.Member;
 
 @RestController
 @RequestMapping("/api/alarm")
@@ -15,7 +14,7 @@ public class AlarmController {
 
     @GetMapping(value = "/sub", produces = "text/event-stream")
     public SseEmitter subscribe(
-            @AuthenticationPrincipal Member member) {
-        return alarmService.subscribe(member);
+            @AuthenticationPrincipal Long memberId) {
+        return alarmService.subscribe(memberId);
     }
 }

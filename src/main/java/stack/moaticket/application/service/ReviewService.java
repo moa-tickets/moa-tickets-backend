@@ -9,14 +9,18 @@ import stack.moaticket.application.dto.ReviewDto;
 import stack.moaticket.domain.concert.entity.Concert;
 import stack.moaticket.domain.concert.service.ConcertService;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.review.entity.Review;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.domain.review.repository.ReviewRepository;
+import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +28,20 @@ public class ReviewService {
     @Value("${app.ai.url}")
     private String AI_SERVER_URL;
 
+    private final Validator validator;
+
+    private final MemberService memberService;
+
     private final ReviewRepository reviewRepository;
     private final ConcertService concertService;
 
     @Transactional
-    public ReviewDto.ReviewResponseDto createReview(Member member, ReviewDto.ReviewRequestDto request) {
+    public ReviewDto.ReviewResponseDto createReview(Long memberId, ReviewDto.ReviewRequestDto request) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
+
         validateCreateRequest(request);
 
         Review review = Review.builder()

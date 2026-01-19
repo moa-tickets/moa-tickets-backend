@@ -39,6 +39,11 @@ public class PaymentService {
 
     @Transactional
     public PaymentDto.PrepareResponse prepare(Member member, PaymentDto.PrepareRequest request) {
+
+        if (member == null) {
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
+        }
+
         if (request == null || request.getHoldToken() == null || request.getHoldToken().isBlank()) {
             throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
         }

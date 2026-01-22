@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import stack.moaticket.application.facade.ConcertInformFacade;
 import stack.moaticket.application.service.AlarmService;
-import stack.moaticket.domain.session_start_alarm.entity.SessionStartAlarm;
+import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,31 +18,23 @@ import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ConcertStartInformJobTest {
-    @Mock AlarmService alarmService;
-    @Mock ConcertInformFacade concertInformFacade;
+    @Mock private AlarmService alarmService;
+    @Mock private ConcertInformFacade concertInformFacade;
 
-    @InjectMocks ConcertStartInformJob job;
+    @InjectMocks private ConcertStartInformJob job;
 
     @Test
     @DisplayName("후보 존재 시 1회 처리되고, 이후 후보가 없을 경우 종료한다.")
-    void test() {
+    void processOneCycle() {
         // given
-        List<SessionStartAlarm> candidateList = List.of(mock(SessionStartAlarm.class));
-        List<SessionStartAlarm> claimed = List.of(mock(SessionStartAlarm.class));
+        List<Long> alarmList = List.of(mock(Long.class));
+        List<SessionStartAlarmMetaDto> metaList = List.of(mock(SessionStartAlarmMetaDto.class));
 
-        List<SessionStartAlarm> succeeded = List.of(mock(SessionStartAlarm.class));
-        List<SessionStartAlarm> disconnected = List.of(mock(SessionStartAlarm.class));
-        List<List<SessionStartAlarm>> results = List.of(succeeded, disconnected);
-
-        given(concertInformFacade.extractCandidates(any(LocalDateTime.class), eq(200L)))
-                .willReturn(candidateList)
+        given(concertInformFacade.extractAlarms(any(LocalDateTime.class), eq(200L)))
+                .willReturn(alarmList)
                 .willReturn(List.of());
-
-        given(concertInformFacade.getCurrentClaimedCandidates(any(LocalDateTime.class)))
-                .willReturn(claimed);
-
-        given(alarmService.sendConcertStartInform(claimed))
-                .willReturn(results);
+        given(concertInformFacade.getCurrentProcessedCandidates(alarmList))
+                .willReturn(metaList);
 
         // when
         job.runEpoch();
@@ -50,14 +42,12 @@ public class ConcertStartInformJobTest {
         // then
         InOrder inOrder = inOrder(concertInformFacade, alarmService);
 
-        inOrder.verify(concertInformFacade).cleanup(any(LocalDateTime.class));
-        inOrder.verify(concertInformFacade).extractCandidates(any(LocalDateTime.class), eq(200L));
-        inOrder.verify(concertInformFacade).skipAndClaim(eq(candidateList), any(LocalDateTime.class));
-        inOrder.verify(concertInformFacade).getCurrentClaimedCandidates(any(LocalDateTime.class));
-        inOrder.verify(alarmService).sendConcertStartInform(eq(claimed));
-        inOrder.verify(concertInformFacade).applyResults(eq(succeeded), eq(disconnected));
+        inOrder.verify(concertInformFacade).extractAlarms(any(LocalDateTime.class), eq(200L));
+        inOrder.verify(concertInformFacade).passAndProcess(any(LocalDateTime.class), eq(alarmList));
+        inOrder.verify(concertInformFacade).getCurrentProcessedCandidates(alarmList);
+        inOrder.verify(alarmService).sendConcertStartInform(metaList);
 
         then(concertInformFacade).should(times(2))
-                .extractCandidates(any(LocalDateTime.class), eq(200L));
+                .extractAlarms(any(LocalDateTime.class), eq(200L));
     }
 }

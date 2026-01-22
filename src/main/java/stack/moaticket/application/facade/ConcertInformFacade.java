@@ -3,7 +3,7 @@ package stack.moaticket.application.facade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import stack.moaticket.domain.session_start_alarm.entity.SessionStartAlarm;
+import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
 import stack.moaticket.domain.session_start_alarm.service.SessionStartAlarmService;
 
 import java.time.LocalDateTime;
@@ -13,29 +13,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ConcertInformFacade {
     private final SessionStartAlarmService sessionStartAlarmService;
-
-    @Transactional
-    public void cleanup(LocalDateTime now) {
-        sessionStartAlarmService.cleanupTerminatedClaimedAlarm(now);
-    }
-
-    public List<SessionStartAlarm> extractCandidates(LocalDateTime now, Long batchSize) {
-        return sessionStartAlarmService.getPendingSessionAlarmList(batchSize, now);
+    
+    public List<Long> extractAlarms(LocalDateTime now, Long batchSize) {
+        return sessionStartAlarmService.getPendingSessionAlarmIdList(now, batchSize);
     }
 
     @Transactional
-    public void skipAndClaim(List<SessionStartAlarm> candidateList, LocalDateTime now) {
-        sessionStartAlarmService.updatePendingToSkipped(candidateList, now);
-        sessionStartAlarmService.updatePendingToClaimed(candidateList, now);
+    public void passAndProcess(LocalDateTime now, List<Long> alarmList) {
+        sessionStartAlarmService.updatePendingToPassed(now, alarmList);
+        sessionStartAlarmService.updatePendingToProcessed(now, alarmList);
     }
 
-    public List<SessionStartAlarm> getCurrentClaimedCandidates(LocalDateTime now) {
-        return sessionStartAlarmService.getClaimedSessionAlarmList(now);
-    }
-
-    @Transactional
-    public void applyResults(List<SessionStartAlarm> succeededList, List<SessionStartAlarm> disconnectedList) {
-        if(!succeededList.isEmpty()) sessionStartAlarmService.updateClaimedToSent(succeededList);
-        if(!disconnectedList.isEmpty()) sessionStartAlarmService.updateClaimedToPendingOrDisconnected(disconnectedList);
+    public List<SessionStartAlarmMetaDto> getCurrentProcessedCandidates(List<Long> alarmIdList) {
+        return sessionStartAlarmService.getProcessedSessionAlarmList(alarmIdList);
     }
 }

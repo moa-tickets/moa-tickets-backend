@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public enum SessionStartAlarmState {
-    PENDING, CLAIMED, SENT, DISCONNECTED, CLEANED, SKIPPED
+    PENDING, PROCESSED, PASSED
 }

@@ -1,107 +1,71 @@
 package stack.moaticket.application.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import stack.moaticket.application.component.register.AlarmEmitterRegister;
-import stack.moaticket.domain.concert.entity.Concert;
-import stack.moaticket.domain.member.entity.Member;
-import stack.moaticket.domain.session.entity.Session;
-import stack.moaticket.domain.session_start_alarm.entity.SessionStartAlarm;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import stack.moaticket.application.component.factory.AlarmMessageFactory;
+import stack.moaticket.application.port.AlarmMessage;
+import stack.moaticket.application.port.AlarmSender;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
 import stack.moaticket.domain.session_start_alarm.type.SessionStartAlarmType;
+import stack.moaticket.domain.ticket.service.TicketService;
+import stack.moaticket.domain.ticket_alarm.service.TicketAlarmService;
+import stack.moaticket.system.component.Validator;
+import stack.moaticket.system.sse.service.SseSubscribeService;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AlarmServiceTest {
-    private AlarmService alarmService;
-    private AlarmEmitterRegister alarmEmitterRegister;
+    @Mock private Validator validator;
 
-    @BeforeEach
-    void setUp() {
-        alarmEmitterRegister = mock(AlarmEmitterRegister.class);
-        alarmService = new AlarmService(alarmEmitterRegister);
-    }
+    @Mock private AlarmMessageFactory alarmMessageFactory;
+    @Mock private AlarmSender alarmSender;
 
-    @Test
-    @DisplayName("구독한 Emitter가 하나도 없을 때 전송하면 연결 끊김 상태로 분류된다.")
-    void noSubscriber() {
-        // given
-        final Long alarmId = 1L;
-        final Long memberId = 10L;
-        final String concertName = "Concert_A";
+    @Mock private SseSubscribeService sseSubscribeService;
 
-        SessionStartAlarm alarm = mockAlarm(alarmId, memberId, concertName);
-        given(alarmEmitterRegister.getSseEmitters(memberId)).willReturn(List.of());
+    @Mock private MemberService memberService;
+    @Mock private TicketService ticketService;
+    @Mock private TicketAlarmService ticketAlarmService;
 
-        // when
-        var results = alarmService.sendConcertStartInform(List.of(alarm));
-
-        // then
-        var succeeded = results.get(0);
-        var disconnected = results.get(1);
-
-        assertThat(succeeded).isEmpty();
-        assertThat(disconnected).containsExactly(alarm);
-    }
+    @InjectMocks private AlarmService alarmService;
 
     @Test
-    @DisplayName("구독한 Emitter 중 하나라도 전송을 시도하면 전송으로 분류된다. (실패 여부는 알 수 없음)")
-    void partialSuccess() throws Exception {
+    @DisplayName("콘서트 시작 알림 메타데이터를 순회하며 메시지를 생성하고, 각 사용자에게 전달한다.")
+    void sendConcertStartInformSendsForEachAlarm() {
         // given
-        final Long alarmId = 1L;
-        final Long memberId = 10L;
-        final String concertName = "Concert_A";
+        SessionStartAlarmMetaDto a1 = mock(SessionStartAlarmMetaDto.class);
+        SessionStartAlarmMetaDto a2 = mock(SessionStartAlarmMetaDto.class);
 
-        SessionStartAlarm alarm = mockAlarm(alarmId, memberId, concertName);
+        given(a1.memberId()).willReturn(1L);
+        given(a2.memberId()).willReturn(2L);
 
-        SseEmitter pass = mock(SseEmitter.class);
-        SseEmitter fail = mock(SseEmitter.class);
+        AlarmMessage m1 = new AlarmMessage("SS_LEFT_10", a1);
+        AlarmMessage m2 = new AlarmMessage("SS_ON_HOUR", a2);
 
-        willThrow(new IOException("fail")).given(fail).send(any(SseEmitter.SseEventBuilder.class));
-        willDoNothing().given(pass).send(any(SseEmitter.SseEventBuilder.class));
-
-        given(alarmEmitterRegister.getSseEmitters(memberId)).willReturn(List.of(pass, fail));
+        given(alarmMessageFactory.sessionStart(a1)).willReturn(m1);
+        given(alarmMessageFactory.sessionStart(a2)).willReturn(m2);
 
         // when
-        var results = alarmService.sendConcertStartInform(List.of(alarm));
+        alarmService.sendConcertStartInform(List.of(a1, a2));
 
         // then
-        var succeeded = results.get(0);
-        var failed = results.get(1);
+        InOrder inOrder = inOrder(alarmMessageFactory, alarmSender);
 
-        assertThat(succeeded).containsExactly(alarm);
-        assertThat(failed).isEmpty();
-    }
+        inOrder.verify(alarmMessageFactory).sessionStart(a1);
+        inOrder.verify(alarmSender).sendAll(1L, m1);
 
-    /* Helper */
-    private SessionStartAlarm mockAlarm(Long alarmId, Long memberId, String concertName) {
-        SessionStartAlarm alarm = mock(SessionStartAlarm.class);
-        Member member = mock(Member.class);
-        Session session = mock(Session.class);
-        Concert concert = mock(Concert.class);
-        SessionStartAlarmType type = mock(SessionStartAlarmType.class);
+        inOrder.verify(alarmMessageFactory).sessionStart(a2);
+        inOrder.verify(alarmSender).sendAll(2L, m2);
 
-        given(alarm.getId()).willReturn(alarmId);
-        given(alarm.getMember()).willReturn(member);
-        given(member.getId()).willReturn(memberId);
-
-        given(alarm.getSession()).willReturn(session);
-        given(session.getConcert()).willReturn(concert);
-        given(concert.getName()).willReturn(concertName);
-
-        given(alarm.getAlarmAt()).willReturn(LocalDateTime.of(2000, 1, 1, 0, 0));
-        given(session.getDate()).willReturn(LocalDateTime.of(2000, 1, 1, 0, 0));
-
-        given(alarm.getType()).willReturn(type);
-        given(alarm.getType().getPrefix()).willReturn("prefix_");
-        given(alarm.getType().getName()).willReturn("name");
-
-        return alarm;
+        then(alarmMessageFactory).shouldHaveNoMoreInteractions();
+        then(alarmSender).shouldHaveNoMoreInteractions();
     }
 }

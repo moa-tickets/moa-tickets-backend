@@ -17,6 +17,7 @@ public enum MoaExceptionType {
     UNAUTHORIZED("인증되지 않은 사용자입니다.", 401),
 
     // 403
+    INVALID_ALARM("올바르지 않은 알림 요청입니다.", 403),
     INVALID_STREAM_REQUEST("유효하지 않은 스트림 요청입니다.", 403),
     HOLD_TOKEN_MISMATCH("선점 토큰이 일치하지 않습니다.", 403),
     FORBIDDEN("권한이 없습니다.", 403),
@@ -45,7 +46,10 @@ public enum MoaExceptionType {
     INTERNAL_SERVER_ERROR("서버 내부 오류", 500),
 
     // 502
-    STREAM_ERROR("스트림 관련 오류가 발생했습니다.", 502);
+    STREAM_ERROR("스트림 관련 오류가 발생했습니다.", 502),
+
+    // 503
+    SSE_ERROR("SSE 관련 오류가 발생하였습니다.", 503);
 
     private final String message;
     private final Integer statusCode;

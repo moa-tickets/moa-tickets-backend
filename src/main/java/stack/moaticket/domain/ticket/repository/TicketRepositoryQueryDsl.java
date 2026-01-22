@@ -1,10 +1,13 @@
 package stack.moaticket.domain.ticket.repository;
 
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.ticket.dto.TicketMetaDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.type.TicketState;
 
@@ -104,6 +107,64 @@ public class TicketRepositoryQueryDsl {
                         .and(ticket.expiresAt.gt(now)) // 아직 유효한 hold만 해제
                 )
                 .execute();
+    }
+
+    public Ticket getTicket(Long ticketId) {
+        BooleanExpression condition = ticket.id.eq(ticketId);
+
+        return jpaQueryFactory.selectFrom(ticket)
+                .where(condition)
+                .fetchFirst();
+    }
+
+    public List<Long> getHoldTicketIdList(LocalDateTime now, Long batchSize) {
+        BooleanExpression condition = ticket.state.eq(TicketState.HOLD)
+                .and(ticket.expiresAt.loe(now))
+                .and(ticket.holdToken.isNotNull())
+                .and(ticket.member.id.isNotNull());
+
+        return jpaQueryFactory.select(ticket.id)
+                .from(ticket)
+                .where(condition)
+                .limit(batchSize)
+                .fetch();
+    }
+
+    public void releaseHoldTickets(LocalDateTime now, List<Long> ticketIdList) {
+        BooleanExpression condition = ticket.id.in(ticketIdList)
+                .and(ticket.state.eq(TicketState.HOLD))
+                .and(ticket.expiresAt.loe(now))
+                .and(ticket.holdToken.isNotNull())
+                .and(ticket.member.id.isNotNull());
+
+        jpaQueryFactory.update(ticket)
+                .set(ticket.state, TicketState.AVAILABLE)
+                .set(ticket.holdToken, (String) null)
+                .set(ticket.expiresAt, (LocalDateTime) null)
+                .set(ticket.member.id, (Long) null)
+                .where(condition)
+                .execute();
+    }
+
+    public List<TicketMetaDto> getTicketEssentialInfoList(List<Long> ticketIdList) {
+        BooleanExpression condition = ticket.id.in(ticketIdList)
+                .and(ticket.state.eq(TicketState.AVAILABLE))
+                .and(ticket.expiresAt.isNull())
+                .and(ticket.holdToken.isNull())
+                .and(ticket.member.id.isNull());
+
+        return jpaQueryFactory.select(
+                Projections.constructor(
+                        TicketMetaDto.class,
+                        ticket.id,
+                        ticket.session.id,
+                        ticket.num,
+                        ticket.session.date,
+                        ticket.session.concert.name
+                ))
+                .from(ticket)
+                .where(condition)
+                .fetch();
     }
 
 }

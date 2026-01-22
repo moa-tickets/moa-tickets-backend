@@ -1,4 +1,4 @@
-package stack.moaticket.application.component.register;
+package stack.moaticket.system.sse.register;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @Component
-public class AlarmEmitterRegister {
+public class SseEmitterRegister {
     private final ConcurrentMap<Long, Set<SseEmitter>> memberEmitterMap = new ConcurrentHashMap<>();
 
     public void insert(Long memberId, SseEmitter emitter) {

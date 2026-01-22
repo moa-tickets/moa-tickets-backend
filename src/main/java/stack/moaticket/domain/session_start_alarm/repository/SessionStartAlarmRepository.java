@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import stack.moaticket.domain.session_start_alarm.entity.SessionStartAlarm;
 
 @Repository
-public interface SessionStartAlarmRepository extends JpaRepository<SessionStartAlarm, Long> {
+public interface SessionStartAlarmRepository extends JpaRepository<SessionStartAlarm, Long>, SessionStartAlarmQueryDslRepository {
 }

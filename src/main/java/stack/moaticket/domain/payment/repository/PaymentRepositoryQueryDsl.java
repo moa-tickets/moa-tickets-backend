@@ -5,6 +5,7 @@ import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import stack.moaticket.domain.payment.entity.Payment;
+import stack.moaticket.domain.payment.type.PaymentState;
 
 import static stack.moaticket.domain.payment.entity.QPayment.payment;
 
@@ -17,7 +18,7 @@ public class PaymentRepositoryQueryDsl {
     public Payment findByOrderIdForUpdate(String orderId){
         return queryFactory
                 .selectFrom(payment)
-                .where(payment.orderId.eq(orderId))
+                .where(payment.orderId.eq(orderId).and(payment.state.eq(PaymentState.READY)))
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetchOne();
     }

@@ -1,0 +1,49 @@
+package stack.moaticket.application.component.scheduler;
+
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.config.Task;
+import org.springframework.stereotype.Component;
+import stack.moaticket.application.job.ConcertStartInformJob;
+import stack.moaticket.application.job.TicketReleaseInformJob;
+
+import java.time.Duration;
+
+@Component
+public class JobScheduler {
+    private final TaskScheduler sessionStartScheduler;
+    private final TaskScheduler ticketReleaseScheduler;
+
+    private final ConcertStartInformJob concertStartInformJob;
+    private final TicketReleaseInformJob ticketReleaseInformJob;
+
+    public JobScheduler(
+            @Qualifier("sessionStartScheduler") TaskScheduler sessionStartScheduler,
+            @Qualifier("ticketReleaseScheduler") TaskScheduler ticketReleaseScheduler,
+            ConcertStartInformJob concertStartInformJob,
+            TicketReleaseInformJob ticketReleaseInformJob
+    ) {
+        this.sessionStartScheduler = sessionStartScheduler;
+        this.ticketReleaseScheduler = ticketReleaseScheduler;
+        this.concertStartInformJob = concertStartInformJob;
+        this.ticketReleaseInformJob = ticketReleaseInformJob;
+    }
+
+    private static final int DELAY = 2;
+
+    @PostConstruct
+    public void start() {
+        sessionStartScheduler.scheduleWithFixedDelay(
+                concertStartInformJob::runEpoch,
+                Duration.ofSeconds(DELAY)
+        );
+
+        ticketReleaseScheduler.scheduleWithFixedDelay(
+                ticketReleaseInformJob::runEpoch,
+                Duration.ofSeconds(DELAY)
+        );
+    }
+}

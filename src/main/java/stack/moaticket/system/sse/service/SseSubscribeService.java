@@ -19,7 +19,7 @@ public class SseSubscribeService {
         sseEmitterRegister.insert(memberId, emitter);
 
         try {
-            sseSendService.sendOrThrow(memberId, emitter, CONNECT_EVENT_TYPE, null);
+            sseSendService.sendOrThrow(memberId, emitter, CONNECT_EVENT_TYPE, "Connected");
             afterClean(memberId, emitter);
             return emitter;
         } catch (RuntimeException e) {

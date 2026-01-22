@@ -12,7 +12,6 @@ import stack.moaticket.application.port.AlarmMessage;
 import stack.moaticket.application.port.AlarmSender;
 import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
-import stack.moaticket.domain.session_start_alarm.type.SessionStartAlarmType;
 import stack.moaticket.domain.ticket.service.TicketService;
 import stack.moaticket.domain.ticket_alarm.service.TicketAlarmService;
 import stack.moaticket.system.component.Validator;

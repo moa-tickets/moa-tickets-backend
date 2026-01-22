@@ -1,11 +1,8 @@
 package stack.moaticket.application.component.scheduler;
 
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Component;
 import stack.moaticket.application.job.ConcertStartInformJob;
 import stack.moaticket.application.job.TicketReleaseInformJob;

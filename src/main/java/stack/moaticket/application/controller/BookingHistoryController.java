@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -15,9 +14,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.BookingHistoryDto;
 import stack.moaticket.application.service.BookingHistoryService;
-import stack.moaticket.domain.member.entity.Member;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
 
 @Tag(name = "BookingHistory API", description = "마이페이지 예매 내역 조회 API")
 @SecurityRequirement(name = "Authorization")
@@ -65,15 +61,11 @@ public class BookingHistoryController {
     )
     @GetMapping("/me/{orderId}")
     public ResponseEntity<BookingHistoryDto.DetailResponse> getDetail(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @PathVariable String orderId
     ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-
         return ResponseEntity.ok(
-                bookingHistoryService.getDetail(member.getId(), orderId)
+                bookingHistoryService.getDetail(memberId, orderId)
         );
     }
 
@@ -147,19 +139,14 @@ public class BookingHistoryController {
     )
     @GetMapping("/me")
     public ResponseEntity<BookingHistoryDto.ListResponse> getList(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) BookingHistoryDto.RangeFilter range,
             @RequestParam(required = false) BookingHistoryDto.MonthBasis basis,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-
+            @RequestParam(required = false) Integer month) {
         return ResponseEntity.ok(
-                bookingHistoryService.getList(member.getId(), page, range, basis, year, month)
+                bookingHistoryService.getList(memberId, page, range, basis, year, month)
         );
     }
 }

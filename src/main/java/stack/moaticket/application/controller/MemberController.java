@@ -1,8 +1,6 @@
 package stack.moaticket.application.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,8 +16,6 @@ import stack.moaticket.application.dto.GetMemberDto;
 import stack.moaticket.application.service.MemberInfoService;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
 
 @Tag(name = "Member API", description = "유저 정보 조회 API")
 @SecurityRequirement(name = "Authorization")
@@ -47,12 +43,8 @@ public class MemberController {
     )
     @GetMapping("/api/members/me")
     public ResponseEntity<GetMemberDto.Response> getMember(
-            @AuthenticationPrincipal Member member
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-        return ResponseEntity.ok(memberInfoService.getMember(member));
+            @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(memberInfoService.getMember(memberId));
     }
 
     @Operation(
@@ -61,12 +53,8 @@ public class MemberController {
     )
     @PostMapping("/api/members/seller")
     public ResponseEntity<Member> convertToSeller(
-            @AuthenticationPrincipal Member member
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-        Member updatedMember = memberService.convertToSeller(member.getId());
+            @AuthenticationPrincipal Long memberId) {
+        Member updatedMember = memberService.convertToSeller(memberId);
         return ResponseEntity.ok(updatedMember);
     }
 
@@ -76,12 +64,8 @@ public class MemberController {
     )
     @PostMapping("/api/members/buyer")
     public ResponseEntity<Member> convertToBuyer(
-            @AuthenticationPrincipal Member member
-    ) {
-        if (member == null) {
-            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
-        }
-        Member updatedMember = memberService.convertToBuyer(member.getId());
+            @AuthenticationPrincipal Long memberId) {
+        Member updatedMember = memberService.convertToBuyer(memberId);
         return ResponseEntity.ok(updatedMember);
     }
 }

@@ -17,6 +17,7 @@ public enum MoaExceptionType {
     UNAUTHORIZED("인증되지 않은 사용자입니다.", 401),
 
     // 403
+    INVALID_ALARM("올바르지 않은 알림 요청입니다.", 403),
     INVALID_STREAM_REQUEST("유효하지 않은 스트림 요청입니다.", 403),
     HOLD_TOKEN_MISMATCH("선점 토큰이 일치하지 않습니다.", 403),
     FORBIDDEN("권한이 없습니다.", 403),
@@ -36,7 +37,7 @@ public enum MoaExceptionType {
     ALREADY_QUESTION("이미 등록된 질문입니다.", 409),
     PAYMENT_STATE_INVALID("결제 상태가 유효하지 않습니다.", 409),
     INVALID_PAYMENT_AMOUNT("결제 금액이 일치하지 않습니다.", 409),
-
+    TICKET_LIMIT_EXCEEDED("한 회차당 최대 4장까지 구매할 수 있습니다.", 409),
 
     // 410
     HOLD_EXPIRED("좌석 선점 시간이 만료되었습니다.", 410),
@@ -45,7 +46,10 @@ public enum MoaExceptionType {
     INTERNAL_SERVER_ERROR("서버 내부 오류", 500),
 
     // 502
-    STREAM_ERROR("스트림 관련 오류가 발생했습니다.", 502);
+    STREAM_ERROR("스트림 관련 오류가 발생했습니다.", 502),
+
+    // 503
+    SSE_ERROR("SSE 관련 오류가 발생하였습니다.", 503);
 
     private final String message;
     private final Integer statusCode;

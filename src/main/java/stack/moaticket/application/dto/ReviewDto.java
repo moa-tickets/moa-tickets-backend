@@ -3,6 +3,8 @@ package stack.moaticket.application.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 public abstract class ReviewDto {
@@ -33,5 +35,22 @@ public abstract class ReviewDto {
             this.score = score;
             this.content = content;
         }
+
+
+    }
+    @Getter
+    public static class SpringReviewItemDto {
+        private final List<Review> reviews;
+
+        public SpringReviewItemDto(Long reviewId, String content, Long userId, Long concertId) {
+            List<Review> reviews = new ArrayList<>();
+            Review review = new Review(reviewId, content, userId, concertId);
+
+            reviews.add(review);
+            this.reviews = reviews;
+        }
+
+        private record Review (Long reviewId, String content, Long userId, Long concertId) {}
+
     }
 }

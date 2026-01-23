@@ -8,24 +8,31 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDTO;
-import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDTO;
+import stack.moaticket.domain.faq_question.dto.FaqQuestionRequestDto;
+import stack.moaticket.domain.faq_question.dto.FaqQuestionResponseDto;
 import stack.moaticket.domain.faq_question.entity.FaqQuestion;
 import stack.moaticket.domain.faq_question.entity.Ownable;
 import stack.moaticket.domain.faq_question.repository.FaqQuestionRepository;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.domain.member.type.MemberState;
+import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.util.AuthValidator;
 
-import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class FaqQuestionService {
+    private final Validator validator;
+
+    private final MemberService memberService;
+
     private final FaqQuestionRepository faqQuestionRepository;
     private static final int PAGE_SIZE = 10;
-  
+
     public static <T extends Ownable> void checkOwner(T data, Member member) {
         if (member == null || member.getId() == null) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
@@ -37,7 +44,11 @@ public class FaqQuestionService {
 
     // 글 생성
     @Transactional
-    public FaqQuestionResponseDTO createQuestion(Member member, FaqQuestionRequestDTO rqdto) {
+    public FaqQuestionResponseDto createQuestion(Long memberId, FaqQuestionRequestDto rqdto) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
 
         // 중복 체크
         if(faqQuestionRepository.existsByTitle((rqdto.getTitle()))) {
@@ -53,26 +64,35 @@ public class FaqQuestionService {
         // 저장
         FaqQuestion savedQuestionData = faqQuestionRepository.save(faqQuestion);
 
-        return FaqQuestionResponseDTO.fromEntity(savedQuestionData);
+        return FaqQuestionResponseDto.fromEntity(savedQuestionData);
     }
 
     // 글 조회
     @Transactional(readOnly = true)
-    public Page<FaqQuestionResponseDTO> readQuestionList(Member member, int pageNo, String criteria) {
+    public Page<FaqQuestionResponseDto> readQuestionList(Long memberId, int pageNo, String criteria) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
+
         AuthValidator.checkAuthenticated(member);
         Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, criteria));
-        Page<FaqQuestionResponseDTO> page = faqQuestionRepository.findAll(pageable).map(FaqQuestionResponseDTO::fromEntity);
+        Page<FaqQuestionResponseDto> page = faqQuestionRepository.findAll(pageable).map(FaqQuestionResponseDto::fromEntity);
         return page;
     }
 
     // 글 수정
     @Transactional
-    public FaqQuestionResponseDTO updateQuestion(Member member, Long id, FaqQuestionRequestDTO rqdto, MultipartFile File) {
+    public FaqQuestionResponseDto updateQuestion(Long memberId, Long id, FaqQuestionRequestDto rqdto, MultipartFile File) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
 
         // 기존의 엔티티 조회
-        FaqQuestion faqQuestionById = faqQuestionRepository.findById(id).orElseThrow(() -> {
-            return new MoaException(MoaExceptionType.NOT_FOUND);
-        });
+        FaqQuestion faqQuestionById = faqQuestionRepository.findById(id).orElseThrow(() ->
+            new MoaException(MoaExceptionType.NOT_FOUND)
+        );
 
         checkOwner(faqQuestionById, member);
 
@@ -90,12 +110,16 @@ public class FaqQuestionService {
         }
 
 
-        return FaqQuestionResponseDTO.fromEntity(faqQuestionById);
+        return FaqQuestionResponseDto.fromEntity(faqQuestionById);
     }
 
     // 글 삭제
     @Transactional
-    public FaqQuestionResponseDTO deleteQuestion(Member member, Long id) {
+    public FaqQuestionResponseDto deleteQuestion(Long memberId, Long id) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
 
         FaqQuestion questionToDelete = faqQuestionRepository.findById(id)
                 .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
@@ -104,16 +128,21 @@ public class FaqQuestionService {
 
         faqQuestionRepository.delete(questionToDelete);
 
-        return FaqQuestionResponseDTO.fromEntity(questionToDelete);
+        return FaqQuestionResponseDto.fromEntity(questionToDelete);
     }
 
     // 상세 조회
     @Transactional
-    public FaqQuestionResponseDTO getDetailQuestion(Member member, Long id) {
+    public FaqQuestionResponseDto getDetailQuestion(Long memberId, Long id) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
+
         FaqQuestion detailQuestion = faqQuestionRepository.findById(id)
                                         .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
         checkOwner(detailQuestion, member);
 
-        return FaqQuestionResponseDTO.fromEntity(detailQuestion);
+        return FaqQuestionResponseDto.fromEntity(detailQuestion);
     }
 }

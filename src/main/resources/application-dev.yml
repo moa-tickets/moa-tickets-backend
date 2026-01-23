@@ -2,10 +2,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
 logging:
   level:
@@ -15,4 +15,4 @@ app:
   frontend:
     url: http://localhost:5173
   ai:
-    url: htpp://localhost:8000
+    url: ${AI_URL}

@@ -2,10 +2,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
 logging:
   level:
@@ -15,4 +15,4 @@ app:
   frontend:
     url: https://moatickets.dev
   ai:
-    url: https://web.moa-ticket.com
+    url: ${AI_URL}

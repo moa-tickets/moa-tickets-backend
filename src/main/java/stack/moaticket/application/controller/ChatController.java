@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import stack.moaticket.application.dto.ChattingDto;
+import stack.moaticket.application.service.ChattingService;
 import stack.moaticket.domain.member.entity.Member;
 
 import java.util.Map;
@@ -22,24 +23,22 @@ import java.util.Map;
 public class ChatController {
 
     private final SimpMessageSendingOperations messagingTemplate;
+    private final ChattingService chattingService;
 
 
-    @MessageMapping("/send/{roomId}")
+    @MessageMapping("/send/{playbackId}")
     public void sendMessage(
             @Header("simpSessionAttributes") Map<String, Object> sessionAttributes,
             ChattingDto request,
-            @DestinationVariable String roomId) {
+            @DestinationVariable String playbackId) {
         String userNickname = (String) sessionAttributes.get("userNickname");
+        Long memberId = (Long) sessionAttributes.get("memberId");
         if (userNickname == null) {
-            log.error("세션에서 userNickname을 찾을 수 없습니다. roomId: {}", roomId);
+            log.error("세션에서 userNickname을 찾을 수 없습니다. roomId: {}", playbackId);
             return;
         }
-        ChattingDto chattingDto = ChattingDto.builder()
-                .message(request.getMessage())
-                .senderNickname(userNickname)
-                .build();
 
-        log.info("방 아이디: {}, 메세지: {}, nick: {}", roomId, chattingDto.getMessage(), userNickname);
-        messagingTemplate.convertAndSend("/sub/" + roomId + "/messages", chattingDto);
+        chattingService.saveAndSend(request.getMessage(), memberId, playbackId);
+
     }
 }

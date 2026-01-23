@@ -12,6 +12,8 @@ import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import stack.moaticket.application.component.registry.StompRoomRegistry;
 
+import java.util.Map;
+
 
 //스프링과 stomp는 기본적으로 세션관리를 자동으로 처리
 //연결/해제 이벤트를 기록, 연결된 세션 수를 실시간으로 확인할 목적으로 이벤트 리스너 생서 >> 로그, 디버깅 목적
@@ -26,8 +28,9 @@ public class StompEventListener {
     @EventListener
     public void disconnectHandle(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String roomId = accessor.getFirstNativeHeader("roomId");
 
+        Map<String, Object> attrs = accessor.getSessionAttributes();
+        String roomId = (String) attrs.get("roomId");
         registry.unregisterBySession(accessor.getSessionId());
 
         log.info("roomId : " + roomId);

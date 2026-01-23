@@ -24,7 +24,7 @@ SET @seller_id := (
 
 SET @hall_id := (
     SELECT `hall_id` FROM `hall`
-    WHERE `hall_name` = 'MOA HALL SMALL'
+    WHERE `hall_name` = '블루스퀘어 SOL트래블홀'
     LIMIT 1
 );
 

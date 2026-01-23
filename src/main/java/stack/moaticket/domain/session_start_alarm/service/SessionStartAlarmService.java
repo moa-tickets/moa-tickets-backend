@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.session.entity.Session;
+import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
 import stack.moaticket.domain.session_start_alarm.entity.SessionStartAlarm;
 import stack.moaticket.domain.session_start_alarm.repository.SessionStartAlarmRepository;
-import stack.moaticket.domain.session_start_alarm.repository.SessionStartAlarmRepositoryQueryDsl;
 import stack.moaticket.domain.session_start_alarm.type.SessionStartAlarmState;
 import stack.moaticket.domain.session_start_alarm.type.SessionStartAlarmType;
 
@@ -17,7 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SessionStartAlarmService {
     private final SessionStartAlarmRepository sessionStartAlarmRepository;
-    private final SessionStartAlarmRepositoryQueryDsl sessionStartAlarmRepositoryQueryDsl;
 
     public SessionStartAlarm createAndSave(Member member, Session session, LocalDateTime alarmAt, SessionStartAlarmType type) {
         SessionStartAlarm sessionStartAlarm = SessionStartAlarm.builder()
@@ -31,31 +30,19 @@ public class SessionStartAlarmService {
         return sessionStartAlarmRepository.save(sessionStartAlarm);
     }
 
-    public List<SessionStartAlarm> getClaimedSessionAlarmList(LocalDateTime now) {
-        return sessionStartAlarmRepositoryQueryDsl.getClaimedSessionStartAlarmList(now);
+    public List<Long> getPendingSessionAlarmIdList(LocalDateTime now, Long batchSize) {
+        return sessionStartAlarmRepository.getSessionStartAlarmIdList(now, batchSize, SessionStartAlarmState.PENDING);
     }
 
-    public List<SessionStartAlarm> getPendingSessionAlarmList(Long batchSize, LocalDateTime now) {
-        return sessionStartAlarmRepositoryQueryDsl.getSessionStartAlarmList(batchSize, SessionStartAlarmState.PENDING, now);
+    public void updatePendingToPassed(LocalDateTime now, List<Long> alarmList) {
+        sessionStartAlarmRepository.updatePendingSessionStartAlarmToPassed(now, alarmList);
     }
 
-    public void updatePendingToSkipped(List<SessionStartAlarm> candidateList, LocalDateTime now) {
-        sessionStartAlarmRepositoryQueryDsl.updatePendingSessionStartAlarmToSkipped(candidateList, now);
+    public void updatePendingToProcessed(LocalDateTime now, List<Long> alarmList) {
+        sessionStartAlarmRepository.updatePendingSessionStartAlarmToProcessed(now, alarmList);
     }
 
-    public void updatePendingToClaimed(List<SessionStartAlarm> candidateList, LocalDateTime now) {
-        sessionStartAlarmRepositoryQueryDsl.updatePendingSessionStartAlarmToClaimed(candidateList, now);
-    }
-
-    public void cleanupTerminatedClaimedAlarm(LocalDateTime now) {
-        sessionStartAlarmRepositoryQueryDsl.updateClaimedSessionStartAlarmToCleaned(now);
-    }
-
-    public void updateClaimedToSent(List<SessionStartAlarm> succeededList) {
-        sessionStartAlarmRepositoryQueryDsl.updateClaimedSessionStartAlarmToSent(succeededList);
-    }
-
-    public void updateClaimedToPendingOrDisconnected(List<SessionStartAlarm> failedList) {
-        sessionStartAlarmRepositoryQueryDsl.updateClaimedSessionStartAlarmToDisconnected(failedList);
+    public List<SessionStartAlarmMetaDto> getProcessedSessionAlarmList(List<Long> alarmIdList) {
+        return sessionStartAlarmRepository.getProcessedSessionStartAlarmList(alarmIdList);
     }
 }

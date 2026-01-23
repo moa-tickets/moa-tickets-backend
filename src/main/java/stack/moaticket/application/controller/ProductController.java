@@ -3,14 +3,11 @@ package stack.moaticket.application.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +21,6 @@ import stack.moaticket.application.dto.ConcertDetailDto;
 import stack.moaticket.application.dto.ConcertListDto;
 import stack.moaticket.application.dto.CreateConcertDto;
 import stack.moaticket.application.service.ProductService;
-import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
 
@@ -60,9 +56,9 @@ public class ProductController {
     )
     @PostMapping("/concert")
     public ResponseEntity<CreateConcertDto.Response> concertSave(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody CreateConcertDto.Request request){
-        CreateConcertDto.Response response = productService.createConcert(member, request);
+        CreateConcertDto.Response response = productService.createConcert(memberId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -90,13 +86,12 @@ public class ProductController {
             }
     )
     @GetMapping("/detail/{id}")
-    public ResponseEntity<ConcertDetailDto.Response> getConcertDetail(@PathVariable Long id){
+    public ResponseEntity<ConcertDetailDto.Response> getConcertDetail(
+            @PathVariable Long id){
         ConcertDetailDto.Response response = productService.getConcertDetail(id);   //TODO
 
         return ResponseEntity.ok(response);
     }
-
-
 
     @Operation(
             security = {},
@@ -146,7 +141,4 @@ public class ProductController {
 
         return ResponseEntity.ok(productService.getConcertList(searchValue, sortBy, sortOrder, pageable));
     }
-
-
-
 }

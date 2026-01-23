@@ -12,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.PaymentDto;
 import stack.moaticket.application.service.PaymentService;
-import stack.moaticket.domain.member.entity.Member;
 
 @Tag(name = "Payment API", description = "상품 결제 도메인 API")
 @SecurityRequirement(name = "Authorization")
@@ -60,11 +59,11 @@ public class PaymentController {
     )
     @PostMapping("/prepare")
     public ResponseEntity<PaymentDto.PrepareResponse> prepare(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody PaymentDto.PrepareRequest request
     ) {
         return ResponseEntity.ok(
-                paymentService.prepare(member.getId(), request)
+                paymentService.prepare(memberId, request)
         );
     }
 
@@ -123,11 +122,11 @@ public class PaymentController {
     )
     @PostMapping("/confirm")
     public ResponseEntity<PaymentDto.ConfirmResponse> confirm(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody PaymentDto.ConfirmRequest request
     ) {
         return ResponseEntity.ok(
-                paymentService.confirm(member.getId(), request)
+                paymentService.confirm(memberId, request)
         );
     }
 }

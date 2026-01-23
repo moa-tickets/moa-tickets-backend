@@ -59,8 +59,29 @@ public class Ticket extends Base {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
-    public boolean isHoldExpired(LocalDateTime now) {
-        return expiresAt != null && expiresAt.isBefore(now);
+    public boolean isAvailable() {
+        return this.state == TicketState.AVAILABLE;
+    }
+
+    public boolean isHold() {
+        return this.state == TicketState.HOLD;
+    }
+
+    public boolean isSold() {
+        return this.state == TicketState.SOLD;
+    }
+
+    public TicketState viewState() {
+        if(isAvailable()) return TicketState.AVAILABLE;
+        else if(isHold()) return TicketState.HOLD;
+        else return TicketState.SOLD;
+    }
+
+    public void holdBy(Member member, String holdToken, LocalDateTime expiresAt){
+        this.state = TicketState.HOLD;
+        this.member = member;
+        this.holdToken = holdToken;
+        this.expiresAt = expiresAt;
     }
 
     public void clearHold() {

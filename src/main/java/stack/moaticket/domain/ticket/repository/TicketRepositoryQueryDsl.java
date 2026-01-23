@@ -31,6 +31,7 @@ public class TicketRepositoryQueryDsl {
                 .selectFrom(ticket)
                 .where(ticket.id.in(sortedIds)
                         .and(ticket.session.id.eq(sessionId)))
+                .orderBy(ticket.id.asc())
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetch();
     }

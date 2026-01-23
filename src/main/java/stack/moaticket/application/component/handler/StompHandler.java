@@ -65,8 +65,6 @@ public class StompHandler  implements ChannelInterceptor {
                     sessionAttributes.put("memberId", memberId);
                     sessionAttributes.put("roomId", roomId);
 
-                    // 유령 세션 방지를 위한 관리 등록
-                    registry.touch(newSessionId);
                 }
                 break;
 

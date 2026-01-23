@@ -27,8 +27,6 @@ public class ChattingService {
         Member member = memberRepositoryQueryDsl.findById(memberId);
         if (member == null) throw new MoaException(MoaExceptionType.MEMBER_NOT_FOUND);
 
-
-
         ChatMessage chatMessage = chatMessageRepository.save(
                 ChatMessage.builder()
                         .chatroomId(playbackId)

@@ -33,7 +33,7 @@ public class ChatController {
             @DestinationVariable String playbackId) {
         String userNickname = (String) sessionAttributes.get("userNickname");
         Long memberId = (Long) sessionAttributes.get("memberId");
-        if (userNickname == null) {
+        if (userNickname == null || memberId == null) {
             log.error("세션에서 userNickname을 찾을 수 없습니다. roomId: {}", playbackId);
             return;
         }

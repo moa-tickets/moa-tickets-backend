@@ -3,7 +3,6 @@ package stack.moaticket.system.sse.register;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;

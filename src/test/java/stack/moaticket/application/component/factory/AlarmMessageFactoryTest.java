@@ -3,7 +3,6 @@ package stack.moaticket.application.component.factory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;

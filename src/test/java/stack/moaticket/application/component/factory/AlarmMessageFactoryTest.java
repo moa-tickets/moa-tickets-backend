@@ -77,7 +77,7 @@ public class AlarmMessageFactoryTest {
     }
 
     @Test
-    @DisplayName("발송할 티켓 홀드 해제 알림이 단일 건수면 key는 TR_BULK이다.")
+    @DisplayName("발송할 티켓 홀드 해제 알림이 여러 건수면 key는 TR_BULK이다.")
     void ticketReleaseBulkKey() {
         // given
         List<TicketMetaDto> alarmList = List.of(

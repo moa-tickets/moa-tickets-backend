@@ -24,9 +24,8 @@ public class StompController {
             @Header("simpSessionAttributes") Map<String, Object> sessionAttributes,
             ChattingDto.Request request,
             @DestinationVariable String playbackId) {
-        String userNickname = (String) sessionAttributes.get("userNickname");
         Long memberId = (Long) sessionAttributes.get("memberId");
-        if (userNickname == null || memberId == null) {
+        if (memberId == null) {
             log.error("세션에서 userNickname 또는 memberId를 찾을 수 없습니다. playbackId: {}", playbackId);
             return;
         }

@@ -19,7 +19,7 @@ public class ChatMessageRepositoryQueryDsl {
         List<ChatMessage> chatMessages =  jpaQueryFactory
                 .selectFrom(chatMessage)
                 .where(chatMessage.chatroomId.eq(playbackId))
-                .orderBy(chatMessage.createdAt.desc())
+                .orderBy(chatMessage.timestamp.desc())
                 .offset(page * size)
                 .limit(size)
                 .fetch();

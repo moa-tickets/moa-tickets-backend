@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.RestController;
 import stack.moaticket.application.dto.ChattingDto;
 import stack.moaticket.application.service.ChattingService;
@@ -17,7 +16,6 @@ import java.util.Map;
 @Slf4j
 public class StompController {
 
-    private final SimpMessageSendingOperations messagingTemplate;
     private final ChattingService chattingService;
 
 
@@ -29,7 +27,7 @@ public class StompController {
         String userNickname = (String) sessionAttributes.get("userNickname");
         Long memberId = (Long) sessionAttributes.get("memberId");
         if (userNickname == null || memberId == null) {
-            log.error("세션에서 userNickname을 찾을 수 없습니다. roomId: {}", playbackId);
+            log.error("세션에서 userNickname 또는 memberId를 찾을 수 없습니다. playbackId: {}", playbackId);
             return;
         }
 

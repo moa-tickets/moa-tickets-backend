@@ -24,9 +24,7 @@ public class ChatController {
     public ResponseEntity<?> getChatHistory(@PathVariable String playbackId,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "20") int size) {
-        log.warn("================================================");
         List<ChattingDto.Response> chatHistory = chatService.getChatHistory(playbackId, page, size);
-
 
         return ResponseEntity.ok(chatHistory);
     }

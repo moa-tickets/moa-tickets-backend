@@ -14,7 +14,6 @@ public abstract class ChattingDto {
     @Getter
     public static class Request {
         private String message;
-        private String senderNickname;
     }
 
 }

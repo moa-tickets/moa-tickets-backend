@@ -59,7 +59,6 @@ public class ChattingService {
                         .build()
                 )
                 .collect(Collectors.toList());
-        response.stream().forEach(System.out::println);
         return response;
     }
 }

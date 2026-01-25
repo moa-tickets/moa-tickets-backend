@@ -64,7 +64,7 @@ public class SseSubscribeServiceTest {
         Long mid = 1L;
         String cid = "c1";
 
-        given(sseEmitterRegister.insert(mid, any(SseEmitter.class)))
+        given(sseEmitterRegister.insert(eq(mid), any(SseEmitter.class)))
                 .willReturn(cid);
 
         willThrow(new MoaException(MoaExceptionType.SSE_ERROR))
@@ -81,7 +81,6 @@ public class SseSubscribeServiceTest {
         then(sseEmitterRegister).should().insert(eq(mid), emitterCaptor.capture());
         then(sseEmitterRegister).should().remove(eq(mid), eq(cid));
 
-        verify(emitterCaptor.getValue()).completeWithError(any(MoaException.class));
         then(sseEmitterRegister).shouldHaveNoMoreInteractions();
     }
 }

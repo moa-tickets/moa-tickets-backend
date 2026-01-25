@@ -1,5 +1,14 @@
 # MOA Tickets Backend
 
+## Jacoco
+```bash
+./gradlew test jacocoTestReport
+./gradlew test jacocoTestReport --continue # 실패하는 경우 이렇게 실행
+./gradlew test --tests "*MoaticketApplicationTests" jacocoTestReport # 특정 테스트 실행
+```
+`file:///{본인컴퓨터경로}/moa-tickets-backend/build/reports/tests/test/index.html` 에서 테스트 결과 확인
+
+
 ## 기술 스택
 - Java 21
 - Spring Boot 4.0.1

@@ -8,6 +8,11 @@ START TRANSACTION;
 -- 0) 변수 (collation 명시해서 비교/저장 시 문제 예방)
 SET @target_name = CONVERT('모아모아구름콘서트' USING utf8mb4) COLLATE utf8mb4_unicode_ci;
 
+-- 0.1) 필요시 HALL 추가
+# INSERT INTO hall (created_at, updated_at, hall_name, hall_state, hall_type) VALUES (NOW(), NOW(), '블루스퀘어 SOL트래블홀', 'AVAILABLE', 'SMALL');
+# INSERT INTO hall (created_at, updated_at, hall_name, hall_state, hall_type) VALUES (NOW(), NOW(), '컨벤션센터 제1전시장', 'AVAILABLE', 'MEDIUM');
+# INSERT INTO hall (created_at, updated_at, hall_name, hall_state, hall_type) VALUES (NOW(), NOW(), '스카이돔', 'AVAILABLE', 'LARGE');
+
 -- 1) 멤버 2명
 INSERT INTO `member`
 (`member_nickname`, `member_state`, `is_seller`, `member_email`, `created_at`, `updated_at`)
@@ -24,7 +29,7 @@ SET @seller_id := (
 
 SET @hall_id := (
     SELECT `hall_id` FROM `hall`
-    WHERE `hall_name` = '블루스퀘어 SOL트래블홀'
+    WHERE `hall_type` = 'SMALL'
     LIMIT 1
 );
 

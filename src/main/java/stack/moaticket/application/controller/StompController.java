@@ -26,7 +26,7 @@ public class StompController {
             @DestinationVariable String playbackId) {
         Long memberId = (Long) sessionAttributes.get("memberId");
         if (memberId == null) {
-            log.error("세션에서 userNickname 또는 memberId를 찾을 수 없습니다. playbackId: {}", playbackId);
+            log.error("세션에서 memberId를 찾을 수 없습니다. playbackId: {}", playbackId);
             return;
         }
 

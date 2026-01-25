@@ -1,15 +1,20 @@
 package stack.moaticket.application.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ChattingDto {
-    private String message;
-    private String senderNickname;
+public abstract class ChattingDto {
+
+    @Getter
+    @Builder
+    public static class Response {
+        private String message;
+        private String senderNickname;
+    }
+
+    @Getter
+    public static class Request {
+        private String message;
+        private String senderNickname;
+    }
+
 }

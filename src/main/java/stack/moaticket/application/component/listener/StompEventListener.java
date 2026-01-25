@@ -28,14 +28,7 @@ public class StompEventListener {
     @EventListener
     public void disconnectHandle(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-
-        Map<String, Object> attrs = accessor.getSessionAttributes();
-        String roomId = (String) attrs.get("roomId");
         registry.unregisterBySession(accessor.getSessionId());
-
-        log.info("roomId : " + roomId);
-        log.info("disconnect session Id : " + accessor.getSessionId());
-        log.info("total sessions : " + registry.roomSize(roomId));
     }
 
 }

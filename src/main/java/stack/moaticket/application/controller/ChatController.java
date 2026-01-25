@@ -2,43 +2,33 @@ package stack.moaticket.application.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.converter.SimpleMessageConverter;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import stack.moaticket.application.dto.ChattingDto;
 import stack.moaticket.application.service.ChattingService;
-import stack.moaticket.domain.member.entity.Member;
 
-import java.util.Map;
+import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 public class ChatController {
 
-    private final SimpMessageSendingOperations messagingTemplate;
-    private final ChattingService chattingService;
+    private final ChattingService chatService;
+
+    @GetMapping("/chat/history/{playbackId}")
+    public ResponseEntity<?> getChatHistory(@PathVariable String playbackId,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "20") int size) {
+        log.warn("================================================");
+        List<ChattingDto.Response> chatHistory = chatService.getChatHistory(playbackId, page, size);
 
 
-    @MessageMapping("/send/{playbackId}")
-    public void sendMessage(
-            @Header("simpSessionAttributes") Map<String, Object> sessionAttributes,
-            ChattingDto request,
-            @DestinationVariable String playbackId) {
-        String userNickname = (String) sessionAttributes.get("userNickname");
-        Long memberId = (Long) sessionAttributes.get("memberId");
-        if (userNickname == null || memberId == null) {
-            log.error("세션에서 userNickname을 찾을 수 없습니다. roomId: {}", playbackId);
-            return;
-        }
-
-        chattingService.saveAndSend(request.getMessage(), memberId, playbackId);
-
+        return ResponseEntity.ok(chatHistory);
     }
+
 }

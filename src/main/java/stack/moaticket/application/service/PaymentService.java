@@ -10,21 +10,17 @@ import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.payment.entity.Payment;
 import stack.moaticket.domain.payment.repository.PaymentRepository;
-import stack.moaticket.domain.payment.repository.PaymentRepositoryQueryDsl;
 import stack.moaticket.domain.payment.type.PaymentState;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
-import stack.moaticket.domain.ticket.type.TicketState;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.toss.facade.TossPaymentsFacade;
 import stack.moaticket.system.util.TokenGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,14 +29,8 @@ public class PaymentService {
     private final Validator validator;
 
     private final MemberService memberService;
-
     private final PaymentRepository paymentRepository;
-    private final PaymentRepositoryQueryDsl paymentRepositoryQueryDsl;
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
-    private final TossPaymentsFacade tossPaymentsFacade;
-    private final PaymentFinalizeService paymentFinalizeService;
-    private final PaymentConfirmValidatorService validatorService;
-
 
     @Transactional
     public PaymentDto.PrepareResponse prepare(Long memberId, PaymentDto.PrepareRequest request) {

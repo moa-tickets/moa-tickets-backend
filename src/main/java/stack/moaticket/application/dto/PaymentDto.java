@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 public abstract class PaymentDto {
 
     @Getter
+    @Builder
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class PrepareRequest {
         private String holdToken;
     }

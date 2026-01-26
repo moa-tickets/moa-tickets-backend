@@ -33,8 +33,6 @@ public class PaymentFinalizeService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new MoaException(MoaExceptionType.PAYMENT_NOT_FOUND));
 
-        // 기존 finalizeSoldAndPersist 내용을 여기로 옮기거나,
-        // PaymentService의 private 메서드를 public으로 바꿔서 주입받아 호출하는 방식은 비추천.
         finalizeSoldAndPersist(payment, paymentKey, memberId, now);
     }
 
@@ -44,7 +42,7 @@ public class PaymentFinalizeService {
         // holdToken으로 티켓 락
         List<Ticket> tickets = ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate(holdToken);
         if (tickets.isEmpty()) {
-            markReadyWithFailReason(payment, "holdToken으로 티켓이 안 잡힘");
+            markFailedWithFailReason(payment, "holdToken으로 티켓이 안 잡힘");
             throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
@@ -53,19 +51,19 @@ public class PaymentFinalizeService {
                 t.getMember() != null && t.getMember().getId().equals(memberId)
         );
         if (!owner) {
-            markReadyWithFailReason(payment, "토큰 소유주가 다름");
+            markFailedWithFailReason(payment, "토큰 소유주가 다름");
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
 
         boolean expired = tickets.stream().anyMatch(t -> t.getExpiresAt() == null || !t.getExpiresAt().isAfter(now));
         if (expired) {
-            markReadyWithFailReason(payment, "토큰 만료");
+            markFailedWithFailReason(payment, "토큰 만료");
             throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
         boolean allHold = tickets.stream().allMatch(t -> t.getState() == TicketState.HOLD);
         if (!allHold) {
-            markReadyWithFailReason(payment, "HOLD 상태 아님");
+            markFailedWithFailReason(payment, "HOLD 상태 아님");
             throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
         }
 
@@ -119,7 +117,7 @@ public class PaymentFinalizeService {
         paymentRepository.save(payment);
     }
 
-    private void markReadyWithFailReason(Payment payment, String reason) {
+    private void markFailedWithFailReason(Payment payment, String reason) {
         payment.setState(PaymentState.FAILED);
         payment.setFailReason(reason);
         paymentRepository.save(payment);

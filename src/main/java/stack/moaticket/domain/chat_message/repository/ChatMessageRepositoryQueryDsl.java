@@ -20,7 +20,7 @@ public class ChatMessageRepositoryQueryDsl {
                 .selectFrom(chatMessage)
                 .where(chatMessage.chatroomId.eq(playbackId),
                         chatMessage.id.lt(lastSeenId))
-                .orderBy(chatMessage.timestamp.desc())
+                .orderBy(chatMessage.id.desc())
                 .limit(size)
                 .fetch();
         return chatMessages;
@@ -29,7 +29,7 @@ public class ChatMessageRepositoryQueryDsl {
         List<ChatMessage> chatMessages =  jpaQueryFactory
                 .selectFrom(chatMessage)
                 .where(chatMessage.chatroomId.eq(playbackId))
-                .orderBy(chatMessage.timestamp.desc())
+                .orderBy(chatMessage.id.desc())
                 .limit(size)
                 .fetch();
         return chatMessages;

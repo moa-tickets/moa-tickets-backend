@@ -1,7 +1,6 @@
 package stack.moaticket.system.alarm.sse.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.core.component.AlarmMessageFactory;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;

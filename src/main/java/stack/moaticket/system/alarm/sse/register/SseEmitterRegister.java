@@ -1,16 +1,13 @@
 package stack.moaticket.system.alarm.sse.register;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.util.KeyGeneratorUtil;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 @Slf4j

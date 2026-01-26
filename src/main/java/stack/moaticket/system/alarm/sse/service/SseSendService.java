@@ -1,11 +1,7 @@
 package stack.moaticket.system.alarm.sse.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import stack.moaticket.system.alarm.core.component.AlarmMessageFactory;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
 import stack.moaticket.system.alarm.core.service.AlarmSendService;

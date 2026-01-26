@@ -19,7 +19,7 @@ public class SseHeartbeatScheduler {
         this.sseHeartbeatInformJob = sseHeartbeatInformJob;
     }
 
-    private static final int RATE = 35;
+    private static final int RATE = 25;
 
     @PostConstruct
     public void start() {

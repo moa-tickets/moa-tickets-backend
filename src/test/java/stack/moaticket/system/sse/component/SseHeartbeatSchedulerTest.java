@@ -24,7 +24,7 @@ public class SseHeartbeatSchedulerTest {
     @InjectMocks SseHeartbeatScheduler sseHeartbeatScheduler;
 
     @Test
-    @DisplayName("START는 30초 FixedRate로 job.run()을 스케줄링한다.")
+    @DisplayName("START는 25초 FixedRate로 job.run()을 스케줄링한다.")
     void startSchedulesAtFixedRate() {
         // given
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);

@@ -8,6 +8,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.RestController;
 import stack.moaticket.application.dto.ChattingDto;
 import stack.moaticket.application.service.ChattingService;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.Map;
 
@@ -27,7 +29,7 @@ public class StompController {
         Long memberId = (Long) sessionAttributes.get("memberId");
         if (memberId == null) {
             log.error("세션에서 memberId를 찾을 수 없습니다. playbackId: {}", playbackId);
-            return;
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
         }
 
         chattingService.saveAndSend(request.getMessage(), memberId, playbackId);

@@ -70,7 +70,7 @@ public class StompRoomRegistry {
         String roomId = sessionRoomMap.remove(sessionId);
         Long memberId = sessionMemberMap.remove(sessionId);
 
-        if (roomId == null || memberId == null) throw new MoaException(MoaExceptionType.NOT_FOUND);
+        if (roomId == null || memberId == null) return;
 
         roomMemberSessionMap.computeIfPresent(roomId, (rId, userSessionMap) -> {
 

@@ -37,7 +37,7 @@ public class SseHeartbeatSchedulerTest {
         then(scheduler).should(times(1))
                 .scheduleAtFixedRate(runnableCaptor.capture(), durationCaptor.capture());
 
-        assertThat(durationCaptor.getValue()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(durationCaptor.getValue()).isEqualTo(Duration.ofSeconds(25));
 
         runnableCaptor.getValue().run();
         then(job).should(times(1)).run();

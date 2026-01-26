@@ -1,49 +1,52 @@
 package stack.moaticket.system.alarm.sse.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import stack.moaticket.system.alarm.core.component.AlarmMessageFactory;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
 import stack.moaticket.system.alarm.core.service.AlarmSendService;
+import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
-@ConditionalOnProperty(
-        value = "alarm.sender",
-        havingValue = "sse",
-        matchIfMissing = true
-)
-@Service
 @RequiredArgsConstructor
 public class SseSendService implements AlarmSendService {
     private final SseEmitterRegister sseEmitterRegister;
 
     @Override
     public void send(Long memberId, AlarmTarget target, AlarmMessage message) {
-        sendToMember(memberId, target.connectionId(), message.key(), message.payload(), false);
+        String connectionId = target.connectionId();
+        EmitterMeta meta = sseEmitterRegister.get(memberId, connectionId);
+        sendToMember(memberId, connectionId, meta, message.key(), message.payload(), false);
     }
 
     @Override
     public void sendOrThrow(Long memberId, AlarmTarget target, AlarmMessage message) {
-        sendToMember(memberId, target.connectionId(), message.key(), message.payload(), true);
+        String connectionId = target.connectionId();
+        EmitterMeta meta = sseEmitterRegister.get(memberId, connectionId);
+        sendToMember(memberId, connectionId, meta, message.key(), message.payload(), true);
     }
 
     @Override
     public void sendAll(Long memberId, AlarmMessage message) {
-        Map<String, SseEmitter> emitterMap = sseEmitterRegister.getSseEmitters(memberId);
-        for(Map.Entry<String, SseEmitter> emitter : emitterMap.entrySet()) {
-            sendToMember(memberId, emitter.getKey(), message.key(), message.payload(), false);
+        Map<String, EmitterMeta> emitterMap = sseEmitterRegister.getSseEmitters(memberId);
+        for(Map.Entry<String, EmitterMeta> entry : emitterMap.entrySet()) {
+            sendToMember(memberId, entry.getKey(), entry.getValue(), message.key(), message.payload(), false);
         }
     }
 
-    private <T> void sendToMember(Long memberId, String connectionId, String type, T payload, boolean rethrow) {
-        SseEmitter emitter = sseEmitterRegister.get(memberId, connectionId);
+    private <T> void sendToMember(Long memberId, String connectionId, EmitterMeta meta, String type, T payload, boolean rethrow) {
+        if(meta == null) return;
+        SseEmitter emitter = meta.getEmitter();
         try {
             if(emitter == null) return;
 
@@ -51,6 +54,7 @@ public class SseSendService implements AlarmSendService {
                     .event()
                     .name(type)
                     .data(payload));
+            meta.updateLastSentAt(LocalDateTime.now());
         } catch (IOException | IllegalStateException e) {
             cleanup(memberId, connectionId, emitter, e);
             if(rethrow) {

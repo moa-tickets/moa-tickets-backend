@@ -8,7 +8,6 @@ import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
 
-@Service
 @RequiredArgsConstructor
 public class SseSubscribeService {
     private final SseEmitterRegister sseEmitterRegister;

@@ -4,17 +4,22 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.BDDAssertions.thenCode;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,9 +37,10 @@ public class SseEmitterRegisterTest {
         String cid = sseEmitterRegister.insert(mid, emitter);
 
         // then
-        Map<String, SseEmitter> list = sseEmitterRegister.getSseEmitters(mid);
-        assertThat(list).isNotNull();
-        assertThat(list).contains(entry(cid, emitter));
+        Map<String, EmitterMeta> map = sseEmitterRegister.getSseEmitters(mid);
+        assertThat(map).isNotNull();
+        assertThat(map.containsKey(cid));
+        assertThat(map.get(cid).getEmitter()).isSameAs(emitter);
     }
 
     @Test
@@ -49,12 +55,16 @@ public class SseEmitterRegisterTest {
         String cid2 = sseEmitterRegister.insert(2L, e2);
 
         // then
-        assertThat(sseEmitterRegister.getSseEmitters(1L))
-                .contains(entry(cid1, e1))
-                .doesNotContain(entry(cid2, e2));
-        assertThat(sseEmitterRegister.getSseEmitters(2L))
-                .contains(entry(cid2, e2))
-                    .doesNotContain(entry(cid1, e1));
+        Map<String, EmitterMeta> m1 = sseEmitterRegister.getSseEmitters(1L);
+        Map<String, EmitterMeta> m2 = sseEmitterRegister.getSseEmitters(2L);
+
+        assertThat(m1).containsKey(cid1);
+        assertThat(m1.get(cid1).getEmitter()).isSameAs(e1);
+        assertThat(m1).doesNotContainKey(cid2);
+
+        assertThat(m2).containsKey(cid2);
+        assertThat(m2.get(cid2).getEmitter()).isSameAs(e2);
+        assertThat(m2).doesNotContainKey(cid1);
     }
 
     @Test
@@ -66,8 +76,8 @@ public class SseEmitterRegisterTest {
         String cid = sseEmitterRegister.insert(mid, emitter);
 
         // when
-        SseEmitter missingConnection = sseEmitterRegister.get(mid, "fake");
-        SseEmitter missingMember = sseEmitterRegister.get(999L, cid);
+        EmitterMeta missingConnection = sseEmitterRegister.get(mid, "fake");
+        EmitterMeta missingMember = sseEmitterRegister.get(999L, cid);
 
         // then
         then(missingConnection).isNull();
@@ -75,7 +85,7 @@ public class SseEmitterRegisterTest {
     }
 
     @Test
-    @DisplayName("Emitter List는 Snapshot으로 받아서 내부에 직접적으로 영향을 줘선 안된다.")
+    @DisplayName("Emitter Map은 Snapshot으로 받아서 내부에 직접적으로 영향을 줘선 안된다.")
     void makeSnapshotNotToEffectOnOriginalList() {
         // given
         Long mid = 1L;
@@ -83,12 +93,86 @@ public class SseEmitterRegisterTest {
         String cid = sseEmitterRegister.insert(mid, emitter);
 
         // when
-        Map<String, SseEmitter> snapshot = sseEmitterRegister.getSseEmitters(mid);
+        Map<String, EmitterMeta> snapshot = sseEmitterRegister.getSseEmitters(mid);
         snapshot.clear();
 
         // then
-        Map<String, SseEmitter> after = sseEmitterRegister.getSseEmitters(mid);
-        assertThat(after).contains(entry(cid, emitter));
+        Map<String, EmitterMeta> after = sseEmitterRegister.getSseEmitters(mid);
+        assertThat(after).containsKey(cid);
+        assertThat(after.get(cid).getEmitter()).isSameAs(emitter);
+    }
+
+    @Test
+    @DisplayName("GET_FILTERED 호출 시 EmitterMap이 비어있으면 emptyMap을 반환한다.")
+    void getFilteredWhenEmptyReturnEmptyMap() {
+        // when
+        Map<Long, Map<String, EmitterMeta>> result = sseEmitterRegister.getFiltered(meta -> true);
+
+        // then
+        assertThat(result).isEmpty();
+        assertThat(result).isSameAs(Collections.emptyMap());
+    }
+
+    @Test
+    @DisplayName("GET_FILTERED 호출 시 Predicate를 만족하는 meta만 불러온다.")
+    void gitFilteredFilteringWorks() {
+        // given
+        Long m1 = 1L;
+        Long m2 = 2L;
+
+        SseEmitter e1 = mock(SseEmitter.class);
+        SseEmitter e2 = mock(SseEmitter.class);
+        SseEmitter e3 = mock(SseEmitter.class);
+
+        String cid1 = sseEmitterRegister.insert(m1, e1);
+        String cid2 = sseEmitterRegister.insert(m1, e2);
+        String cid3 = sseEmitterRegister.insert(m2, e3);
+
+        EmitterMeta meta1 = sseEmitterRegister.get(m1, cid1);
+        EmitterMeta meta2 = sseEmitterRegister.get(m1, cid2);
+        EmitterMeta meta3 = sseEmitterRegister.get(m2, cid3);
+
+        AtomicLong last1 = (AtomicLong) ReflectionTestUtils.getField(meta1, "lastSentAtMillis");
+        AtomicLong last2 = (AtomicLong) ReflectionTestUtils.getField(meta2, "lastSentAtMillis");
+        AtomicLong last3 = (AtomicLong) ReflectionTestUtils.getField(meta3, "lastSentAtMillis");
+
+        long now = System.currentTimeMillis();
+        last1.set(now - 60_000);
+        last2.set(now);
+        last3.set(now - 60_000);
+
+        LocalDateTime current = LocalDateTime.now();
+
+        Predicate<EmitterMeta> predicate = meta ->
+                meta.tryMarkHeartbeat(current);
+
+        // when
+        Map<Long, Map<String, EmitterMeta>> result = sseEmitterRegister.getFiltered(predicate);
+
+        // then
+        assertThat(result).containsKeys(m1, m2);
+        assertThat(result.get(m1)).containsKey(cid1);
+        assertThat(result.get(m1)).doesNotContainKey(cid2);
+        assertThat(result.get(m2)).containsKey(cid3);
+    }
+
+    @Test
+    @DisplayName("GET_FILTERED는 원본이 아닌 스냅샷을 반환한다.")
+    void getFilteredWillReturnSnapshot() {
+        // given
+        Long mid = 1L;
+        SseEmitter e1 = mock(SseEmitter.class);
+        String cid = sseEmitterRegister.insert(mid, e1);
+
+        // when
+        Map<Long, Map<String, EmitterMeta>> snapshot1 = sseEmitterRegister.getFiltered(meta -> true);
+
+        // then
+        snapshot1.get(mid).remove(cid);
+
+        Map<Long, Map<String, EmitterMeta>> snapshot2 = sseEmitterRegister.getFiltered(meta -> true);
+
+        assertThat(snapshot2.get(mid)).containsKey(cid);
     }
 
     @Test
@@ -106,10 +190,12 @@ public class SseEmitterRegisterTest {
         sseEmitterRegister.remove(mid, cid1);
 
         // then
-        then(sseEmitterRegister.getSseEmitters(mid))
-                .contains(entry(cid2, e2))
-                .doesNotContain(entry(cid1, e1));
-        then(sseEmitterRegister.get(mid, cid1)).isNull();
+        Map<String, EmitterMeta> after = sseEmitterRegister.getSseEmitters(mid);
+        assertThat(after).doesNotContainKey(cid1);
+        assertThat(after).containsKey(cid2);
+        assertThat(after.get(cid2).getEmitter()).isSameAs(e2);
+
+        assertThat(sseEmitterRegister.get(mid, cid1)).isNull();
     }
 
     @Test
@@ -121,8 +207,12 @@ public class SseEmitterRegisterTest {
         String cid = sseEmitterRegister.insert(mid, emitter);
 
         // when & then
-        thenCode(() -> sseEmitterRegister.remove(mid, "fake")).doesNotThrowAnyException();
-        then(sseEmitterRegister.getSseEmitters(mid)).contains(entry(cid, emitter));
+        assertThatCode(() -> sseEmitterRegister.remove(mid, "fake"))
+                .doesNotThrowAnyException();
+
+        Map<String, EmitterMeta> after = sseEmitterRegister.getSseEmitters(mid);
+        assertThat(after).containsKey(cid);
+        assertThat(after.get(cid).getEmitter()).isSameAs(emitter);
     }
 
     @Test

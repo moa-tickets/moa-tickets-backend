@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
+import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
@@ -40,16 +41,18 @@ public class SseSendServiceTest {
         given(message.payload()).willReturn("payload");
 
         SseEmitter emitter = mock(SseEmitter.class);
-        given(sseEmitterRegister.get(mid, cid)).willReturn(emitter);
+        EmitterMeta meta = new EmitterMeta(emitter);
+
+        given(sseEmitterRegister.get(mid, cid)).willReturn(meta);
 
         // when
         sseSendService.send(mid, target, message);
 
         // then
-        verify(sseEmitterRegister).get(mid, cid);
-        verify(emitter, times(1)).send(any(SseEmitter.SseEventBuilder.class));
-        verify(sseEmitterRegister, never()).remove(anyLong(), anyString());
-        verify(emitter, never()).completeWithError(any());
+        then(sseEmitterRegister).should().get(mid, cid);
+        then(emitter).should(times(1)).send(any(SseEmitter.SseEventBuilder.class));
+        then(sseEmitterRegister).should(never()).remove(anyLong(), anyString());
+        then(emitter).should(never()).completeWithError(any());
     }
 
     @Test
@@ -65,21 +68,22 @@ public class SseSendServiceTest {
         given(message.payload()).willReturn("payload");
 
         SseEmitter emitter = mock(SseEmitter.class);
-        IOException cause = new IOException("boom");
+        EmitterMeta meta = new EmitterMeta(emitter);
 
-        given(sseEmitterRegister.get(mid, cid)).willReturn(emitter);
-        doThrow(cause).when(emitter).send(any(SseEmitter.SseEventBuilder.class));
+        IOException cause = new IOException("boom");
+        willThrow(cause).given(emitter).send(any(SseEmitter.SseEventBuilder.class));
+        given(sseEmitterRegister.get(mid, cid)).willReturn(meta);
 
         // when
         sseSendService.send(mid, target, message);
 
         // then
-        verify(sseEmitterRegister).remove(mid, cid);
-        verify(emitter).completeWithError(cause);
+        then(sseEmitterRegister).should().remove(mid, cid);
+        then(emitter).should().completeWithError(cause);
     }
 
     @Test
-    @DisplayName("단일 대상으로 전송을 실패하고, 예외가 발생한다.")
+    @DisplayName("단일 대상으로 전송을 실패하면 예외를 전파한다.")
     void sendFailAndThrowException() throws Exception {
         // given
         Long mid = 1L;
@@ -91,8 +95,9 @@ public class SseSendServiceTest {
         given(message.payload()).willReturn("payload");
 
         SseEmitter emitter = mock(SseEmitter.class);
+        EmitterMeta meta = new EmitterMeta(emitter);
 
-        given(sseEmitterRegister.get(mid, cid)).willReturn(emitter);
+        given(sseEmitterRegister.get(mid, cid)).willReturn(meta);
         doThrow(new IllegalStateException("closed"))
                 .when(emitter).send(any(SseEmitter.SseEventBuilder.class));
 
@@ -102,8 +107,8 @@ public class SseSendServiceTest {
                 .extracting(e -> ((MoaException) e).getType())
                 .isEqualTo(MoaExceptionType.SSE_ERROR);
 
-        verify(sseEmitterRegister).remove(mid, cid);
-        verify(emitter).completeWithError(any(IllegalStateException.class));
+        then(sseEmitterRegister).should().remove(mid, cid);
+        then(emitter).should().completeWithError(any(IllegalStateException.class));
     }
 
     @Test
@@ -119,8 +124,8 @@ public class SseSendServiceTest {
         sseSendService.sendAll(mid, message);
 
         // then
-        verify(sseEmitterRegister).getSseEmitters(mid);
-        verifyNoMoreInteractions(sseEmitterRegister);
+        then(sseEmitterRegister).should().getSseEmitters(mid);
+        then(sseEmitterRegister).shouldHaveNoMoreInteractions();
     }
 
     @Test
@@ -139,25 +144,25 @@ public class SseSendServiceTest {
         SseEmitter fail = mock(SseEmitter.class);
         SseEmitter succeed = mock(SseEmitter.class);
 
-        doThrow(new IOException("fail"))
-                .when(fail).send(any(SseEmitter.SseEventBuilder.class));
-        given(sseEmitterRegister.getSseEmitters(mid))
-                .willReturn(Map.of(failCid, fail, succeedCid, succeed));
-        given(sseEmitterRegister.get(mid, failCid)).willReturn(fail);
-        given(sseEmitterRegister.get(mid, succeedCid)).willReturn(succeed);
+        EmitterMeta failMeta = new EmitterMeta(fail);
+        EmitterMeta succeedMeta = new EmitterMeta(succeed);
 
+        willThrow(new IOException("fail"))
+                .given(fail).send(any(SseEmitter.SseEventBuilder.class));
+        given(sseEmitterRegister.getSseEmitters(mid))
+                .willReturn(Map.of(failCid, failMeta, succeedCid, succeedMeta));
 
         // when
         sseSendService.sendAll(mid, message);
 
         // then
-        verify(fail).send(any(SseEmitter.SseEventBuilder.class));
-        verify(succeed).send(any(SseEmitter.SseEventBuilder.class));
+        then(fail).should().send(any(SseEmitter.SseEventBuilder.class));
+        then(succeed).should().send(any(SseEmitter.SseEventBuilder.class));
 
-        verify(sseEmitterRegister).remove(mid, failCid);
-        verify(fail).completeWithError(any(IOException.class));
+        then(sseEmitterRegister).should().remove(mid, failCid);
+        then(fail).should().completeWithError(any(IOException.class));
 
-        verify(sseEmitterRegister, never()).remove(mid, succeedCid);
-        verify(succeed, never()).completeWithError(any());
+        then(sseEmitterRegister).should(never()).remove(mid, succeedCid);
+        then(succeed).should(never()).completeWithError(any());
     }
 }

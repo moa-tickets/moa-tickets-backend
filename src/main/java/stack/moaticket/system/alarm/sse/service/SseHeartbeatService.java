@@ -7,7 +7,6 @@ import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
-import stack.moaticket.system.exception.MoaException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -29,11 +28,7 @@ public class SseHeartbeatService {
         receiver.forEach((mid, inner) -> {
             inner.forEach((cid, meta) -> {
                 AlarmTarget target = new AlarmTarget(cid);
-                try {
-                    asyncSseSendService.sendOrThrow(mid, target, message);
-                } catch (MoaException e) {
-                    log.info("Heartbeat send is failed - id: {}, connId: {}", mid, cid);
-                }
+                asyncSseSendService.sendOrThrow(mid, target, message);
             });
         });
     }

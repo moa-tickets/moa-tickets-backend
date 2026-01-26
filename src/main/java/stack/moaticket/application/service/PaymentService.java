@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.PaymentDto;
+import stack.moaticket.application.model.ConfirmContext;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
@@ -30,7 +31,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PaymentService {
     private final Validator validator;
 
@@ -41,6 +41,7 @@ public class PaymentService {
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
     private final TossPaymentsFacade tossPaymentsFacade;
     private final PaymentFinalizeService paymentFinalizeService;
+    private final PaymentConfirmValidatorService validatorService;
 
 
     @Transactional
@@ -86,33 +87,6 @@ public class PaymentService {
                 .build();
     }
 
-    public PaymentDto.ConfirmResponse confirm(Long memberId, PaymentDto.ConfirmRequest request) {
-        // 1) TX1 : 검증 + payment 락 조회
-        ConfirmContext ctx = validateAndLockPayment(memberId, request);
-
-        // 2) TX 밖 : Toss API 호출
-        TossConfirmResponse tossResponse = tossPaymentsFacade.confirm(ctx.paymentKey(), ctx.orderId(), ctx.amount());
-
-        if(tossResponse == null || tossResponse.getPaymentKey() == null || tossResponse.getPaymentKey().isBlank()) {
-            throw new MoaException(MoaExceptionType.INTERNAL_SERVER_ERROR);
-        }
-
-        // 3) TX2 (REQUIRES_NEW) : 확정 finalize
-        paymentFinalizeService.finalizeAfterTossPaid(ctx.paymentId(), tossResponse.getPaymentKey(), memberId, LocalDateTime.now());
-
-        // 4) 결과 조회 (payment를 다시 조회해서 최신 상태로)
-        Payment paid = paymentRepositoryQueryDsl.findByOrderId(ctx.orderId());
-        return PaymentDto.ConfirmResponse.builder()
-                .paymentId(paid.getId())
-                .orderId(paid.getOrderId())
-                .paymentState(paid.getState())
-                .paidAt(paid.getPaidAt())
-                .amount(paid.getAmount())
-                .orderName(paid.getOrderName())
-                .build();
-
-    }
-
     // holdToken 기반으로 hold 목록을 가져오고, 결제 가능한 상태인지 검증한다.
     // - 만료된 hold가 섞이면 토큰 단위로 정리(delete) 후 실패
     // - 소유자(member) 검증
@@ -151,50 +125,50 @@ public class PaymentService {
     }
 
     // TX1: 입력/멤버/Payment 락 검증 메서드
-    @Transactional
-    protected ConfirmContext validateAndLockPayment(Long memberId, PaymentDto.ConfirmRequest request) {
-        // member 검증은 반드시 실행되게!
-        Member member = validator.of(memberService.findById(memberId))
-                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
-                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
-                .get();
+//    @Transactional
+//    protected ConfirmContext validateAndLockPayment(Long memberId, PaymentDto.ConfirmRequest request) {
+//        // member 검증은 반드시 실행되게!
+//        Member member = validator.of(memberService.findById(memberId))
+//                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+//                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+//                .get();
+//
+//        if (request == null
+//                || request.getOrderId() == null || request.getOrderId().isBlank()
+//                || request.getPaymentKey() == null || request.getPaymentKey().isBlank()) {
+//            throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
+//        }
+//
+//        String orderId = request.getOrderId();
+//        String paymentKey = request.getPaymentKey();
+//        long reqAmount = request.getAmount();
+//
+//        if (reqAmount <= 0) {
+//            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+//        }
+//
+//        Payment payment = validator.of(paymentRepositoryQueryDsl.findByOrderIdForUpdate(orderId))
+//                .validateOrThrow(Objects::isNull, MoaExceptionType.PAYMENT_NOT_FOUND)
+//                .validateOrThrow(p -> !p.getMember().getId().equals(memberId), MoaExceptionType.FORBIDDEN)
+//                .validateOrThrow(p -> p.getState() != PaymentState.READY, MoaExceptionType.PAYMENT_STATE_INVALID)
+//                .validateOrThrow(p -> p.getAmount() != reqAmount, MoaExceptionType.INVALID_PAYMENT_AMOUNT)
+//                .get();
+//
+//        // 멱등: 이미 PAID면 여기서 바로 응답 컨텍스트 반환하거나, 바로 응답해도 됨
+//        if (payment.getState() == PaymentState.PAID) {
+//            return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount);
+//        }
+//
+//        return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount);
+//    }
 
-        if (request == null
-                || request.getOrderId() == null || request.getOrderId().isBlank()
-                || request.getPaymentKey() == null || request.getPaymentKey().isBlank()) {
-            throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
-        }
-
-        String orderId = request.getOrderId();
-        String paymentKey = request.getPaymentKey();
-        long reqAmount = request.getAmount();
-
-        if (reqAmount <= 0) {
-            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
-        }
-
-        Payment payment = validator.of(paymentRepositoryQueryDsl.findByOrderIdForUpdate(orderId))
-                .validateOrThrow(Objects::isNull, MoaExceptionType.PAYMENT_NOT_FOUND)
-                .validateOrThrow(p -> !p.getMember().getId().equals(memberId), MoaExceptionType.FORBIDDEN)
-                .validateOrThrow(p -> p.getState() != PaymentState.READY, MoaExceptionType.PAYMENT_STATE_INVALID)
-                .validateOrThrow(p -> p.getAmount() != reqAmount, MoaExceptionType.INVALID_PAYMENT_AMOUNT)
-                .get();
-
-        // 멱등: 이미 PAID면 여기서 바로 응답 컨텍스트 반환하거나, 바로 응답해도 됨
-        if (payment.getState() == PaymentState.PAID) {
-            return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount);
-        }
-
-        return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount);
-    }
-
-    private record ConfirmContext(
-            Long paymentId,
-            Long memberId,
-            String orderId,
-            String paymentKey,
-            long amount
-    ) {}
+//    private record ConfirmContext(
+//            Long paymentId,
+//            Long memberId,
+//            String orderId,
+//            String paymentKey,
+//            long amount
+//    ) {}
 
 
 }

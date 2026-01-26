@@ -3,12 +3,8 @@ package stack.moaticket.application.component.listener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import stack.moaticket.application.component.registry.StompRoomRegistry;
 
@@ -26,13 +22,7 @@ public class StompEventListener {
     @EventListener
     public void disconnectHandle(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String roomId = accessor.getFirstNativeHeader("roomId");
-
         registry.unregisterBySession(accessor.getSessionId());
-
-        log.info("roomId : " + roomId);
-        log.info("disconnect session Id : " + accessor.getSessionId());
-        log.info("total sessions : " + registry.roomSize(roomId));
     }
 
 }

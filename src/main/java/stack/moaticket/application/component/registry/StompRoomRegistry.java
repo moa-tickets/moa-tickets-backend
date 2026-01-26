@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,7 +35,7 @@ public class StompRoomRegistry {
             try {
                 ws.close(status);
             } catch (Exception e) {
-                log.error("웹소켓 세션 종료중 오류 발생 . sessionId : {}, status : {}, {}", sessionId, status, e);
+                throw new MoaException(MoaExceptionType.NOT_FOUND);
             }
         }
     }
@@ -49,6 +51,11 @@ public class StompRoomRegistry {
 
         SessionInfo oldInfo = userSessionMap.put(memberId, newInfo);
 
+
+        if (oldInfo != null) {
+            sessionMemberMap.remove(oldInfo.getSessionId());
+            sessionRoomMap.remove(oldInfo.getSessionId());
+        }
         sessionRoomMap.put(sessionId, roomId);
         sessionMemberMap.put(sessionId, memberId);
 
@@ -62,7 +69,7 @@ public class StompRoomRegistry {
         String roomId = sessionRoomMap.remove(sessionId);
         Long memberId = sessionMemberMap.remove(sessionId);
 
-        if (roomId == null || memberId == null) return;
+        if (roomId == null || memberId == null) throw new MoaException(MoaExceptionType.NOT_FOUND);
 
         roomMemberSessionMap.computeIfPresent(roomId, (rId, userSessionMap) -> {
 
@@ -80,6 +87,15 @@ public class StompRoomRegistry {
         ConcurrentHashMap<Long, SessionInfo> room = roomMemberSessionMap.get(roomId);
         return room != null ? room.size() : 0;
     }
+    public int sessionRoomSize(String roomId) {
+        return sessionRoomMap.size();
+    }
+    public int sessionMemberSize(String roomId) {
+        return sessionMemberMap.size();
+    }
+    public int wsSessionSize(String sessionId) {
+        return wsSessionMap.size();
+    }
 
     /* ================= lastSeen 갱신 ================= */
 
@@ -87,10 +103,10 @@ public class StompRoomRegistry {
         String roomId = sessionRoomMap.get(sessionId);
         Long userId = sessionMemberMap.get(sessionId);
 
-        if (roomId == null || userId == null) return;
+        if (roomId == null || userId == null) throw new MoaException(MoaExceptionType.NOT_FOUND);
 
         ConcurrentHashMap<Long, SessionInfo> map = roomMemberSessionMap.get(roomId);
-        if (map == null) return;
+        if (map == null) throw new MoaException(MoaExceptionType.NOT_FOUND);
 
         SessionInfo info = map.get(userId);
         if (info != null) {

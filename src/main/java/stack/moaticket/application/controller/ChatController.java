@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import stack.moaticket.application.dto.ChattingDto;
-import stack.moaticket.application.service.ChattingService;
+import stack.moaticket.application.facade.ChattingFacade;
 
 import java.util.List;
 
@@ -17,13 +17,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
 
-    private final ChattingService chatService;
+    private final ChattingFacade chatService;
 
     @GetMapping("/chat/history/{playbackId}")
     public ResponseEntity<List<ChattingDto.Response>> getChatHistory(@PathVariable String playbackId,
-                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(required = false) Long lastSeenId,
                                             @RequestParam(defaultValue = "20") int size) {
-        List<ChattingDto.Response> chatHistory = chatService.getChatHistory(playbackId, page, size);
+        log.info("lastSeenId = {}", lastSeenId);
+        List<ChattingDto.Response> chatHistory = chatService.getChatHistory(playbackId, lastSeenId, size);
 
         return ResponseEntity.ok(chatHistory);
     }

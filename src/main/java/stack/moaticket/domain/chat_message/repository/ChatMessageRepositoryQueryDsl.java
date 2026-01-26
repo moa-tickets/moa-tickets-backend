@@ -15,12 +15,21 @@ public class ChatMessageRepositoryQueryDsl {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public List<ChatMessage> getChatHistory(String playbackId, int page, int size){
+    public List<ChatMessage> getChatHistory(String playbackId, Long lastSeenId, int size){
+        List<ChatMessage> chatMessages =  jpaQueryFactory
+                .selectFrom(chatMessage)
+                .where(chatMessage.chatroomId.eq(playbackId),
+                        chatMessage.id.lt(lastSeenId))
+                .orderBy(chatMessage.timestamp.desc())
+                .limit(size)
+                .fetch();
+        return chatMessages;
+    }
+    public List<ChatMessage> getChatHistoryFirst(String playbackId, int size){
         List<ChatMessage> chatMessages =  jpaQueryFactory
                 .selectFrom(chatMessage)
                 .where(chatMessage.chatroomId.eq(playbackId))
                 .orderBy(chatMessage.timestamp.desc())
-                .offset(page * size)
                 .limit(size)
                 .fetch();
         return chatMessages;

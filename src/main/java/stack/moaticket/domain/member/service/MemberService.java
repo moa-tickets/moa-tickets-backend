@@ -6,6 +6,8 @@ import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.repository.MemberRepository;
 import stack.moaticket.domain.member.repository.MemberRepositoryQueryDsl;
 import stack.moaticket.domain.member.type.MemberState;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,13 @@ public class MemberService {
 
     public Member findById(long memberId){
         return memberRepositoryQueryDsl.findById(memberId);
+    }
+    public Member getByIdOrThrow(long memberId) {
+        Member member = memberRepositoryQueryDsl.findById(memberId);
+        if (member == null) {
+            throw new MoaException(MoaExceptionType.MEMBER_NOT_FOUND);
+        }
+        return member;
     }
 
     public Member convertToSeller(long memberId){

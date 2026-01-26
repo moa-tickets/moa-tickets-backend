@@ -60,11 +60,7 @@ class PaymentConfirmFacadeTest {
     void confirm_alreadyPaid_returnsIdempotentResponse_withoutTossAndFinalize() {
         // given
         Long memberId = 1L;
-        PaymentDto.ConfirmRequest request = PaymentDto.ConfirmRequest.builder()
-                .orderId("order_123")
-                .paymentKey("payKey_abc")
-                .amount(10000L)
-                .build();
+        PaymentDto.ConfirmRequest request = confirmRequest();
 
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, true
@@ -105,11 +101,7 @@ class PaymentConfirmFacadeTest {
     void confirm_success_callsTossAndFinalize_andReturnsLatestPayment() {
         // given
         Long memberId = 1L;
-        PaymentDto.ConfirmRequest request = PaymentDto.ConfirmRequest.builder()
-                .orderId("order_123")
-                .paymentKey("payKey_abc")
-                .amount(10000L)
-                .build();
+        PaymentDto.ConfirmRequest request = confirmRequest();
 
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
@@ -159,11 +151,7 @@ class PaymentConfirmFacadeTest {
     void confirm_tossResponseNull_throwsInternalServerError() {
         // given
         Long memberId = 1L;
-        PaymentDto.ConfirmRequest request = PaymentDto.ConfirmRequest.builder()
-                .orderId("order_123")
-                .paymentKey("payKey_abc")
-                .amount(10000L)
-                .build();
+        PaymentDto.ConfirmRequest request = confirmRequest();
 
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
@@ -187,11 +175,7 @@ class PaymentConfirmFacadeTest {
     void confirm_tossPaymentKeyNull_throwsInternalServerError() {
         // given
         Long memberId = 1L;
-        PaymentDto.ConfirmRequest request = PaymentDto.ConfirmRequest.builder()
-                .orderId("order_123")
-                .paymentKey("payKey_abc")
-                .amount(10000L)
-                .build();
+        PaymentDto.ConfirmRequest request = confirmRequest();
 
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
@@ -217,11 +201,7 @@ class PaymentConfirmFacadeTest {
     void confirm_tossPaymentKeyBlank_throwsInternalServerError() {
         // given
         Long memberId = 1L;
-        PaymentDto.ConfirmRequest request = PaymentDto.ConfirmRequest.builder()
-                .orderId("order_123")
-                .paymentKey("payKey_abc")
-                .amount(10000L)
-                .build();
+        PaymentDto.ConfirmRequest request = confirmRequest();
 
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
@@ -247,11 +227,7 @@ class PaymentConfirmFacadeTest {
     void confirm_tossThrows_propagates_andDoesNotFinalizeOrRead() {
         // given
         Long memberId = 1L;
-        PaymentDto.ConfirmRequest request = PaymentDto.ConfirmRequest.builder()
-                .orderId("order_123")
-                .paymentKey("payKey_abc")
-                .amount(10000L)
-                .build();
+        PaymentDto.ConfirmRequest request = confirmRequest();
 
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
@@ -275,11 +251,7 @@ class PaymentConfirmFacadeTest {
     void confirm_finalizeThrows_propagates_andDoesNotRead() {
         // given
         Long memberId = 1L;
-        PaymentDto.ConfirmRequest request = PaymentDto.ConfirmRequest.builder()
-                .orderId("order_123")
-                .paymentKey("payKey_abc")
-                .amount(10000L)
-                .build();
+        PaymentDto.ConfirmRequest request = confirmRequest();
 
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
@@ -301,4 +273,14 @@ class PaymentConfirmFacadeTest {
 
         then(paymentRepositoryQueryDsl).should(never()).findByOrderId(anyString());
     }
+
+    // Helpers
+    private PaymentDto.ConfirmRequest confirmRequest() {
+        return PaymentDto.ConfirmRequest.builder()
+                .orderId("order_123")
+                .paymentKey("payKey_abc")
+                .amount(10000L)
+                .build();
+    }
+
 }

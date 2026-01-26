@@ -45,7 +45,7 @@ public class PaymentConfirmValidatorService {
         Payment payment = validator.of(paymentRepositoryQueryDsl.findByOrderIdForUpdate(orderId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.PAYMENT_NOT_FOUND)
                 .validateOrThrow(p -> !p.isOwnedBy(memberId), MoaExceptionType.FORBIDDEN)
-                .validateOrThrow(p -> !p.isConfirmable(), MoaExceptionType.PAYMENT_STATE_INVALID)
+                .validateOrThrow(p -> !(p.isConfirmable() || p.isPaid()), MoaExceptionType.PAYMENT_STATE_INVALID)
                 .validateOrThrow(p -> !p.isAmountEquals(reqAmount), MoaExceptionType.INVALID_PAYMENT_AMOUNT)
                 .get();
 

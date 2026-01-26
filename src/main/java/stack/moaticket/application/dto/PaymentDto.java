@@ -1,5 +1,6 @@
 package stack.moaticket.application.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,8 +23,11 @@ public abstract class PaymentDto {
         private String orderName;
         private long amount;
     }
+
     @Getter
+    @Builder
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class ConfirmRequest {
         private String orderId;
         private String paymentKey;

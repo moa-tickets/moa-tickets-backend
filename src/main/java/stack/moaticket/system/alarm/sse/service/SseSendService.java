@@ -44,8 +44,6 @@ public class SseSendService implements AlarmSendService {
         if(meta == null) return;
         SseEmitter emitter = meta.getEmitter();
         try {
-            if(emitter == null) return;
-
             emitter.send(SseEmitter
                     .event()
                     .name(type)

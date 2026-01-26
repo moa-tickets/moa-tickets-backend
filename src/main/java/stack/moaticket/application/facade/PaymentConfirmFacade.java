@@ -28,6 +28,19 @@ public class PaymentConfirmFacade {
         // 1) TX1 : 검증 + payment 락 조회
         ConfirmContext ctx = validatorService.validateAndLockPayment(memberId, request);
 
+        // 이미 결제된 것이 있다면 멱등하게 반환
+        if (ctx.alreadyPaid()){
+            Payment paid = paymentRepositoryQueryDsl.findByOrderId(ctx.orderId());
+            return PaymentDto.ConfirmResponse.builder()
+                    .paymentId(paid.getId())
+                    .orderId(paid.getOrderId())
+                    .paymentState(paid.getState())
+                    .paidAt(paid.getPaidAt())
+                    .amount(paid.getAmount())
+                    .orderName(paid.getOrderName())
+                    .build();
+        }
+
         // 2) TX 밖 : Toss API 호출
         TossConfirmResponse tossResponse = tossPaymentsFacade.confirm(ctx.paymentKey(), ctx.orderId(), ctx.amount());
 

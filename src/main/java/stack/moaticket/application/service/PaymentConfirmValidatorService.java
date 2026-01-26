@@ -49,6 +49,8 @@ public class PaymentConfirmValidatorService {
                 .validateOrThrow(p -> !p.isAmountEquals(reqAmount), MoaExceptionType.INVALID_PAYMENT_AMOUNT)
                 .get();
 
-        return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount);
+        boolean alreadyPaid = payment.isPaid();
+
+        return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount, alreadyPaid);
     }
 }

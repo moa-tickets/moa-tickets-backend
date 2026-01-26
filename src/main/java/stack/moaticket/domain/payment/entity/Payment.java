@@ -73,4 +73,8 @@ public class Payment extends Base {
         return this.amount == amount;
     }
 
+    public boolean isPaid() {
+        return state == PaymentState.PAID;
+    }
+
 }

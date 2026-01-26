@@ -5,5 +5,6 @@ public record ConfirmContext(
         Long memberId,
         String orderId,
         String paymentKey,
-        long amount
+        long amount,
+        boolean alreadyPaid
 ) {}

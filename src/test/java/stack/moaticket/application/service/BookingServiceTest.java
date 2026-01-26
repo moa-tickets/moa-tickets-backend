@@ -107,9 +107,7 @@ class BookingServiceTest {
         Long sessionId = null;
         List<Long> ticketIds = List.of(1L);
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         // when & then
         assertThatThrownBy(() -> bookingService.holdTickets(memberId, sessionId, ticketIds))
@@ -126,9 +124,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = null;
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         // when & then
         assertThatThrownBy(() -> bookingService.holdTickets(memberId, sessionId, ticketIds))
@@ -145,9 +141,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of();
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         // when & then
         assertThatThrownBy(() -> bookingService.holdTickets(memberId, sessionId, ticketIds))
@@ -164,9 +158,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of(1L, 2L, 3L, 4L, 5L);
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         // when & then
         assertThatThrownBy(() -> bookingService.holdTickets(memberId, sessionId, ticketIds))
@@ -183,9 +175,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of(1L, 1L);
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         // when & then
         assertThatThrownBy(() -> bookingService.holdTickets(memberId, sessionId, ticketIds))
@@ -202,9 +192,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of(1L, 2L);
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         // 아래 로직으로 내려가면 countSoldByMemberAndSession 호출됨
         given(ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId)).willReturn(0L);
@@ -228,9 +216,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of(1L, 2L); // 요청 2장
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         // 이미 3장 구매했다고 치면 3 + 2 > 4
         given(ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId))
@@ -254,9 +240,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of(2L, 1L); // 일부러 섞어서(정렬 확인에도 도움)
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         given(ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId))
                 .willReturn(0L);
@@ -283,9 +267,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of(1L, 2L);
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        givenActiveMember(memberId);
 
         given(ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId))
                 .willReturn(0L);
@@ -315,9 +297,7 @@ class BookingServiceTest {
         Long sessionId = 10L;
         List<Long> ticketIds = List.of(3L, 1L, 2L);
 
-        Member member = mock(Member.class);
-        given(member.getState()).willReturn(MemberState.ACTIVE);
-        given(memberService.findById(memberId)).willReturn(member);
+        Member member = givenActiveMember(memberId);
 
         given(ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId))
                 .willReturn(0L);
@@ -362,23 +342,10 @@ class BookingServiceTest {
         // given
         Long sessionId = 10L;
 
-        Ticket available = spy(Ticket.class);
-        Ticket hold = spy(Ticket.class);
-        Ticket sold = spy(Ticket.class);
-
-        doReturn(1L).when(available).getId();
-        doReturn(1).when(available).getNum();
-        doReturn(true).when(available).isAvailable();
-
-        doReturn(2L).when(hold).getId();
-        doReturn(2).when(hold).getNum();
-        doReturn(false).when(hold).isAvailable();
-        doReturn(true).when(hold).isHold();
-
-        doReturn(3L).when(sold).getId();
-        doReturn(3).when(sold).getNum();
-        doReturn(false).when(sold).isAvailable();
-        doReturn(false).when(sold).isHold();
+        // viewState() 실제 메서드 실행을 위해 spy로 부름. 안 쓴다면 TicketState로 넣어야함
+        Ticket available = spyTicket(1L, 1, true, false);
+        Ticket hold = spyTicket(2L, 2, false, true);
+        Ticket sold = spyTicket(3L, 3, false, false);
 
         given(ticketRepositoryQueryDsl.getTicketsBySession(sessionId))
                 .willReturn(List.of(available, hold, sold));
@@ -390,9 +357,9 @@ class BookingServiceTest {
         // then
         assertThat(result).hasSize(3);
 
-        assertThat(result.get(0).getTicketId()).isEqualTo(1L);
-        assertThat(result.get(0).getSeatNum()).isEqualTo(1);
-        assertThat(result.get(0).getState()).isEqualTo(TicketState.AVAILABLE.name());
+        assertThat(result.getFirst().getTicketId()).isEqualTo(1L);
+        assertThat(result.getFirst().getSeatNum()).isEqualTo(1);
+        assertThat(result.getFirst().getState()).isEqualTo(TicketState.AVAILABLE.name());
 
         assertThat(result.get(1).getTicketId()).isEqualTo(2L);
         assertThat(result.get(1).getSeatNum()).isEqualTo(2);
@@ -404,5 +371,35 @@ class BookingServiceTest {
 
     }
 
+
+    // Helpers
+
+    // Active Member
+    private Member givenActiveMember(Long memberId) {
+        Member member = mock(Member.class);
+        given(member.getState()).willReturn(MemberState.ACTIVE);
+        given(memberService.findById(memberId)).willReturn(member);
+        return member;
+    }
+
+    // Ticket spy 생성 + 상태 설정
+    private Ticket spyTicket(long id, int seatNum, boolean available, boolean hold) {
+        // viewState() 실제 메서드 실행을 위해 spy로 부름. 안 쓴다면 TicketState로 넣어야함
+        Ticket t = spy(Ticket.class);
+
+        // STRICT 모드에서 stub하고 안 쓴 stubbling은 에러 -> given을 쓰면 실제 메서드를 호출하려고 시도함 -> UnnecessaryStubbingException
+        // doReturn은 메서드 호출 없이 바로 stub
+        // spy - doReturn()
+        doReturn(id).when(t).getId();
+        doReturn(seatNum).when(t).getNum();
+        doReturn(available).when(t).isAvailable();
+
+        // viewState() 분기 때문에 available=true면 isHold는 불필요 stub이 될 수 있음
+        if (!available) {
+            doReturn(hold).when(t).isHold();
+        }
+
+        return t;
+    }
 
 }

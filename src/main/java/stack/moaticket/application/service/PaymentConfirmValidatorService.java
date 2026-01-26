@@ -10,7 +10,6 @@ import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.payment.entity.Payment;
 import stack.moaticket.domain.payment.repository.PaymentRepositoryQueryDsl;
-import stack.moaticket.domain.payment.type.PaymentState;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
@@ -45,9 +44,9 @@ public class PaymentConfirmValidatorService {
 
         Payment payment = validator.of(paymentRepositoryQueryDsl.findByOrderIdForUpdate(orderId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.PAYMENT_NOT_FOUND)
-                .validateOrThrow(p -> !p.getMember().getId().equals(memberId), MoaExceptionType.FORBIDDEN)
-                .validateOrThrow(p -> p.getState() != PaymentState.READY, MoaExceptionType.PAYMENT_STATE_INVALID)
-                .validateOrThrow(p -> p.getAmount() != reqAmount, MoaExceptionType.INVALID_PAYMENT_AMOUNT)
+                .validateOrThrow(p -> !p.isOwnedBy(memberId), MoaExceptionType.FORBIDDEN)
+                .validateOrThrow(p -> !p.isConfirmable(), MoaExceptionType.PAYMENT_STATE_INVALID)
+                .validateOrThrow(p -> !p.isAmountEquals(reqAmount), MoaExceptionType.INVALID_PAYMENT_AMOUNT)
                 .get();
 
         return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount);

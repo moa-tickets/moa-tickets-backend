@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.PaymentDto;
-import stack.moaticket.application.model.ConfirmContext;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
@@ -19,7 +18,6 @@ import stack.moaticket.domain.ticket.type.TicketState;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.toss.dto.TossConfirmResponse;
 import stack.moaticket.system.toss.facade.TossPaymentsFacade;
 import stack.moaticket.system.util.TokenGenerator;
 
@@ -66,7 +64,7 @@ public class PaymentService {
 
         // Toss 결제창에 넘길 값 생성
         String orderId = TokenGenerator.generateOrderId();
-        String orderName = tickets.get(0).getSession().getConcert().getName() + " " + tickets.size() + "매";
+        String orderName = tickets.getFirst().getSession().getConcert().getName() + " " + tickets.size() + "매";
 
         // Payment(READY) 생성/저장
         Payment payment = Payment.builder()
@@ -102,24 +100,22 @@ public class PaymentService {
         }
 
         // 소유자 검증 + 상태 검증 + 만료 검증
-        boolean owner = tickets.stream().allMatch(t ->
-                t.getMember() != null && t.getMember().getId().equals(member.getId())
-        );
-        if (!owner) throw new MoaException(MoaExceptionType.FORBIDDEN);
+        boolean owner = tickets.stream().allMatch(t -> t.isOwnedBy(member.getId()));
+        if (!owner) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
 
-        boolean allHold = tickets.stream().allMatch(t -> t.getState() == TicketState.HOLD);
-        if (!allHold) throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
-
-        //TODO: 캡슐화 필요
-        boolean expired = tickets.stream().anyMatch(t -> t.getExpiresAt() == null || !t.getExpiresAt().isAfter(now));
-        if (expired) {
+        boolean allHold = tickets.stream().allMatch(t -> t.isHoldValidAt(now));
+        if (!allHold) {
             throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
         // 세션 단일성
         Long sessionId = tickets.getFirst().getSession().getId();
-        boolean allSameSession = tickets.stream().allMatch(t -> t.getSession().getId().equals(sessionId));
-        if (!allSameSession) throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        boolean allSameSession = tickets.stream().allMatch(t -> t.isSameSession(sessionId));
+        if (!allSameSession) {
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+        }
 
         return tickets;
     }

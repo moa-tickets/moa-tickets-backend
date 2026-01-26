@@ -84,6 +84,23 @@ public class Ticket extends Base {
         this.expiresAt = expiresAt;
     }
 
+    public boolean isExpiredAt(LocalDateTime now) {
+        return expiresAt == null || !expiresAt.isAfter(now);
+    }
+
+    public boolean isHoldValidAt(LocalDateTime now) {
+        return isHold() && !isExpiredAt(now);
+    }
+
+    public boolean isOwnedBy(Long memberId) {
+        return member != null && member.getId().equals(memberId);
+    }
+
+    public boolean isSameSession(Long sessionId) {
+        return session != null && session.getId().equals(sessionId);
+    }
+
+
     public void clearHold() {
         this.holdToken = null;
         this.expiresAt = null;

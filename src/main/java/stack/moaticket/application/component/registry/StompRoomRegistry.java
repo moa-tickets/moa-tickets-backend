@@ -35,7 +35,7 @@ public class StompRoomRegistry {
             try {
                 ws.close(status);
             } catch (Exception e) {
-                throw new MoaException(MoaExceptionType.NOT_FOUND);
+                throw new MoaException(MoaExceptionType.INTERNAL_SERVER_ERROR);
             }
         }
     }
@@ -87,13 +87,13 @@ public class StompRoomRegistry {
         ConcurrentHashMap<Long, SessionInfo> room = roomMemberSessionMap.get(roomId);
         return room != null ? room.size() : 0;
     }
-    public int sessionRoomSize(String roomId) {
+    public int sessionRoomMapSize() {
         return sessionRoomMap.size();
     }
-    public int sessionMemberSize(String roomId) {
+    public int sessionMemberMapSize() {
         return sessionMemberMap.size();
     }
-    public int wsSessionSize(String sessionId) {
+    public int wsSessionMapSize() {
         return wsSessionMap.size();
     }
 

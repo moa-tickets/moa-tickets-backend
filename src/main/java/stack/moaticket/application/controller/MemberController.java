@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,9 @@ import stack.moaticket.domain.member.service.MemberService;
 @RestController
 @RequiredArgsConstructor
 public class MemberController {
+
+    @Value("${spring.profiles.active}")
+    private String profile;
 
     private final MemberInfoService memberInfoService;
     private final MemberService memberService;
@@ -52,11 +56,26 @@ public class MemberController {
     @PostMapping("/api/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response, @AuthenticationPrincipal Long memberId){
         if (memberId != null) {
-            Cookie cookie = new Cookie("Authorization", null);
-            cookie.setMaxAge(0);
-            response.addCookie(cookie);
+            expireCookie(response);
         }
         return ResponseEntity.ok().build();
+    }
+    private void expireCookie(HttpServletResponse response) {
+        if (profile.equals("dev")) {
+            Cookie cookie = new Cookie("Authorization", null);
+            cookie.setMaxAge(0); //만료 시간을 0으로 설정
+            cookie.setPath("/");
+            cookie.setHttpOnly(false);
+            response.addCookie(cookie);
+        }
+        else {
+            Cookie cookie = new Cookie("Authorization", null);
+            cookie.setPath("/");
+            cookie.setSecure(true);
+            cookie.setDomain("moatickets.dev");
+            cookie.setMaxAge(0); //만료 시간을 0으로 설정
+            response.addCookie(cookie);
+        }
     }
 
     @Operation(

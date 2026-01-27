@@ -1,4 +1,8 @@
 spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -6,6 +10,9 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  sql:
+    init:
+      mode: never
 
 logging:
   level:
@@ -14,5 +21,3 @@ logging:
 app:
   frontend:
     url: https://moatickets.dev
-  ai:
-    url: ${AI_URL}

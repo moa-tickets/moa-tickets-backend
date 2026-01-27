@@ -1,11 +1,18 @@
 spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
         format_sql: false
+  sql:
+    init:
+      mode: never
 
 logging:
   level:
@@ -14,5 +21,3 @@ logging:
 app:
   frontend:
     url: http://localhost:5173
-  ai:
-    url: ${AI_URL}

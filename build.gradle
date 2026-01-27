@@ -70,7 +70,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-
+    runtimeOnly "com.h2database:h2"
+    testImplementation "com.squareup.okhttp3:okhttp:4.12.0"
+    testImplementation "com.squareup.okhttp3:okhttp-sse:4.12.0"
 }
 
 tasks.named('test') {

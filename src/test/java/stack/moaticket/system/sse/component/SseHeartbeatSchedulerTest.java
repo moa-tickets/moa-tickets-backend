@@ -1,6 +1,7 @@
 package stack.moaticket.system.sse.component;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,6 +17,7 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.*;
 
+@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class SseHeartbeatSchedulerTest {
     @Mock TaskScheduler scheduler;

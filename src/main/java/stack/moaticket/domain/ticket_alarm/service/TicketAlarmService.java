@@ -24,6 +24,10 @@ public class TicketAlarmService {
         ticketAlarmRepository.save(ticketAlarm);
     }
 
+    public void delete(Member member, Ticket ticket, Long ticketAlarmId) {
+        ticketAlarmRepository.delete(member, ticket, ticketAlarmId);
+    }
+
     public List<TicketAlarmDto> getDtoList(List<Long> ticketIdList, Long cursor, int limit) {
         return ticketAlarmRepository.getReceiverDtoList(ticketIdList, cursor, limit);
     }

@@ -28,6 +28,8 @@ public class MemberController {
 
     @Value("${spring.profiles.active}")
     private String profile;
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     private final MemberInfoService memberInfoService;
     private final MemberService memberService;
@@ -69,7 +71,7 @@ public class MemberController {
         }
         else {
             cookie.setSecure(true);
-            cookie.setDomain("moatickets.dev");
+            cookie.setDomain(frontendUrl);
         }
         response.addCookie(cookie);
     }

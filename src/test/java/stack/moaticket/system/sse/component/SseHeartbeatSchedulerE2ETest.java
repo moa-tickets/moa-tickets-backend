@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import settings.config.TestSecurityConfig;
-import settings.support.ReflectUtil;
+import settings.support.util.ReflectUtil;
 import stack.moaticket.system.alarm.sse.model.ConnectPayload;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;

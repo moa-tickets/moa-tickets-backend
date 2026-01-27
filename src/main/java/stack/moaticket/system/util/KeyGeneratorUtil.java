@@ -1,9 +1,9 @@
 package stack.moaticket.system.util;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import lombok.experimental.UtilityClass;
 
 import java.security.SecureRandom;
+import java.util.UUID;
 
 public class KeyGeneratorUtil {
     private KeyGeneratorUtil() {};
@@ -19,6 +19,12 @@ public class KeyGeneratorUtil {
             sb.append(CHARS[v % BASE]);
         }
         return sb.toString();
+    }
+
+    public static String genUuidV4() {
+        return UUID.randomUUID()
+                .toString()
+                .replaceAll("-", "");
     }
 
     public static String genUuidV7() {

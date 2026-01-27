@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         })
 @Import(TestSecurityConfig.class)
 @Sql(scripts = "/sql/member_01_not_seller.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class AlarmControllerIT {
+public class AlarmControllerE2ETest {
     @LocalServerPort int port;
 
     @Autowired ObjectMapper objectMapper;

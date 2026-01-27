@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -45,6 +47,16 @@ public class MemberController {
     public ResponseEntity<GetMemberDto.Response> getMember(
             @AuthenticationPrincipal Long memberId) {
         return ResponseEntity.ok(memberInfoService.getMember(memberId));
+    }
+
+    @PostMapping("/api/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response, @AuthenticationPrincipal Long memberId){
+        if (memberId != null) {
+            Cookie cookie = new Cookie("Authorization", null);
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+        }
+        return ResponseEntity.ok().build();
     }
 
     @Operation(

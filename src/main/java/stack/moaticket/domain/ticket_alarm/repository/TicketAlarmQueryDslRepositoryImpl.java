@@ -19,7 +19,7 @@ public class TicketAlarmQueryDslRepositoryImpl implements TicketAlarmQueryDslRep
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public void delete(Member member, Ticket ticket, Long ticketAlarmId) {
+    public void delete(Member member, Ticket ticket) {
         Long memberId = member.getId();
         Long ticketId = ticket.getId();
 

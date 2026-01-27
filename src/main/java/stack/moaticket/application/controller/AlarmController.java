@@ -34,7 +34,7 @@ public class AlarmController {
     public ResponseEntity<Void> unsubscribeTicket(
             @AuthenticationPrincipal Long memberId,
             @Valid @RequestBody UnsubscribeTicketDto.Request request) {
-        alarmService.unsubscribeTicketReleaseAlarm(memberId, request.getTicketId(), request.getTicketAlarmId());
+        alarmService.unsubscribeTicketReleaseAlarm(memberId, request.getTicketId());
         return ResponseEntity.noContent().build();
     }
 }

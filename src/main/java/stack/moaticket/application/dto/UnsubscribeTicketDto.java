@@ -9,7 +9,5 @@ public abstract class UnsubscribeTicketDto {
     public static class Request {
         @NotNull
         private Long ticketId;
-        @NotNull
-        private Long ticketAlarmId;
     }
 }

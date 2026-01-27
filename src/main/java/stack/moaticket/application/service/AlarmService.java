@@ -60,6 +60,20 @@ public class AlarmService {
         ticketAlarmService.createAndSave(member, ticket);
     }
 
+    @Transactional
+    public void unsubscribeTicketReleaseAlarm(Long memberId, Long ticketId) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
+
+        Ticket ticket = validator.of(ticketService.get(ticketId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.TICKET_NOT_FOUND)
+                .get();
+
+        ticketAlarmService.delete(member, ticket);
+    }
+
     public void sendConcertStartInform(List<SessionStartAlarmMetaDto> alarmMetadata) {
         for(SessionStartAlarmMetaDto alarm : alarmMetadata) {
             Long memberId = alarm.memberId();

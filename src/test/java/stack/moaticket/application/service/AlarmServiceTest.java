@@ -168,6 +168,72 @@ class AlarmServiceTest {
         then(ticketAlarmService).shouldHaveNoMoreInteractions();
     }
 
+    // Method: unsubscribeTicketReleaseAlarm()
+    @Test
+    @DisplayName("티켓 알림 등록을 해제한다.")
+    void unsubscribeTicketAlarmSuccess() {
+        // given
+        Long mid = 1L;
+        Long tid = 10L;
+
+        Member member = mock(Member.class);
+        given(memberService.findById(mid)).willReturn(member);
+        given(member.getState()).willReturn(MemberState.ACTIVE);
+
+        Ticket ticket = mock(Ticket.class);
+        given(ticketService.get(tid)).willReturn(ticket);
+
+        // when
+        alarmService.unsubscribeTicketReleaseAlarm(mid, tid);
+
+        // then
+        then(memberService).should().findById(mid);
+        then(ticketService).should().get(tid);
+        then(ticketAlarmService).should().delete(member, ticket);
+
+        then(memberService).shouldHaveNoMoreInteractions();
+        then(ticketService).shouldHaveNoMoreInteractions();
+        then(ticketAlarmService).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("유효하지 않은 회원이면 MEMBER_NOT_FOUND 예외가 발생하고 UnsubscribeTicketReleaseAlarm을 호출하지 않는다.")
+    void unsubscribeTicketAlarmFailedMemberNotFound() {
+        // given
+        Long mid = 1L;
+        Long tid = 10L;
+        given(memberService.findById(mid)).willReturn(null);
+
+        // when & then
+        BDDAssertions.thenThrownBy(() -> alarmService.unsubscribeTicketReleaseAlarm(mid, tid))
+                .isInstanceOf(MoaException.class)
+                .extracting(e -> ((MoaException) e).getType())
+                .isEqualTo(MoaExceptionType.MEMBER_NOT_FOUND);
+
+        then(ticketService).shouldHaveNoMoreInteractions();
+        then(ticketAlarmService).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("ACTIVE 상태인 회원이 아니면 UNAUTHORIZED 예외가 발생하고 UnsubscribeTicketReleaseAlarm을 호출하지 않는다.")
+    void unsubscribeTicketAlarmFailedUnauthorized() {
+        // given
+        Long mid = 1L;
+        Long tid = 10L;
+        Member member = mock(Member.class);
+        given(memberService.findById(mid)).willReturn(member);
+        given(member.getState()).willReturn(MemberState.BLOCKED);
+
+        // when & then
+        BDDAssertions.thenThrownBy(() -> alarmService.unsubscribeTicketReleaseAlarm(mid, tid))
+                .isInstanceOf(MoaException.class)
+                .extracting(e -> ((MoaException) e).getType())
+                .isEqualTo(MoaExceptionType.UNAUTHORIZED);
+
+        then(ticketService).shouldHaveNoMoreInteractions();
+        then(ticketAlarmService).shouldHaveNoMoreInteractions();
+    }
+
     // Method: sendConcertStartInform()
     @Test
     @DisplayName("콘서트 시작 알림 메타데이터를 순회하며 메시지를 생성하고, 각 사용자에게 전달한다.")

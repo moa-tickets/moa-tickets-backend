@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import stack.moaticket.application.dto.BoardDto;
+import stack.moaticket.domain.base.Base;
+import stack.moaticket.domain.member.entity.Member;
 
 @Getter
 @Setter
@@ -15,11 +17,15 @@ import stack.moaticket.application.dto.BoardDto;
 @Entity
 @SuperBuilder
 @Table(name = "board")
-public class Board {
+public class Board extends Base{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "board_id")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member memberId;
 
     @Column
     private String title;

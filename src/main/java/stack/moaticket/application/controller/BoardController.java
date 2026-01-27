@@ -1,6 +1,7 @@
 package stack.moaticket.application.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.BoardDto;
 import stack.moaticket.application.service.BoardService;
@@ -14,9 +15,11 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    @PostMapping("/create")
-    public void createBoard(@RequestBody BoardDto.Request request) {
-        boardService.create(request);
+    @PostMapping("/board")
+    public void createBoard(
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody BoardDto.Request request) {
+        boardService.create(memberId, request);
     }
 
     //전체 조회
@@ -34,12 +37,12 @@ public class BoardController {
     }
 
     @PatchMapping("/board/patch")
-    public void fix(@RequestBody BoardDto.BoardFixRequest boardFixRequest) {
-        boardService.fix(boardFixRequest);
+    public void fix(@AuthenticationPrincipal Long memberId, @RequestBody BoardDto.BoardFixRequest boardFixRequest) {
+        boardService.fix(memberId, boardFixRequest);
     }
 
     @DeleteMapping("/board/delete/{id}")
-    public void delete(@PathVariable Long id) {
-        boardService.delete(id);
+    public void delete(@AuthenticationPrincipal Long memberId, @PathVariable Long id) {
+        boardService.delete(memberId, id);
     }
 }

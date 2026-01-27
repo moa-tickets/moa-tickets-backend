@@ -8,11 +8,6 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class BoardDto {
-
-    private String title;
-    private String content;
-    private String nickName;
-
     // Create
     //title, content
     @Getter

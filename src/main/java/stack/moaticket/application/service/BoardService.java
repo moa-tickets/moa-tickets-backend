@@ -9,15 +9,15 @@ import java.util.List;
 @Service
 public interface BoardService {
 
-    void create(BoardDto.Request request);
+    void create(Long memberId, BoardDto.Request request);
 
     BoardDto.BoardResponse read(Long id);
 
     List<BoardDto.BoardResponse> reads();
 
-    void fix(BoardDto.BoardFixRequest boardFixRequest);
+    void fix(Long memberId, BoardDto.BoardFixRequest boardFixRequest);
 
-    void delete(Long id);
+    void delete(Long memberId, Long id);
 
     default Board requestToEntity(BoardDto.Request request) {
         return Board.builder()

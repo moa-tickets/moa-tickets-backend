@@ -33,6 +33,16 @@ public class AlarmMessageFactoryTest {
     }
 
     @Test
+    @DisplayName("Heartbeat 메시지는 HEARTBEAT key에 ping payload로 고정 생성된다.")
+    void sessionHeartbeatKey() {
+        // when
+        AlarmMessage message = AlarmMessageFactory.heartbeat();
+
+        // then
+        assertThat(message).isEqualTo(new AlarmMessage("HEARTBEAT", "ping"));
+    }
+
+    @Test
     @DisplayName("세션 시작 알림 타입이 LEFT_10이면 key는 SS_LEFT_10이다.")
     void sessionStartLeft10Key() {
         // given

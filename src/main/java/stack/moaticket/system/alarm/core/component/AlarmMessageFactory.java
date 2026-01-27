@@ -15,6 +15,10 @@ public class AlarmMessageFactory {
         return new AlarmMessage("CONNECT", "connected");
     }
 
+    public static AlarmMessage heartbeat() {
+        return new AlarmMessage("HEARTBEAT", "ping");
+    }
+
     public AlarmMessage sessionStart(SessionStartAlarmMetaDto alarm) {
         String key = switch (alarm.type()) {
             case LEFT_10 -> "SS_LEFT_10";

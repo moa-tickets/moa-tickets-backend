@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.type.MemberState;
+import stack.moaticket.domain.session_start_alarm.type.SessionStartAlarmType;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.system.alarm.core.component.AlarmMessageFactory;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -177,25 +179,20 @@ class AlarmServiceTest {
         given(a1.memberId()).willReturn(1L);
         given(a2.memberId()).willReturn(2L);
 
-        AlarmMessage m1 = new AlarmMessage("SS_LEFT_10", a1);
-        AlarmMessage m2 = new AlarmMessage("SS_ON_HOUR", a2);
-
-        given(alarmMessageFactory.sessionStart(a1)).willReturn(m1);
-        given(alarmMessageFactory.sessionStart(a2)).willReturn(m2);
+        given(a1.type()).willReturn(SessionStartAlarmType.LEFT_10);
+        given(a2.type()).willReturn(SessionStartAlarmType.ON_HOUR);
 
         // when
         alarmService.sendConcertStartInform(List.of(a1, a2));
 
         // then
-        InOrder inOrder = inOrder(alarmMessageFactory, alarmSendService);
+        InOrder inOrder = inOrder(alarmSendService);
 
-        inOrder.verify(alarmMessageFactory).sessionStart(a1);
-        inOrder.verify(alarmSendService).sendAll(1L, m1);
+        inOrder.verify(alarmSendService).sendAll(eq(1L), argThat(msg ->
+                "SS_LEFT_10".equals(msg.key()) && msg.payload() == a1));
+        inOrder.verify(alarmSendService).sendAll(eq(2L), argThat(msg ->
+                "SS_ON_HOUR".equals(msg.key()) && msg.payload() == a2));
 
-        inOrder.verify(alarmMessageFactory).sessionStart(a2);
-        inOrder.verify(alarmSendService).sendAll(2L, m2);
-
-        then(alarmMessageFactory).shouldHaveNoMoreInteractions();
         then(alarmSendService).shouldHaveNoMoreInteractions();
     }
 
@@ -235,28 +232,34 @@ class AlarmServiceTest {
         ticketMetadata.put(t2, meta2);
         ticketMetadata.put(t3, meta3);
 
-        AlarmMessage msg1 = mock(AlarmMessage.class);
-        AlarmMessage msg2 = mock(AlarmMessage.class);
-
-        given(alarmMessageFactory.ticketRelease(anyList())).willReturn(msg1, msg2);
-
         // when
         alarmService.sendTicketReleaseInform(receiverMap, ticketMetadata);
 
         // then
-        ArgumentCaptor<List<TicketMetaDto>> captor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<AlarmMessage> captor = ArgumentCaptor.forClass(AlarmMessage.class);
+        InOrder inOrder = inOrder(alarmSendService);
 
-        then(alarmMessageFactory).should(times(2)).ticketRelease(captor.capture());
-        then(alarmSendService).should().sendAll(m1, msg1);
-        then(alarmSendService).should().sendAll(m2, msg2);
+        inOrder.verify(alarmSendService).sendAll(eq(m1), captor.capture());
+        inOrder.verify(alarmSendService).sendAll(eq(m2), captor.capture());
 
-        List<List<TicketMetaDto>> capturedLists = captor.getAllValues();
+        List<AlarmMessage> messages = captor.getAllValues();
+        assertThat(messages).hasSize(2);
 
-        BDDAssertions.then(capturedLists)
-                .anySatisfy(list -> BDDAssertions.then(list).containsExactly(meta1, meta2))
-                .anySatisfy(list -> BDDAssertions.then(list).containsExactly(meta3));
+        then(alarmSendService).should().sendAll(eq(m1), argThat(msg ->
+                "TR_BULK".equals(msg.key())
+                && msg.payload() instanceof List<?> list
+                && list.size() == 2
+                && list.contains(meta1)
+                && list.contains(meta2)
+        ));
 
-        then(alarmMessageFactory).shouldHaveNoMoreInteractions();
+        then(alarmSendService).should().sendAll(eq(m2), argThat(msg ->
+                "TR_SINGLE".equals(msg.key())
+                        && msg.payload() instanceof List<?> list
+                        && list.size() == 1
+                        && list.contains(meta3)
+        ));
+
         then(alarmSendService).shouldHaveNoMoreInteractions();
     }
 

@@ -61,21 +61,17 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
     private void expireCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("Authorization", null);
+        cookie.setMaxAge(0); //만료 시간을 0으로 설정
+        cookie.setPath("/");
         if (profile.equals("dev")) {
-            Cookie cookie = new Cookie("Authorization", null);
-            cookie.setMaxAge(0); //만료 시간을 0으로 설정
-            cookie.setPath("/");
             cookie.setHttpOnly(false);
-            response.addCookie(cookie);
         }
         else {
-            Cookie cookie = new Cookie("Authorization", null);
-            cookie.setPath("/");
             cookie.setSecure(true);
             cookie.setDomain("moatickets.dev");
-            cookie.setMaxAge(0); //만료 시간을 0으로 설정
-            response.addCookie(cookie);
         }
+        response.addCookie(cookie);
     }
 
     @Operation(

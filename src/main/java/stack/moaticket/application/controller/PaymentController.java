@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.PaymentDto;
+import stack.moaticket.application.facade.PaymentConfirmFacade;
 import stack.moaticket.application.service.PaymentService;
 
 @Tag(name = "Payment API", description = "상품 결제 도메인 API")
@@ -21,6 +22,7 @@ import stack.moaticket.application.service.PaymentService;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final PaymentConfirmFacade paymentConfirmFacade;
 
     // 결제 준비 (holdToken 검증 -> amount/orderName/orderId 생성 -> Payment(READY) 저장)
     @Operation(
@@ -126,7 +128,7 @@ public class PaymentController {
             @RequestBody PaymentDto.ConfirmRequest request
     ) {
         return ResponseEntity.ok(
-                paymentService.confirm(memberId, request)
+                paymentConfirmFacade.confirm(memberId, request)
         );
     }
 }

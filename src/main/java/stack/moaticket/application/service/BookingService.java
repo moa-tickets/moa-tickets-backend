@@ -9,7 +9,6 @@ import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
-import stack.moaticket.domain.ticket.type.TicketState;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
@@ -27,8 +26,7 @@ public class BookingService {
     private final Validator validator;
 
     private final MemberService memberService;
-    private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
-
+    private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl; //TODO: querydsl 수정했으니 확인해주세요
 
     private static final int HOLD_MINUTES = 10;
     private static final int MAX_TICKETS_PER_HOLD = 4;
@@ -36,6 +34,7 @@ public class BookingService {
     // 좌석 임시 점유 (AVAILABLE -> HOLD)
     @Transactional
     public HoldResult holdTickets(Long memberId, Long sessionId, List<Long> ticketIds) {
+        // Member에 락을 걸어 동일 사용자 동시 처리 방지하는 방법도 있는데 쓰면 DB 성능에 영향이 있을지 체크하기
         Member member = validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
@@ -48,13 +47,9 @@ public class BookingService {
 
         // 구매 장수 제한(SOLD 기준)
         long alreadyBought = ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId);
-        if(alreadyBought + sortedIds.size() > 4) {
+        if(alreadyBought + sortedIds.size() > MAX_TICKETS_PER_HOLD) {
             throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
         }
-
-        // 자동 교체: 같은 멤버+세션 기존 hold 즉시 해제
-        // TODO 실제로 남은 시간 vs 같은 멤버가 재접속했을 때 해제하는 정책적 시간 중 min인쪽으로 변경? (아직 반영X)
-        ticketRepositoryQueryDsl.releaseActiveHoldsByMemberAndSession(memberId, sessionId, now);
 
         // 비관적 락으로 티켓들 조회
         List<Ticket> tickets = ticketRepositoryQueryDsl.findTicketsForUpdate(sortedIds, sessionId);
@@ -64,16 +59,8 @@ public class BookingService {
             throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
         }
 
-        // 락 잡힌 상태에서 만료 HOLD만 해제
-        // TODO 스케줄러로 정리하게 되는 부분?
-        for (Ticket t : tickets) {
-            if (t.getState() == TicketState.HOLD && t.isHoldExpired(now)) {
-                t.clearHold();
-            }
-        }
-
         // 모두 AVAILABLE 상태인지 검증
-        boolean allAvailable = tickets.stream().allMatch(t -> t.getState() == TicketState.AVAILABLE);
+        boolean allAvailable = tickets.stream().allMatch(Ticket::isAvailable);
         if(!allAvailable) {
             throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
         }
@@ -82,39 +69,21 @@ public class BookingService {
         String holdToken = TokenGenerator.generateHoldToken();
         LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
-        // 엔티티에 hold 정보 세팅
+        // 엔티티에 hold 정보 세팅 (영속성 컨텍스트(메모리)만 변경)
         for (Ticket t : tickets) {
-            t.setState(TicketState.HOLD);
-            t.setHoldToken(holdToken);
-            t.setExpiresAt(expiresAt);
-            t.setMember(member);
+            t.holdBy(member, holdToken, expiresAt);
         }
-        // 트랜잭션 커밋 시점에 flush -> UPDATE
+        // 트랜잭션 커밋 시점에 JPA flush -> UPDATE (영속성 컨텍스트 → DB 버퍼 풀)
 
         return new HoldResult(holdToken, expiresAt);
     }
 
-
-    // 좌석 점유 해제
-    @Transactional
-    public void releaseHold(Long memberId, String holdToken) {
-        validator.of(memberService.findById(memberId))
-                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
-                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED);
-        if (holdToken == null || holdToken.isBlank()) {
-            return;
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-
-        ticketRepositoryQueryDsl.releaseHoldByTokenAndMember(holdToken, memberId, now);
-    }
-
     // 회차별 좌석 목록 조회
-    // hold 판단은 ticket_hold(expires_at > now) 존재 여부로 처리
-    // sold는 ticket_state 기준
+    // hold 판단은 ticket_state 기준 (hold -> release 스케줄러가 처리), sold는 ticket_state 기준
     public List<BookingDto.TicketResponse> getTicketsBySession(Long sessionId) {
-        LocalDateTime now = LocalDateTime.now();
+        if(sessionId == null){
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED, "회차 ID가 전달되지 않았습니다.");
+        }
 
         List<Ticket> tickets = ticketRepositoryQueryDsl.getTicketsBySession(sessionId);
 
@@ -122,32 +91,21 @@ public class BookingService {
                 .map(t -> BookingDto.TicketResponse.builder()
                         .ticketId(t.getId())
                         .seatNum(t.getNum())
-                        .state(resolveStateForView(t, now))
+                        .state(t.viewState().name())
                         .build())
                 .toList();
     }
 
-    private String resolveStateForView(Ticket ticket, LocalDateTime now) {
-        if (ticket.getState() == TicketState.SOLD) {
-            return TicketState.SOLD.name();
-        }
-
-        if(ticket.getState() == TicketState.HOLD){
-            return ticket.isHoldExpired(now) ? TicketState.AVAILABLE.name() : TicketState.HOLD.name();
-        }
-        return TicketState.AVAILABLE.name();
-    }
-
-
+    //TODO: private으로 한 이유는 뭔가요? 테스트를 안하시나요?
     private void validateHoldRequest(Long sessionId, List<Long> ticketIds) {
         if (sessionId == null) {
-            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED, "같은 회차 ID가 전달되지 않았습니다.");
         }
         if (ticketIds == null || ticketIds.isEmpty()) {
-            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED, "티켓 ID가 전달되지 않았습니다.");
         }
         if (ticketIds.size() > MAX_TICKETS_PER_HOLD) {
-            throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
+            throw new MoaException(MoaExceptionType.VALIDATION_FAILED, "한 회차에 최대 4개의 티켓만 예약할 수 있습니다.");
         }
         if (new HashSet<>(ticketIds).size() != ticketIds.size()) {
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED, "중복된 티켓 ID가 포함되어 있습니다.");

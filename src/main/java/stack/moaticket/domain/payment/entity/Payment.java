@@ -60,4 +60,21 @@ public class Payment extends Base {
 
     @Column(name= "fail_reason", nullable = true, length = 300)
     private String failReason;
+
+    public boolean isOwnedBy(Long memberId) {
+        return member != null && member.getId() != null && member.getId().equals(memberId);
+    }
+
+    public boolean isConfirmable() {
+        return state == PaymentState.READY;
+    }
+
+    public boolean isAmountEquals(long amount) {
+        return this.amount == amount;
+    }
+
+    public boolean isPaid() {
+        return state == PaymentState.PAID;
+    }
+
 }

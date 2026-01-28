@@ -35,6 +35,10 @@ management:
         include: prometheus
 
 app:
+  server:
+    scheduler:
+      session_start: true
+      ticket_release: true
   ai:
     url: ${AI_URL}
 

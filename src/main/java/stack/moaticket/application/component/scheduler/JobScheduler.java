@@ -17,30 +17,38 @@ public class JobScheduler {
     private final ConcertStartInformJob concertStartInformJob;
     private final TicketReleaseInformJob ticketReleaseInformJob;
 
+    private final JobSchedulerProperties properties;
+
     public JobScheduler(
             @Qualifier("sessionStartScheduler") TaskScheduler sessionStartScheduler,
             @Qualifier("ticketReleaseScheduler") TaskScheduler ticketReleaseScheduler,
             ConcertStartInformJob concertStartInformJob,
-            TicketReleaseInformJob ticketReleaseInformJob
+            TicketReleaseInformJob ticketReleaseInformJob,
+            JobSchedulerProperties properties
     ) {
         this.sessionStartScheduler = sessionStartScheduler;
         this.ticketReleaseScheduler = ticketReleaseScheduler;
         this.concertStartInformJob = concertStartInformJob;
         this.ticketReleaseInformJob = ticketReleaseInformJob;
+        this.properties = properties;
     }
 
     private static final int DELAY = 2;
 
     @PostConstruct
     public void start() {
-        sessionStartScheduler.scheduleWithFixedDelay(
-                concertStartInformJob::runEpoch,
-                Duration.ofSeconds(DELAY)
-        );
+        if(properties.sessionStart()) {
+            sessionStartScheduler.scheduleWithFixedDelay(
+                    concertStartInformJob::runEpoch,
+                    Duration.ofSeconds(DELAY)
+            );
+        }
 
-        ticketReleaseScheduler.scheduleWithFixedDelay(
-                ticketReleaseInformJob::runEpoch,
-                Duration.ofSeconds(DELAY)
-        );
+        if(properties.ticketRelease()) {
+            ticketReleaseScheduler.scheduleWithFixedDelay(
+                    ticketReleaseInformJob::runEpoch,
+                    Duration.ofSeconds(DELAY)
+            );
+        }
     }
 }

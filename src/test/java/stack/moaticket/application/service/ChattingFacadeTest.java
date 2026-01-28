@@ -113,14 +113,15 @@ class ChattingFacadeTest {
 
     @DisplayName("member == null일시 전송 실패")
     @Test
-    void test(){
+    void memberNullTest(){
         Long memberId = 999L;
         when(memberService.getByIdOrThrow(memberId))
                 .thenThrow(new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
 
         assertThatThrownBy(() ->
                 chattingFacade.saveAndSend("hi", memberId, "roomA", LocalDateTime.now())
-        ).isInstanceOf(MoaException.class);
+        ).isInstanceOf(MoaException.class)
+                .hasMessage("올바른 사용자를 찾을 수 없습니다");
 
         verify(chatMessageService, never()).saveMessage(any(), any(), any(), any());
         verify(messagingTemplate, never()).convertAndSend(anyString(), Optional.ofNullable(any()));

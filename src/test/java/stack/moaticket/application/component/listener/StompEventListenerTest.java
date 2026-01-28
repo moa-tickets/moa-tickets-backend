@@ -25,9 +25,9 @@ class StompEventListenerTest {
     @InjectMocks
     StompEventListener stompEventListener;
 
-    @DisplayName("")
+    @DisplayName("세션 연결 종료 시 registry에서 세션이 제거되는지 확인")
     @Test
-    void test(){
+    void disconnectHandle_unregistersSession(){
         //given
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.DISCONNECT);
         accessor.setSessionId("sessionId");

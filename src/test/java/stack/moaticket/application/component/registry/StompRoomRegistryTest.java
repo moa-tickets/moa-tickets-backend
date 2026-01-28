@@ -45,7 +45,7 @@ class StompRoomRegistryTest {
          String oldSession = stompRoomRegistry.register(1L, "sessionId2", "roomId");
          //then
          assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(1);
-         assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(1);
+         assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(1);
          assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(1);
          assertThat(oldSession).isEqualTo("sessionId1");
      }

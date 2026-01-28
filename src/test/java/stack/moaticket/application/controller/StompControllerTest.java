@@ -51,9 +51,6 @@ class StompControllerTest {
         Map<String,Object> map = new HashMap<>();
         ChattingDto.Request request = new ChattingDto.Request();
         String playbackId = "playbackId";
-        Long memberId = null;
-        LocalDateTime now = LocalDateTime.now();
-        String subscribedRoom = "subcribedRoom";
         //when
         assertThatThrownBy(() -> stompController.sendMessage(map, request, playbackId))
                 .isInstanceOf(MoaException.class)

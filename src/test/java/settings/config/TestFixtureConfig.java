@@ -7,8 +7,11 @@ import settings.support.fixture.*;
 import stack.moaticket.domain.concert.repository.ConcertRepository;
 import stack.moaticket.domain.hall.repository.HallRepository;
 import stack.moaticket.domain.member.repository.MemberRepository;
+import stack.moaticket.domain.payment.repository.PaymentRepository;
+import stack.moaticket.domain.payment_ticket.repository.PaymentTicketRepository;
 import stack.moaticket.domain.session.repository.SessionRepository;
 import stack.moaticket.domain.session_start_alarm.repository.SessionStartAlarmRepository;
+import stack.moaticket.domain.ticket.repository.TicketRepository;
 
 @Profile("test")
 @TestConfiguration
@@ -37,5 +40,20 @@ public class TestFixtureConfig {
     @Bean
     public SessionStartAlarmFixture sessionStartAlarmFixture(SessionStartAlarmRepository sessionStartAlarmRepository) {
         return new SessionStartAlarmFixture(sessionStartAlarmRepository);
+    }
+
+    @Bean
+    public TicketFixture ticketFixture(TicketRepository ticketRepository) {
+        return new TicketFixture(ticketRepository);
+    }
+
+    @Bean
+    public PaymentFixture paymentFixture(PaymentRepository paymentRepository) {
+        return new PaymentFixture(paymentRepository);
+    }
+
+    @Bean
+    public PaymentTicketFixture paymentTicketFixture(PaymentTicketRepository paymentTicketRepository) {
+        return new PaymentTicketFixture(paymentTicketRepository);
     }
 }

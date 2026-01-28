@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okio.BufferedSource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -12,9 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
+import settings.config.TestFixtureConfig;
 import settings.config.TestSecurityConfig;
 import settings.model.SseEvent;
+import settings.support.fixture.MemberFixture;
+import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.alarm.sse.model.ConnectPayload;
 import tools.jackson.databind.ObjectMapper;
 
@@ -30,10 +33,12 @@ import static org.assertj.core.api.Assertions.assertThat;
         properties = {
                 "alarm.sender=sse"
         })
-@Import(TestSecurityConfig.class)
-@Sql(scripts = "/sql/member_01_not_seller.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Import({TestSecurityConfig.class, TestFixtureConfig.class})
 public class AlarmControllerE2ETest {
     @LocalServerPort int port;
+
+    // Fixture
+    @Autowired MemberFixture memberFixture;
 
     @Autowired ObjectMapper objectMapper;
 
@@ -43,16 +48,24 @@ public class AlarmControllerE2ETest {
             .callTimeout(0, TimeUnit.MILLISECONDS)
             .build();
 
+    @AfterEach
+    void clear() {
+        memberFixture.clear();
+    }
+
     @Test
     @DisplayName("연결에 성공하면 CONNECT 이벤트 메시지를 받는다.")
     void subscribeThenReceivesConnectEvent() throws Exception {
         // given
+        Member member = memberFixture.create();
+        Long memberId = member.getId();
+
         String url = "http://localhost:" + port + "/api/alarm/sub";
 
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Accept", "text/event-stream")
-                .addHeader("X-TEST-PASS-ID", "1")
+                .addHeader("X-TEST-PASS-ID", String.valueOf(memberId))
                 .build();
 
         // when

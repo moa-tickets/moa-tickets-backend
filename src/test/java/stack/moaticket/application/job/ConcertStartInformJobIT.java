@@ -1,5 +1,6 @@
 package stack.moaticket.application.job;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,15 @@ public class  ConcertStartInformJobIT {
     @Autowired SessionStartAlarmFixture sessionStartAlarmFixture;
 
     @MockitoSpyBean AlarmService alarmService;
+
+    @AfterEach
+    void clear() {
+        sessionStartAlarmFixture.clear();
+        sessionFixture.clear();
+        concertFixture.clear();
+        hallFixture.clear();
+        memberFixture.clear();
+    }
 
     @Test
     @DisplayName("임계 시간이 지나지 않은 PENDING 알림이 후보로 추출되면 PROCESSED로 상태가 변경되고, 알림 발송을 시도한다.")

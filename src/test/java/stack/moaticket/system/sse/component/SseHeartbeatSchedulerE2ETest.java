@@ -8,6 +8,7 @@ import okhttp3.sse.EventSourceListener;
 import okhttp3.sse.EventSources;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
+import settings.config.TestFixtureConfig;
 import settings.config.TestSecurityConfig;
+import settings.support.fixture.MemberFixture;
 import settings.support.util.ReflectUtil;
+import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.system.alarm.sse.model.ConnectPayload;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
@@ -38,10 +41,12 @@ import static org.assertj.core.api.Assertions.assertThat;
         properties = {
                 "alarm.sender=sse"
         })
-@Import(TestSecurityConfig.class)
-@Sql(scripts = "/sql/member_01_not_seller.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Import({TestSecurityConfig.class, TestFixtureConfig.class})
 public class SseHeartbeatSchedulerE2ETest {
     @LocalServerPort int port;
+
+    // Fixture
+    @Autowired MemberFixture memberFixture;
 
     @Autowired ObjectMapper objectMapper;
     @Autowired SseEmitterRegister sseEmitterRegister;
@@ -53,16 +58,24 @@ public class SseHeartbeatSchedulerE2ETest {
             .callTimeout(0, TimeUnit.MILLISECONDS)
             .build();
 
+    @AfterEach
+    void clear() {
+        memberFixture.clear();
+    }
+
     @Test
     @DisplayName("SSE를 구독하면 클라이언트에서 Heartbeat 이벤트를 받는다.")
     void subscribeThenManualHeartbeatThenReceivesEvent() throws Exception {
         // given
+        Member member = memberFixture.create();
+        Long memberId = member.getId();
+
         String url = "http://localhost:" + port + "/api/alarm/sub";
 
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Accept", "text/event-stream")
-                .addHeader("X-TEST-PASS-ID", "1")
+                .addHeader("X-TEST-PASS-ID", String.valueOf(memberId))
                 .build();
 
         CountDownLatch opened = new CountDownLatch(1);
@@ -103,7 +116,7 @@ public class SseHeartbeatSchedulerE2ETest {
             String cid = cidRef.get();
             assertThat(cid).isNotBlank();
 
-            EmitterMeta meta = sseEmitterRegister.get(1L, cid);
+            EmitterMeta meta = sseEmitterRegister.get(memberId, cid);
             ReflectUtil.setAtomicLong(meta, "lastSentAtMillis", System.currentTimeMillis() - 60_000);
 
             assertThat(meta).isNotNull();

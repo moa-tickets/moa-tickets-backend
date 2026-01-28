@@ -41,7 +41,8 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardDto.BoardResponse read(Long id) {
         Board boardEntity = boardRepository.findById(id).orElseThrow(() ->
-                new MoaException(MoaExceptionType.ENTITY_NOT_FOUND, "해당 게시글을 찾을 수 없습니다. id=" + id));;
+                new MoaException(MoaExceptionType.ENTITY_NOT_FOUND, "해당 게시글을 찾을 수 없습니다. id=" + id));
+        ;
         return entityToResponse(boardEntity);
     }
 
@@ -57,24 +58,30 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void fix(Long memerId, BoardDto.BoardFixRequest boardFixRequest) {
+    public void fix(Long memerId, BoardDto.BoardFixRequest boardFixRequest, Long boardId) {
         Member member = validator.of(memberService.findById(memerId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
 
-        Board boardEntity = boardRepository.findById(boardFixRequest.boardId()).get();
+        Board boardEntity = boardRepository.findById(boardId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
+                        "해당 게시글을 찾을 수 없습니다. id=" + boardId));
         boardEntity.fix(boardFixRequest);
         //가독성을 위해 save을 한 번더 작성
         boardRepository.save(boardEntity);
     }
 
     @Override
-    public void delete(Long memberId, Long id) {
+    public void delete(Long memberId, Long boardId) {
         Member member = validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
+
+        Board boardEntity = boardRepository.findById(boardId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
+                        "해당 게시글을 찾을 수 없습니다. id=" + boardId));
         boardRepository.deleteById(memberId);
     }
 }

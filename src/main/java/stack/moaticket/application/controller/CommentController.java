@@ -21,16 +21,17 @@ public class CommentController {
 
     }
 
-    @PatchMapping("/comment/patch")
+    @PatchMapping("/comment/{commentId}")
     public void fix(@AuthenticationPrincipal Long memberId,
-                    @RequestBody CommentDto.CommentFixRequest commentFixRequest) {
-        commentService.fix(memberId, commentFixRequest);
+                    @RequestBody CommentDto.CommentFixRequest commentFixRequest,
+                    @PathVariable Long commentId) {
+        commentService.fix(memberId, commentFixRequest, commentId);
 
     }
 
     @DeleteMapping("/comment/delete/{id}")
     public void delete(@AuthenticationPrincipal Long memberId, @PathVariable Long id) {
-
+        commentService.delete(memberId, id);
     }
 }
 

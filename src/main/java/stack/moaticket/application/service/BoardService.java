@@ -15,7 +15,7 @@ public interface BoardService {
 
     List<BoardDto.BoardResponse> reads();
 
-    void fix(Long memberId, BoardDto.BoardFixRequest boardFixRequest);
+    void fix(Long memberId, BoardDto.BoardFixRequest boardFixRequest, Long boardId);
 
     void delete(Long memberId, Long id);
 

@@ -12,8 +12,6 @@ public class BoardDto {
     //title, content
     @Getter
     public static class Request {
-        @NotNull
-        private Long boardId;
         private String title;
         private String content;
         private String nickName;
@@ -29,7 +27,7 @@ public class BoardDto {
     }
 
     public record BoardFixRequest(
-            Long boardId, String title, String content, String nickName
+            String title, String content, String nickName
     ){
     }
 }

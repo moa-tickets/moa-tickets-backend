@@ -10,6 +10,7 @@ import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.system.component.Validator;
+import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.Objects;
@@ -33,16 +34,26 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
-    public void fix(Long memberId, CommentDto.CommentFixRequest commentFixRequest) {
+    public void fix(Long memberId, CommentDto.CommentFixRequest commentFixRequest, Long commentId) {
         Member member = validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
 
-        Comment commentEntity = commentRepository.findById(commentFixRequest.commentId()).get();
+        Comment commentEntity = commentRepository.findById(commentId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
+                        "해당 게시글을 찾을 수 없습니다. id=" + commentId));
         commentEntity.fix(commentFixRequest);
         commentRepository.save(commentEntity);
 
+    }
+
+    public void delete(Long memberId, Long id) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
+        commentRepository.deleteById(memberId);
     }
 
     public Comment requestToEntity(CommentDto.Request request) {

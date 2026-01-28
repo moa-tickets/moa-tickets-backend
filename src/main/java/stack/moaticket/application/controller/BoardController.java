@@ -36,9 +36,11 @@ public class BoardController {
         return boardService.read(id);
     }
 
-    @PatchMapping("/board/patch")
-    public void fix(@AuthenticationPrincipal Long memberId, @RequestBody BoardDto.BoardFixRequest boardFixRequest) {
-        boardService.fix(memberId, boardFixRequest);
+    @PatchMapping("/board/{boardId}")
+    public void fix(@AuthenticationPrincipal Long memberId,
+                    @RequestBody BoardDto.BoardFixRequest boardFixRequest,
+                    @PathVariable Long boardId) {
+        boardService.fix(memberId, boardFixRequest, boardId);
     }
 
     @DeleteMapping("/board/delete/{id}")

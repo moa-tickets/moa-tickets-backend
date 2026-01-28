@@ -25,10 +25,8 @@ public class SessionStartAlarmFixture extends BaseFixture<SessionStartAlarm, Lon
 
     @Transactional
     public SessionStartAlarm create(Member member, Session session, LocalDateTime alarmAt, SessionStartAlarmType type) {
-        LocalDateTime now = LocalDateTime.now();
-
         return save(SessionStartAlarm.builder()
-                .alarmAt(now)
+                .alarmAt(alarmAt)
                 .state(SessionStartAlarmState.PENDING)
                 .type(type)
                 .member(member)

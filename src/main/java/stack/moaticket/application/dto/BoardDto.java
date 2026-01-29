@@ -7,14 +7,13 @@ import lombok.NoArgsConstructor;
 
 
 @NoArgsConstructor
-public class BoardDto {
+public abstract class BoardDto {
     // Create
     //title, content
     @Getter
     public static class Request {
         private String title;
         private String content;
-        private String nickName;
     }
 
     @Getter

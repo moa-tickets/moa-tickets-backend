@@ -9,19 +9,18 @@ public class CommentDto {
 
     @Getter
     public static class Request {
-        private String nickName;
         private String content;
     }
 
     @Getter
-    public static class CommentResponse {
+    public static class commentResponse {
         private Long commentId;
         private String nickName;
         private String content;
     }
 
     public record CommentFixRequest (
-            String nickName, String content
+            Long commentId, String nickName, String content
     ){
     }
 }

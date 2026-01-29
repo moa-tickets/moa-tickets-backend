@@ -23,9 +23,9 @@ public class Board extends Base{
     @Column(name = "board_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "member_id")
-    private Member memberId;
+    private Member member;
 
     @Column
     private String title;
@@ -33,12 +33,8 @@ public class Board extends Base{
     @Column
     private String content;
 
-    @Column
-    private String nickName;
-
     public void fix(BoardDto.BoardFixRequest boardFixRequest) {
         this.title = boardFixRequest.title();
         this.content = boardFixRequest.content();
-        this.nickName = boardFixRequest.nickName();
     }
 }

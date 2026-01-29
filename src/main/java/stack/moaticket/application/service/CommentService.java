@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import stack.moaticket.application.dto.CommentDto;
+import stack.moaticket.domain.board.entity.Board;
+import stack.moaticket.domain.board.repository.BoardRepository;
 import stack.moaticket.domain.comment.entity.Comment;
 import stack.moaticket.domain.comment.repository.CommentRepository;
 import stack.moaticket.domain.member.entity.Member;
@@ -23,14 +25,19 @@ public class CommentService {
     private final Validator validator;
     private final MemberService memberService;
     private final CommentRepository commentRepository;
+    private final BoardRepository boardRepository;
 
-    public void create(Long memberId, CommentDto.Request commentRequest) {
+    public void create(Long memberId, Long boardId, CommentDto.Request commentRequest) {
         Member member = validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
 
-        Comment comment = requestToEntity(commentRequest);
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
+                        "해당 게시글을 찾을 수 없습니다. id=" + boardId));
+
+        Comment comment = requestToEntity(board, commentRequest);
         commentRepository.save(comment);
     }
 
@@ -46,6 +53,7 @@ public class CommentService {
         commentEntity.fix(commentFixRequest);
         commentRepository.save(commentEntity);
 
+
     }
 
     public void delete(Long memberId, Long id) {
@@ -56,9 +64,10 @@ public class CommentService {
         commentRepository.deleteById(memberId);
     }
 
-    public Comment requestToEntity(CommentDto.Request request) {
+
+    public Comment requestToEntity(Board board, CommentDto.Request request) {
         return Comment.builder()
-                .nickName(request.getNickName())
+                .board(board)
                 .content(request.getContent())
                 .build();
     }

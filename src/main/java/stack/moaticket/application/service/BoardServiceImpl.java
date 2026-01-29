@@ -33,7 +33,7 @@ public class BoardServiceImpl implements BoardService {
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
 
-        Board board = requestToEntity(boardRequest);
+        Board board = requestToEntity(member, boardRequest);
 
         boardRepository.save(board);
     }
@@ -82,6 +82,12 @@ public class BoardServiceImpl implements BoardService {
         Board boardEntity = boardRepository.findById(boardId)
                 .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
                         "해당 게시글을 찾을 수 없습니다. id=" + boardId));
+
+        if (!boardEntity.getMember().getId().equals(memberId)) {
+            throw new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
+                    "memberId가 같지 않습니다");
+        }
         boardRepository.deleteById(memberId);
     }
+
 }

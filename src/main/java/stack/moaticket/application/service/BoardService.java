@@ -3,6 +3,7 @@ package stack.moaticket.application.service;
 import org.springframework.stereotype.Service;
 import stack.moaticket.application.dto.BoardDto;
 import stack.moaticket.domain.board.entity.Board;
+import stack.moaticket.domain.member.entity.Member;
 
 import java.util.List;
 
@@ -19,11 +20,12 @@ public interface BoardService {
 
     void delete(Long memberId, Long id);
 
-    default Board requestToEntity(BoardDto.Request request) {
+    default Board requestToEntity(Member member, BoardDto.Request request) {
+
         return Board.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .nickName(request.getNickName())
+                .member(member)
                 .build();
 
     }
@@ -34,7 +36,7 @@ public interface BoardService {
                 .boardId(board.getId())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .nickName(board.getNickName())
+                .nickName(board.getMember().getNickname())
                 .build();
     }
 

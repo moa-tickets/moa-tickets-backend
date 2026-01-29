@@ -13,11 +13,12 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/comment")
+    @PostMapping("board/{boardId}/comments")
     public void createComment(
             @AuthenticationPrincipal Long memberId,
+            @PathVariable Long boardId,
             @RequestBody CommentDto.Request request) {
-        commentService.create(memberId, request);
+        commentService.create(memberId, boardId, request);
 
     }
 

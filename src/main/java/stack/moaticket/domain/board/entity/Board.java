@@ -11,7 +11,6 @@ import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.member.entity.Member;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

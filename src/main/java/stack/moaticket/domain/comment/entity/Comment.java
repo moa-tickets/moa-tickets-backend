@@ -18,7 +18,7 @@ import stack.moaticket.domain.member.entity.Member;
 public class Comment extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private Long comment;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "commenter_id")

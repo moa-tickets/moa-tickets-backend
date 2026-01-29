@@ -13,14 +13,14 @@ public class CommentDto {
     }
 
     @Getter
-    public static class commentResponse {
+    public static class CommentResponse {
         private Long commentId;
         private String nickName;
         private String content;
     }
 
     public record CommentFixRequest (
-            Long comment, String content
+            String content
     ){
     }
 }

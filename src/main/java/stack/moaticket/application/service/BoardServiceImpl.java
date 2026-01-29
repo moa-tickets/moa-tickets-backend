@@ -41,8 +41,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardDto.BoardResponse read(Long id) {
         Board boardEntity = boardRepository.findById(id).orElseThrow(() ->
-                new MoaException(MoaExceptionType.ENTITY_NOT_FOUND, "해당 게시글을 찾을 수 없습니다. id=" + id));
-        ;
+                new MoaException(MoaExceptionType.ENTITY_NOT_FOUND));
         return entityToResponse(boardEntity);
     }
 
@@ -83,8 +82,7 @@ public class BoardServiceImpl implements BoardService {
                 .get();
 
         Board boardEntity = boardRepository.findById(boardId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
-                        "해당 게시글을 찾을 수 없습니다. id=" + boardId));
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND));
 
         if (!boardEntity.getMember().getId().equals(memberId)) {
             throw new MoaException(MoaExceptionType.FORBIDDEN,

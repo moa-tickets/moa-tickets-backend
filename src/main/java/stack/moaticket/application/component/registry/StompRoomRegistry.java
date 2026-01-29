@@ -7,6 +7,7 @@ import org.springframework.web.socket.WebSocketSession;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -52,10 +53,12 @@ public class StompRoomRegistry {
 
         SessionInfo oldInfo = userSessionMap.put(memberId, newInfo);
 
-
         if (oldInfo != null) {
-            sessionMemberMap.remove(oldInfo.getSessionId());
-            sessionRoomMap.remove(oldInfo.getSessionId());
+            String oldRoomId = sessionRoomMap.get(oldInfo.getSessionId());
+            if (Objects.equals(oldRoomId, roomId)) {
+                sessionMemberMap.remove(oldInfo.getSessionId());
+                sessionRoomMap.remove(oldInfo.getSessionId());
+            }
         }
         sessionRoomMap.put(sessionId, roomId);
         sessionMemberMap.put(sessionId, memberId);

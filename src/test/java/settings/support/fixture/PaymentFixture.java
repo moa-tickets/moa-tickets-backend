@@ -21,11 +21,11 @@ public class PaymentFixture extends BaseFixture<Payment, Long> {
     }
 
     @Transactional
-    public Payment create(Member member, long amount) {
+    public Payment create(Member member, String holdToken, long amount, String orderName) {
         return save(Payment.builder()
                 .orderId(TestUtil.uuid())
-                .orderName(TestUtil.uniqueString("name"))
-                .paymentKey(TestUtil.uuid())
+                .orderName(orderName != null ? orderName : TestUtil.uniqueString("name"))
+                .paymentKey(null)
                 .amount(amount)
                 .state(PaymentState.READY)
                 .member(member)

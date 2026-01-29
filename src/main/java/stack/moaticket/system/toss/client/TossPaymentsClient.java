@@ -5,4 +5,5 @@ import stack.moaticket.system.toss.dto.TossConfirmResponse;
 
 public interface TossPaymentsClient {
     TossConfirmResponse confirm(TossConfirmRequest request);
+//    TossConfirmResponse cancel(String paymentKey);
 }

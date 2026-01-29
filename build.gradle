@@ -86,3 +86,37 @@ tasks.named('jacocoTestReport') {
         html.required.set(true)
     }
 }
+
+tasks.named('jacocoTestReport') {
+    dependsOn test
+
+    classDirectories.setFrom(
+            files(classDirectories.files.collect { dir ->
+                fileTree(dir: dir, exclude: [
+                        // DTO
+                        '**/dto/**',
+                        '**/*Dto.class',
+                        '**/*Request.class',
+                        '**/*Response.class',
+
+                        // Exception
+                        '**/exception/**',
+                        '**/*Exception.class',
+
+                        // Querydsl
+                        '**/Q*.class',
+
+                        // entity
+                        '**/entity/**',
+
+                        // Generated / 공통
+                        '**/*Application.class'
+                ])
+            })
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}

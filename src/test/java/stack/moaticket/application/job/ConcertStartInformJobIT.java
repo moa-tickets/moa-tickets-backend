@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.context.jdbc.Sql;
 import settings.config.TestFixtureConfig;
 import settings.support.fixture.*;
 import stack.moaticket.application.service.AlarmService;
@@ -34,6 +35,7 @@ import static org.mockito.BDDMockito.*;
                 "app.server.scheduler.ticket-release=false"
         })
 @Import(TestFixtureConfig.class)
+@Sql(value = "/sql/clear.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public class  ConcertStartInformJobIT {
     @Autowired ConcertStartInformJob job;
 

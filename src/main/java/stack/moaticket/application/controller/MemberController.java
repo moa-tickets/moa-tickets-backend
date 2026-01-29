@@ -58,7 +58,7 @@ public class MemberController {
     @PostMapping("/api/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response, @AuthenticationPrincipal Long memberId){
         if (memberId != null) {
-            expireCookie(response);
+            response.addHeader("Set-Cookie", expireCookie(response).toString());
         }
         return ResponseEntity.ok().build();
     }

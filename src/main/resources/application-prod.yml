@@ -22,4 +22,4 @@ app:
   frontend:
     url: https://moatickets.dev
   cookie:
-    url: moatickets.dev
+    domain: moatickets.dev

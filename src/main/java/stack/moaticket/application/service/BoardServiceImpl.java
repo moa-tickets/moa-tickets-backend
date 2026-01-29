@@ -58,15 +58,18 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void fix(Long memerId, BoardDto.BoardFixRequest boardFixRequest, Long boardId) {
-        Member member = validator.of(memberService.findById(memerId))
+    public void fix(Long memberId, BoardDto.BoardFixRequest boardFixRequest, Long boardId) {
+        Member member = validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
 
         Board boardEntity = boardRepository.findById(boardId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
-                        "해당 게시글을 찾을 수 없습니다. id=" + boardId));
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND));
+
+        if (!boardEntity.getMember().getId().equals(memberId)) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
         boardEntity.fix(boardFixRequest);
         //가독성을 위해 save을 한 번더 작성
         boardRepository.save(boardEntity);
@@ -84,10 +87,9 @@ public class BoardServiceImpl implements BoardService {
                         "해당 게시글을 찾을 수 없습니다. id=" + boardId));
 
         if (!boardEntity.getMember().getId().equals(memberId)) {
-            throw new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
+            throw new MoaException(MoaExceptionType.FORBIDDEN,
                     "memberId가 같지 않습니다");
         }
-        boardRepository.deleteById(memberId);
+        boardRepository.deleteById(boardId);
     }
-
 }

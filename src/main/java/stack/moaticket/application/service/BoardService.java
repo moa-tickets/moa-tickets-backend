@@ -39,5 +39,4 @@ public interface BoardService {
                 .nickName(board.getMember().getNickname())
                 .build();
     }
-
 }

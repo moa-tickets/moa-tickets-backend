@@ -48,20 +48,32 @@ public class CommentService {
                 .get();
 
         Comment commentEntity = commentRepository.findById(commentId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND,
-                        "해당 게시글을 찾을 수 없습니다. id=" + commentId));
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND));
+
+        if (!commentEntity.getCommenter().equals(member)) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
+
         commentEntity.fix(commentFixRequest);
         commentRepository.save(commentEntity);
 
 
     }
 
-    public void delete(Long memberId, Long id) {
+    public void delete(Long memberId, Long commentId) {
         Member member = validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
-        commentRepository.deleteById(memberId);
+
+        Comment commentEntity = commentRepository.findById(commentId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.ENTITY_NOT_FOUND));
+
+        if (!commentEntity.getCommenter().equals(member)) {
+            throw new MoaException(MoaExceptionType.FORBIDDEN);
+        }
+
+        commentRepository.deleteById(commentId);
     }
 
 

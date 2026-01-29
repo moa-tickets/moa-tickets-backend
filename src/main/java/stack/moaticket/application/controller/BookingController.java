@@ -152,5 +152,4 @@ public class BookingController {
         bookingService.releaseHold(memberId, holdToken);
         return ResponseEntity.ok().build();
     }
-
 }

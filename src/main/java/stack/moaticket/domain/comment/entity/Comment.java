@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 import stack.moaticket.application.dto.CommentDto;
 import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.board.entity.Board;
+import stack.moaticket.domain.member.entity.Member;
 
 @Getter
 @AllArgsConstructor
@@ -17,7 +18,11 @@ import stack.moaticket.domain.board.entity.Board;
 public class Comment extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private Long commentId;
+    private Long comment;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "commenter_id")
+    private Member commenter;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "board_id")

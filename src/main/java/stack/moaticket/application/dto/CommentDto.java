@@ -20,7 +20,7 @@ public class CommentDto {
     }
 
     public record CommentFixRequest (
-            Long commentId, String nickName, String content
+            Long comment, String content
     ){
     }
 }

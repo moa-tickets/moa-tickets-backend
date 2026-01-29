@@ -1,5 +1,6 @@
 package stack.moaticket.application.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class CommentController {
     public void createComment(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long boardId,
-            @RequestBody CommentDto.Request request) {
+            @Valid @RequestBody CommentDto.Request request) {
         commentService.create(memberId, boardId, request);
 
     }

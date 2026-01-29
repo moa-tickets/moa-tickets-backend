@@ -1,5 +1,6 @@
 package stack.moaticket.application.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class BoardController {
     @PostMapping("/board")
     public void createBoard(
             @AuthenticationPrincipal Long memberId,
-            @RequestBody BoardDto.Request request) {
+            @Valid @RequestBody BoardDto.Request request) {
         boardService.create(memberId, request);
     }
 
@@ -38,7 +39,7 @@ public class BoardController {
 
     @PatchMapping("/board/{boardId}")
     public void fix(@AuthenticationPrincipal Long memberId,
-                    @RequestBody BoardDto.BoardFixRequest boardFixRequest,
+                    @Valid @RequestBody BoardDto.BoardFixRequest boardFixRequest,
                     @PathVariable Long boardId) {
         boardService.fix(memberId, boardFixRequest, boardId);
     }

@@ -73,7 +73,7 @@ public class CommentService {
     }
 
 
-    public Comment requestToEntity(Member member, Board board, CommentDto.Request request) {
+    private Comment requestToEntity(Member member, Board board, CommentDto.Request request) {
         return Comment.builder()
                 .commenter(member)
                 .board(board)

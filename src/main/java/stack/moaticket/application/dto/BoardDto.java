@@ -12,8 +12,8 @@ public abstract class BoardDto {
     //title, content
     @Getter
     public static class Request {
-        private String title;
-        private String content;
+        @NotNull private String title;
+        @NotNull private String content;
     }
 
     @Getter
@@ -26,7 +26,7 @@ public abstract class BoardDto {
     }
 
     public record BoardFixRequest(
-            String title, String content
+            @NotNull String title,@NotNull String content
     ){
     }
 }

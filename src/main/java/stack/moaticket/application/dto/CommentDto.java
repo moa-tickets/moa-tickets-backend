@@ -9,6 +9,7 @@ public class CommentDto {
 
     @Getter
     public static class Request {
+        @NotNull
         private String content;
     }
 
@@ -19,8 +20,8 @@ public class CommentDto {
         private String content;
     }
 
-    public record CommentFixRequest (
-            String content
-    ){
+    public record CommentFixRequest(
+            @NotNull String content
+    ) {
     }
 }

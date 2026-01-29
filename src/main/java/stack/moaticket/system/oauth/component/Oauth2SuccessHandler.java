@@ -37,6 +37,8 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
@@ -75,7 +77,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private ResponseCookie createCookie(String token){
         if(profile.equals("dev")) {
             return ResponseCookie.from("Authorization", token)
-                    .httpOnly(false)
+                    .httpOnly(true)
                     .path("/")
                     .maxAge(60 * 60 * 24)
                     .build();
@@ -85,7 +87,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .secure(true)
                     .sameSite("Lax")
                     .path("/")
-                    .domain("moatickets.dev")
+                    .domain(cookieDomain)
                     .maxAge(60 * 60 * 24)
                     .build();
         }

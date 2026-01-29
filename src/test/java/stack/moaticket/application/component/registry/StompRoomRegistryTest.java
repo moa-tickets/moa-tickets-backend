@@ -73,6 +73,19 @@ class StompRoomRegistryTest {
         assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(2);
     }
 
+    @DisplayName("한 아이디로 두 방에 입장")
+    @Test
+    void joinOtherChatroomOneMember() {
+        // when
+        stompRoomRegistry.register(1L, "sessionId1", "roomId");
+        stompRoomRegistry.register(1L, "sessionId2", "roomId2");
+        // then
+        assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(1);
+        assertThat(stompRoomRegistry.roomSize("roomId2")).isEqualTo(1);
+        assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(2);
+        assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(2);
+    }
+
 
     @DisplayName("세션 등록해제")
     @Test

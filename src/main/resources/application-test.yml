@@ -16,3 +16,5 @@ spring:
 app:
   frontend:
     url: http://localhost:5173
+  cookie:
+    domain: localhost

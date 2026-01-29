@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 import stack.moaticket.application.dto.BoardDto;
 import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.member.entity.Member;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 @Getter
 @NoArgsConstructor
@@ -36,4 +38,6 @@ public class Board extends Base{
         this.title = boardFixRequest.title();
         this.content = boardFixRequest.content();
     }
+
+
 }

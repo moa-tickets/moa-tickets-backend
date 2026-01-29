@@ -26,7 +26,7 @@ public abstract class BoardDto {
     }
 
     public record BoardFixRequest(
-            String title, String content, String nickName
+            String title, String content
     ){
     }
 }

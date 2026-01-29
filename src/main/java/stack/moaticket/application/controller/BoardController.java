@@ -43,7 +43,7 @@ public class BoardController {
         boardService.fix(memberId, boardFixRequest, boardId);
     }
 
-    @DeleteMapping("/board/delete/{id}")
+    @DeleteMapping("/board/{id}")
     public void delete(@AuthenticationPrincipal Long memberId, @PathVariable Long id) {
         boardService.delete(memberId, id);
     }

@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.application.dto.SubscribeTicketDto;
+import stack.moaticket.application.dto.UnsubscribeTicketDto;
 import stack.moaticket.application.service.AlarmService;
 
 @RestController
@@ -26,6 +27,14 @@ public class AlarmController {
             @AuthenticationPrincipal Long memberId,
             @Valid @RequestBody SubscribeTicketDto.Request request) {
         alarmService.subscribeTicketReleaseAlarm(memberId, request.getTicketId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/ticket")
+    public ResponseEntity<Void> unsubscribeTicket(
+            @AuthenticationPrincipal Long memberId,
+            @Valid @RequestBody UnsubscribeTicketDto.Request request) {
+        alarmService.unsubscribeTicketReleaseAlarm(memberId, request.getTicketId());
         return ResponseEntity.noContent().build();
     }
 }

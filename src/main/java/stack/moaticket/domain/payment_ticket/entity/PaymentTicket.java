@@ -19,9 +19,6 @@ import stack.moaticket.domain.ticket.entity.Ticket;
 @Table(name = "payment_ticket",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_payment_ticket_payment_ticket", columnNames = {"payment_id", "ticket_id"})
-        },
-        indexes = {
-                @Index(name = "idx_payment_ticket_payment", columnList = "payment_id")
         })
 public class PaymentTicket extends Base {
 

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -20,6 +21,7 @@ import stack.moaticket.system.oauth.facade.OauthFacade;
 
 import java.io.IOException;
 
+@Profile("!test")
 @Component
 @RequiredArgsConstructor
 public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -35,6 +37,8 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
@@ -73,7 +77,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private ResponseCookie createCookie(String token){
         if(profile.equals("dev")) {
             return ResponseCookie.from("Authorization", token)
-                    .httpOnly(false)
+                    .httpOnly(true)
                     .path("/")
                     .maxAge(60 * 60 * 24)
                     .build();
@@ -83,7 +87,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .secure(true)
                     .sameSite("Lax")
                     .path("/")
-                    .domain("moatickets.dev")
+                    .domain(cookieDomain)
                     .maxAge(60 * 60 * 24)
                     .build();
         }

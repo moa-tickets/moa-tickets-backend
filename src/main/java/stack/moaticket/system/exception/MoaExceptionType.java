@@ -11,10 +11,14 @@ public enum MoaExceptionType {
     MISMATCH_ARGUMENT("입력 인자 형식이 잘못되었습니다.", 400),
     MISMATCH_PARAMETER("입력 매개변수 형식이 잘못되었습니다.", 400),
     MISMATCH_HEADER("입력 헤더 형식이 잘못되었습니다.", 400),
+    MISMATCH_TOKEN("토큰 형식이 잘못되었습니다.", 400),
     VALIDATION_FAILED("요청 값이 올바르지 않습니다.", 400),
+
 
     // 401
     UNAUTHORIZED("인증되지 않은 사용자입니다.", 401),
+    EXPIRED_TOKEN("만료된 토큰입니다.", 401),
+    INVALID_TOKEN("잘못된 토큰입니다.", 401),
 
     // 403
     INVALID_ALARM("올바르지 않은 알림 요청입니다.", 403),

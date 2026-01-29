@@ -34,6 +34,7 @@ public class StompRoomRegistry {
         if (ws != null && ws.isOpen()) {
             try {
                 ws.close(status);
+                unregisterBySession(sessionId);
             } catch (Exception e) {
                 log.error("웹소켓 세션 종료중 오류 발생 . sessionId : {}, status : {}, {}", sessionId, status, e);
                 throw new MoaException(MoaExceptionType.INTERNAL_SERVER_ERROR);

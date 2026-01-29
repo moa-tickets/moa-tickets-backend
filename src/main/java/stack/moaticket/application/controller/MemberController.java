@@ -28,8 +28,6 @@ public class MemberController {
 
     @Value("${spring.profiles.active}")
     private String profile;
-    @Value("${app.frontend.url}")
-    private String frontendUrl;
 
     private final MemberInfoService memberInfoService;
     private final MemberService memberService;
@@ -66,12 +64,10 @@ public class MemberController {
         Cookie cookie = new Cookie("Authorization", null);
         cookie.setMaxAge(0); //만료 시간을 0으로 설정
         cookie.setPath("/");
-        if (profile.equals("dev")) {
-            cookie.setHttpOnly(false);
-        }
-        else {
+        cookie.setHttpOnly(true);
+        if (!profile.equals("dev")) {
             cookie.setSecure(true);
-            cookie.setDomain(frontendUrl);
+            cookie.setDomain("moatickets.dev");
         }
         response.addCookie(cookie);
     }

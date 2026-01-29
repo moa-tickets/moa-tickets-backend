@@ -10,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,16 +62,23 @@ public class MemberController {
         }
         return ResponseEntity.ok().build();
     }
-    private void expireCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("Authorization", null);
-        cookie.setMaxAge(0); //만료 시간을 0으로 설정
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        if (!profile.equals("dev")) {
-            cookie.setSecure(true);
-            cookie.setDomain(cookieDomain);
+    private ResponseCookie expireCookie(HttpServletResponse response) {
+        if(profile.equals("dev")) {
+            return ResponseCookie.from("Authorization")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .build();
         }
-        response.addCookie(cookie);
+        else {
+            return ResponseCookie.from("Authorization")
+                    .secure(true)
+                    .sameSite("Lax")
+                    .path("/")
+                    .domain(cookieDomain)
+                    .maxAge(0)
+                    .build();
+        }
     }
 
     @Operation(

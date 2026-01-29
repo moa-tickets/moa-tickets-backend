@@ -2,6 +2,7 @@ package stack.moaticket.domain.member.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.repository.MemberRepository;
 import stack.moaticket.domain.member.repository.MemberRepositoryQueryDsl;
@@ -47,4 +48,9 @@ public class MemberService {
         member.demoteFromSeller();
         return memberRepository.save(member);
     }
+
+    public Member lockById(Long memberId) {
+        return memberRepositoryQueryDsl.findByIdForUpdate(memberId);
+    }
+
 }

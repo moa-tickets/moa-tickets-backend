@@ -13,9 +13,14 @@ import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.payment.entity.Payment;
 import stack.moaticket.domain.payment.repository.PaymentRepositoryQueryDsl;
+import stack.moaticket.domain.ticket.entity.Ticket;
+import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,6 +38,8 @@ class PaymentConfirmValidatorServiceTest {
 
     @Mock
     private PaymentRepositoryQueryDsl paymentRepositoryQueryDsl;
+    @Mock
+    private TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
 
     private PaymentConfirmValidatorService validatorService;
 
@@ -41,7 +48,8 @@ class PaymentConfirmValidatorServiceTest {
         validatorService = new PaymentConfirmValidatorService(
                 validator,
                 memberService,
-                paymentRepositoryQueryDsl
+                paymentRepositoryQueryDsl,
+                ticketRepositoryQueryDsl
         );
     }
 
@@ -234,9 +242,19 @@ class PaymentConfirmValidatorServiceTest {
         given(payment.isPaid()).willReturn(false);
         given(payment.getId()).willReturn(10L);
         given(payment.getOrderId()).willReturn("order-1");
+        given(payment.getHoldToken()).willReturn("hold-1");
 
         given(paymentRepositoryQueryDsl.findByOrderIdForUpdate("order-1"))
                 .willReturn(payment);
+
+        Ticket ticket = mock(Ticket.class);
+        given(ticket.isHoldValidAt(any(LocalDateTime.class))).willReturn(true);
+
+        given(ticketRepositoryQueryDsl.findTicketsByHoldToken("hold-1"))
+                .willReturn(List.of(ticket));
+
+        assertThat(validatorService).isNotNull();
+
 
         // when
         ConfirmContext ctx =

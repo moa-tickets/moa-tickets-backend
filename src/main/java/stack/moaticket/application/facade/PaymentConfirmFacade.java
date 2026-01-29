@@ -50,6 +50,12 @@ public class PaymentConfirmFacade {
 
         // 3) TX2 (REQUIRES_NEW) : 확정 finalize
         paymentFinalizeService.finalizeAfterTossPaid(ctx.paymentId(), tossResponse.getPaymentKey(), memberId, LocalDateTime.now());
+//        try {
+//        } catch (MoaException e){
+//            tossPaymentsFacade.cancel(tossResponse.getPaymentKey(), "quota exceeded");
+//            throw e;
+//        }
+
 
         // 4) 결과 조회 (payment를 다시 조회해서 최신 상태로)
         Payment paid = paymentRepositoryQueryDsl.findByOrderId(ctx.orderId());

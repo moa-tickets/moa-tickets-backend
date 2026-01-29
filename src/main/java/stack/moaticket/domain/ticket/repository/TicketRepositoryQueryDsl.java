@@ -14,6 +14,7 @@ import stack.moaticket.domain.ticket.type.TicketState;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static stack.moaticket.domain.session.entity.QSession.session;
 import static stack.moaticket.domain.ticket.entity.QTicket.ticket;
 
 @Repository
@@ -165,6 +166,19 @@ public class TicketRepositoryQueryDsl {
                 ))
                 .from(ticket)
                 .where(condition)
+                .fetch();
+    }
+
+    public List<Ticket> findSoldTicketsByMemberAndSessionForUpdate(Long memberId, Long sessionId) {
+        return jpaQueryFactory
+                .selectFrom(ticket)
+                .join(ticket.session, session)
+                .where(
+                        ticket.member.id.eq(memberId),
+                        ticket.session.id.eq(sessionId),
+                        ticket.state.eq(TicketState.SOLD)
+                )
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE) // FOR UPDATE
                 .fetch();
     }
 

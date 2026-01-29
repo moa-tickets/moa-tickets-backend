@@ -7,9 +7,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.toss.client.TossPaymentsClient;
-import stack.moaticket.system.toss.dto.TossConfirmRequest;
-import stack.moaticket.system.toss.dto.TossConfirmResponse;
-import stack.moaticket.system.toss.dto.TossErrorResponse;
+import stack.moaticket.system.toss.dto.*;
 
 @Component
 @RequiredArgsConstructor
@@ -37,6 +35,17 @@ public class TossPaymentsFacade {
             throw new MoaException(MoaExceptionType.CONFLICT, err != null ? err.getMessage() : "Toss confirm failed");
         }
     }
+
+//    public TossCancelResponse cancel(String paymentKey, long amount, String reason) {
+//        try {
+//            TossCancelResponse res = tossPaymentsClient.cancel(new TossCancelRequest(paymentKey, amount, reason));
+//            return res;
+//
+//        }catch (WebClientResponseException e){
+//            TossErrorResponse err = tryParseError(e.getResponseBodyAsString());
+//            throw new MoaException(MoaExceptionType.CONFLICT, err != null ? err.getMessage() : "Toss confirm failed");
+//        }
+//    }
 
     private TossErrorResponse tryParseError(String body) {
         try {

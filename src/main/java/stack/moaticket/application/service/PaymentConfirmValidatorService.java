@@ -9,11 +9,16 @@ import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.payment.entity.Payment;
+import stack.moaticket.domain.payment.repository.PaymentRepository;
 import stack.moaticket.domain.payment.repository.PaymentRepositoryQueryDsl;
+import stack.moaticket.domain.ticket.entity.Ticket;
+import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -22,14 +27,23 @@ public class PaymentConfirmValidatorService {
     private final Validator validator;
     private final MemberService memberService;
     private final PaymentRepositoryQueryDsl paymentRepositoryQueryDsl;
+    private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
+
+    private static final int MAX_TICKETS_PER_SESSION = 4;
 
     @Transactional
     public ConfirmContext validateAndLockPayment(Long memberId, PaymentDto.ConfirmRequest request) {
+
+        // 1. member 조회 + 상태 검증
         Member member = validator.of(memberService.findById(memberId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
 
+        // 2. 동일 사용자 결제 confirm 직렬화
+        memberService.lockById(memberId);
+
+        // 3. request 기본 검증
         if (request == null
                 || request.getOrderId() == null || request.getOrderId().isBlank()
                 || request.getPaymentKey() == null || request.getPaymentKey().isBlank()) {
@@ -37,11 +51,9 @@ public class PaymentConfirmValidatorService {
         }
 
         String orderId = request.getOrderId();
-        String paymentKey = request.getPaymentKey();
         long reqAmount = request.getAmount();
 
-        if (reqAmount <= 0) throw new MoaException(MoaExceptionType.VALIDATION_FAILED);
-
+        // 4. payment FOR UPDATE
         Payment payment = validator.of(paymentRepositoryQueryDsl.findByOrderIdForUpdate(orderId))
                 .validateOrThrow(Objects::isNull, MoaExceptionType.PAYMENT_NOT_FOUND)
                 .validateOrThrow(p -> !p.isOwnedBy(memberId), MoaExceptionType.FORBIDDEN)
@@ -50,7 +62,57 @@ public class PaymentConfirmValidatorService {
                 .get();
 
         boolean alreadyPaid = payment.isPaid();
+        if (alreadyPaid) {
+            // 멱등 confirm
+            return new ConfirmContext(
+                    payment.getId(),
+                    memberId,
+                    payment.getOrderId(),
+                    request.getPaymentKey(),
+                    reqAmount,
+                    true
+            );
+        }
 
-        return new ConfirmContext(payment.getId(), member.getId(), payment.getOrderId(), paymentKey, reqAmount, alreadyPaid);
+        // 5. holdToken → 티켓 조회
+        String holdToken = payment.getHoldToken();
+        if (holdToken == null || holdToken.isBlank()) {
+            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+        }
+
+        List<Ticket> tickets = ticketRepositoryQueryDsl.findTicketsByHoldToken(holdToken);
+        if (tickets.isEmpty()) {
+            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+        }
+
+        // 6. hold 유효성 검증
+        LocalDateTime now = LocalDateTime.now();
+        boolean allHoldValid = tickets.stream().allMatch(t -> t.isHoldValidAt(now));
+        if (!allHoldValid) {
+            throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
+        }
+
+        //TODO member-session-amount-state 테이블로 payment 4장 부분 관리하는 로직 짜기
+//        // 7. quota 체크
+//        Long sessionId = tickets.getFirst().getSession().getId();
+//
+//        long alreadySold =
+//                ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId);
+//
+//        int toSell = tickets.size();
+//
+//        if (alreadySold + toSell > MAX_TICKETS_PER_SESSION) {
+//            throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
+//        }
+
+        // 8. Toss 호출 가능
+        return new ConfirmContext(
+                payment.getId(),
+                memberId,
+                payment.getOrderId(),
+                request.getPaymentKey(),
+                reqAmount,
+                false
+        );
     }
 }

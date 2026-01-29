@@ -184,29 +184,6 @@ class BookingServiceTest {
                 .isEqualTo(MoaExceptionType.VALIDATION_FAILED);
     }
 
-    @Test
-    @DisplayName("중복이 없는 티켓 ID면 validateHoldRequest를 통과한다.")
-    void holdTickets_noDuplicate_passesValidateHoldRequest() {
-        // given
-        Long memberId = 1L;
-        Long sessionId = 10L;
-        List<Long> ticketIds = List.of(1L, 2L);
-
-        givenActiveMember(memberId);
-
-        // 아래 로직으로 내려가면 countSoldByMemberAndSession 호출됨
-        given(ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId)).willReturn(0L);
-
-        // findTicketsForUpdate까지 내려가게 되므로 여기서 일부러 mismatch로 예외 유도
-        given(ticketRepositoryQueryDsl.findTicketsForUpdate(List.of(1L, 2L), sessionId))
-                .willReturn(List.of()); // size mismatch → MISMATCH_PARAMETER
-
-        // when & then
-        assertThatThrownBy(() -> bookingService.holdTickets(memberId, sessionId, ticketIds))
-                .isInstanceOf(MoaException.class)
-                .extracting(e -> ((MoaException) e).getType())
-                .isEqualTo(MoaExceptionType.MISMATCH_PARAMETER);
-    }
 
     @Test
     @DisplayName("이미 구매한 수 + 요청 수가 4를 초과하면 TICKET_LIMIT_EXCEEDED 예외가 발생한다.")

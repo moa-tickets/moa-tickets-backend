@@ -54,6 +54,22 @@ public class BookingService {
         // 비관적 락으로 티켓들 조회
         List<Ticket> tickets = ticketRepositoryQueryDsl.findTicketsForUpdate(sortedIds, sessionId);
 
+        boolean allHold = tickets.stream().allMatch(Ticket::isHold);
+        boolean allOwnedByMe = tickets.stream().allMatch(t -> t.isOwnedBy(memberId));
+
+        if(allHold && allOwnedByMe) {
+            String existingToken = tickets.getFirst().getHoldToken();
+            LocalDateTime existingExpiresAt = tickets.getFirst().getExpiresAt();
+
+            boolean sameToken = tickets.stream().allMatch(t -> existingToken != null && existingToken.equals(t.getHoldToken()));
+            boolean sameExpiresAt = tickets.stream().allMatch(t -> existingExpiresAt != null && existingExpiresAt.equals(t.getExpiresAt()));
+
+            // holdToken/expiresAt이 정합한 경우에만 멱등 성공 처리
+            if (sameToken && sameExpiresAt) {
+                return new HoldResult(existingToken, existingExpiresAt);
+            }
+        }
+
         // 요청한 개수만큼 전부 조회됐는지(세션/존재 검증)
         if(tickets.size() != sortedIds.size()) {
             throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
@@ -80,6 +96,7 @@ public class BookingService {
 
     // 회차별 좌석 목록 조회
     // hold 판단은 ticket_state 기준 (hold -> release 스케줄러가 처리), sold는 ticket_state 기준
+    @Transactional(readOnly = true)
     public List<BookingDto.TicketResponse> getTicketsBySession(Long sessionId) {
         if(sessionId == null){
             throw new MoaException(MoaExceptionType.VALIDATION_FAILED, "회차 ID가 전달되지 않았습니다.");

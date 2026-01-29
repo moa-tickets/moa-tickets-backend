@@ -29,17 +29,17 @@ class StompControllerTest {
     @DisplayName("메세지 보내기 성공")
     @Test
     void successSendMessage() {
-        //given
+        // given
         Map<String,Object> map = new HashMap<>();
         ChattingDto.Request request = new ChattingDto.Request();
         String playbackId = "playbackId";
         map.put("memberId", 1L);
-        map.put("roomId", "playbackId");
+        map.put("roomId", playbackId);
         map.put("sendTime", LocalDateTime.now());
-        //when
+        // when
         stompController.sendMessage(map, request, playbackId);
 
-        //then
+        // then
         verify(chattingFacade, times(1)).saveAndSend(any(), anyLong(), anyString(), any());
     }
 
@@ -47,15 +47,15 @@ class StompControllerTest {
     @DisplayName("memberId null 처리")
     @Test
     void failedSendMessageMemberIdNull() {
-        //given
+        // given
         Map<String,Object> map = new HashMap<>();
         ChattingDto.Request request = new ChattingDto.Request();
         String playbackId = "playbackId";
-        //when
+        // when
         assertThatThrownBy(() -> stompController.sendMessage(map, request, playbackId))
                 .isInstanceOf(MoaException.class)
                 .hasMessage("인증되지 않은 사용자입니다.");
-        //then
+        // then
         verify(chattingFacade, never()).saveAndSend(any(), anyLong(), anyString(), any());
     }
 
@@ -63,19 +63,19 @@ class StompControllerTest {
     @DisplayName("메세지 보내기 실패 구독하지 않은 채팅방에 채팅")
     @Test
     void failedSendMessageByUnsubscribe() {
-        //given
+        // given
         Map<String,Object> map = new HashMap<>();
         ChattingDto.Request request = new ChattingDto.Request();
         String playbackId = "playbackId";
         map.put("memberId", 1L);
         map.put("roomId", "roomId");
         map.put("sendTime", LocalDateTime.now());
-        //when
+        // when
         assertThatThrownBy(() -> stompController.sendMessage(map, request, playbackId))
                 .isInstanceOf(MoaException.class)
                 .hasMessage("권한이 없습니다.");
 
-        //then
+        // then
         verify(chattingFacade, never()).saveAndSend(any(), anyLong(), anyString(), any());
     }
 }

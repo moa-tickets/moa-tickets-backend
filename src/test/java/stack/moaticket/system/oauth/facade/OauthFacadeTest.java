@@ -11,7 +11,6 @@ import stack.moaticket.domain.oauth_info.service.OauthInfoService;
 import stack.moaticket.domain.member.entity.Member;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -19,24 +18,22 @@ import static org.mockito.Mockito.when;
 class OauthFacadeTest {
     @Mock
     MemberService memberService;
-    @Mock
-    OauthInfoService oauthInfoService;
     @InjectMocks
     OauthFacade oauthFacade;
 
     @DisplayName("signUp진행시 memberId 리턴")
     @Test
     void signUpReturnMemberId(){
-        //given
+        // given
         String name = "name";
         String oauthId = "oauthId";
         String email = "email";
         Member member = mock(Member.class);
         when(memberService.joinMember(name, email)).thenReturn(member);
         when(member.getId()).thenReturn(1L);
-        //when
+        // when
         Long getMemberId = oauthFacade.signUp(name, oauthId, email);
-        //then
+        // then
         assertThat(getMemberId).isEqualTo(1L);
     }
 

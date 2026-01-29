@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
@@ -19,45 +18,42 @@ import static org.mockito.Mockito.*;
 class StompRoomRegistryTest {
 
 
-    @InjectMocks StompRoomRegistry stompRoomRegistry;
+    @InjectMocks
+    StompRoomRegistry stompRoomRegistry;
 
     @DisplayName("처음 채팅 접속")
     @Test
-    void firstJoinChatroom(){
-        //given
-
-        //when
+    void firstJoinChatroom() {
+        // when
         String oldSession = stompRoomRegistry.register(1L, "sessionId", "roomId");
-
-        //then
+        // then
         assertThat(oldSession).isNull();
         assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(1);
         assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(1);
         assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(1);
     }
 
-     @DisplayName("같은 아이디로 같은 방 참여시 기존 세션 제거")
-     @Test
-     void joinSameChatroom(){
-         //given
-         stompRoomRegistry.register(1L, "sessionId1", "roomId");
-         //when
-         String oldSession = stompRoomRegistry.register(1L, "sessionId2", "roomId");
-         //then
-         assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(1);
-         assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(1);
-         assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(1);
-         assertThat(oldSession).isEqualTo("sessionId1");
-     }
+    @DisplayName("같은 아이디로 같은 방 참여시 기존 세션 제거")
+    @Test
+    void joinSameChatroom() {
+        // given
+        stompRoomRegistry.register(1L, "sessionId1", "roomId");
+        // when
+        String oldSession = stompRoomRegistry.register(1L, "sessionId2", "roomId");
+        // then
+        assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(1);
+        assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(1);
+        assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(1);
+        assertThat(oldSession).isEqualTo("sessionId1");
+    }
 
     @DisplayName("두명이 같은방 입장")
     @Test
-    void joinSameChatroomTwoMember(){
-        //given
+    void joinSameChatroomTwoMember() {
+        //given when
         stompRoomRegistry.register(1L, "sessionId1", "roomId");
         stompRoomRegistry.register(2L, "sessionId2", "roomId");
-        //when
-        //then
+        // then
         assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(2);
         assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(2);
         assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(2);
@@ -65,14 +61,13 @@ class StompRoomRegistryTest {
 
     @DisplayName("두명이 입장 후 한명이 중복 입장")
     @Test
-    void joinSameChatroomTwoMemberAndOneDuplicate(){
-        //given
+    void joinSameChatroomTwoMemberAndOneDuplicate() {
+        // given
         stompRoomRegistry.register(1L, "sessionId1", "roomId");
         stompRoomRegistry.register(2L, "sessionId2", "roomId");
-        //when
+        // when
         stompRoomRegistry.register(2L, "sessionId3", "roomId");
-
-        //then
+        // then
         assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(2);
         assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(2);
         assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(2);
@@ -81,12 +76,12 @@ class StompRoomRegistryTest {
 
     @DisplayName("세션 등록해제")
     @Test
-    void unregisterBySession(){
-        //given
+    void unregisterBySession() {
+        // given
         stompRoomRegistry.register(1L, "sessionId1", "roomId");
-        //when
+        // when
         stompRoomRegistry.unregisterBySession("sessionId1");
-        //then
+        // then
         assertThat(stompRoomRegistry.roomSize("roomId")).isEqualTo(0);
         assertThat(stompRoomRegistry.sessionRoomMapSize()).isEqualTo(0);
         assertThat(stompRoomRegistry.sessionMemberMapSize()).isEqualTo(0);
@@ -95,40 +90,39 @@ class StompRoomRegistryTest {
     @DisplayName("웹소켓 세션 등록")
     @Test
     void registerWsSessionTest() {
-         //given
-         WebSocketSession ws = mock(WebSocketSession.class);
-         when(ws.getId()).thenReturn("sessionId");
+        //given
+        WebSocketSession ws = mock(WebSocketSession.class);
+        when(ws.getId()).thenReturn("sessionId");
+        //when
+        stompRoomRegistry.registerWsSession(ws);
 
-         stompRoomRegistry.registerWsSession(ws);
-
-         assertThat(stompRoomRegistry.wsSessionMapSize()).isEqualTo(1);
+        assertThat(stompRoomRegistry.wsSessionMapSize()).isEqualTo(1);
     }
 
     @DisplayName("웹소켓 세션 종료")
     @Test
     void closeWsSessionTest() throws IOException {
-        //given
+        // given
         WebSocketSession ws = mock(WebSocketSession.class);
         when(ws.getId()).thenReturn("sessionId");
         when(ws.isOpen()).thenReturn(true);
-
         stompRoomRegistry.registerWsSession(ws);
-
+        // when
         stompRoomRegistry.closeSession("sessionId", CloseStatus.POLICY_VIOLATION);
-
+        // then
         verify(ws, times(1)).close(CloseStatus.POLICY_VIOLATION);
     }
 
     @DisplayName("웹소켓 세션 해제")
     @Test
-    void unregisterWsSessionTest(){
-        //given
+    void unregisterWsSessionTest() {
+        // given
         WebSocketSession ws = mock(WebSocketSession.class);
         when(ws.getId()).thenReturn("sessionId");
         stompRoomRegistry.registerWsSession(ws);
-        //when
+        // when
         stompRoomRegistry.unregisterWsSession("sessionId");
-        //then
+        // then
         assertThat(stompRoomRegistry.wsSessionMapSize()).isEqualTo(0);
     }
 
@@ -136,15 +130,17 @@ class StompRoomRegistryTest {
     @DisplayName("touch 작동 테스트")
     @Test
     void touchTest() {
-        // given
+        // when
         stompRoomRegistry.register(1L, "sessionId", "room1");
         // then
         assertThatCode(() -> stompRoomRegistry.touch("sessionId"))
                 .doesNotThrowAnyException();
     }
 
+
+    @DisplayName("예외처리 시 세션 닫힘")
     @Test
-    void closeSession_whenWsCloseThrowsException_doesNotPropagate() throws Exception {
+    void closeSession_whenWsCloseThrowsException_rethrowsAsMoaException() throws Exception {
         // given
         WebSocketSession ws = mock(WebSocketSession.class);
         when(ws.getId()).thenReturn("sessionId");
@@ -152,7 +148,7 @@ class StompRoomRegistryTest {
         doThrow(new RuntimeException("close fail"))
                 .when(ws).close(any());
         stompRoomRegistry.registerWsSession(ws);
-        // then
+        // when then
         assertThatCode(() ->
                 stompRoomRegistry.closeSession("sessionId", CloseStatus.POLICY_VIOLATION)
         ).isInstanceOf(MoaException.class)
@@ -161,13 +157,12 @@ class StompRoomRegistryTest {
 
     @DisplayName("touch 아이디 null일 시 예외처리")
     @Test
-    void touchIdIsNull(){
-        //then
+    void touchIdIsNull() {
+        // then
         assertThatThrownBy(() -> stompRoomRegistry.touch("sessionId2"))
                 .isInstanceOf(MoaException.class)
                 .hasMessage("요청한 리소스를 찾을 수 없습니다.");
     }
-
 
 
 }

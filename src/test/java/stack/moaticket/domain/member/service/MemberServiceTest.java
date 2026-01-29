@@ -16,7 +16,6 @@ import stack.moaticket.system.exception.MoaExceptionType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -33,15 +32,15 @@ class MemberServiceTest {
     @DisplayName("joinMember 정상 작동")
     @Test
     void joinMember(){
-        //given
+        // given
         Member member = mock(Member.class);
         String name = "name";
         String email = "email";
         when(memberRepository.save(any(Member.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        //when
+        // when
         Member saved = memberService.joinMember(name, email);
-        //then
+        // then
         assertThat(saved.getNickname()).isEqualTo(name);
         assertThat(saved.getEmail()).isEqualTo(email);
         assertThat(saved.getState()).isEqualTo(MemberState.ACTIVE);
@@ -95,7 +94,7 @@ class MemberServiceTest {
         // given
         when(memberRepositoryQueryDsl.findById(99L)).thenReturn(null);
 
-        // when & then
+        // when then
         assertThatThrownBy(() -> memberService.getByIdOrThrow(99L))
                 .isInstanceOf(MoaException.class)
                 .hasMessage("올바른 사용자를 찾을 수 없습니다");

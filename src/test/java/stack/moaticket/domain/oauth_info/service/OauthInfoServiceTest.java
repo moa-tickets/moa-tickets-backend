@@ -13,7 +13,6 @@ import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.oauth_info.repository.OauthInfoRepositoryQueryDsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -30,14 +29,14 @@ class OauthInfoServiceTest {
     @DisplayName("joinOauthInfo")
     @Test
     void saveOauthInfo(){
-        //given
+        // given
         Member member = mock(Member.class);
         String oauthId = "oauthId";
         when(oauthInfoRepository.save(any(OauthInfo.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        //when
+        // when
         OauthInfo saved = oauthInfoService.joinOauthInfo(member, oauthId);
-        //then
+        // then
         assertThat(saved.getOauthId()).isEqualTo(oauthId);
         assertThat(saved.getMember()).isSameAs(member);
 
@@ -54,13 +53,13 @@ class OauthInfoServiceTest {
     @DisplayName("findOauthInfo 성공 테스트")
     @Test
     void findOauthInfoTest(){
-        //given
+        // given
         String oauthId = "oauthId";
         OauthInfo oauthInfo = mock(OauthInfo.class);
         when(oauthInfoRepositoryQueryDsl.findByOauthId(oauthId)).thenReturn(oauthInfo);
-        //when
+        // when
         OauthInfo found = oauthInfoService.findOauthInfo(oauthId);
-        //then
+        // then
         assertThat(found).isSameAs(oauthInfo);
         verify(oauthInfoRepositoryQueryDsl, times(1)).findByOauthId(oauthId);
         verifyNoInteractions(oauthInfoRepository);

@@ -19,7 +19,6 @@ import stack.moaticket.system.exception.MoaExceptionType;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +40,7 @@ class ChattingFacadeTest {
     @DisplayName("채팅 저장 성공 및 전송")
     @Test
     void chattingSaveAndSend(){
-        //given
+        // given
         Long memberId = 1L;
         String playbackId = "playbackId";
         String content = "content";
@@ -52,10 +51,10 @@ class ChattingFacadeTest {
 
         ChatMessage saved = mock(ChatMessage.class);
         when(chatMessageService.saveMessage(content, member, playbackId, sendTime)).thenReturn(saved);
-        //when
+        // when
         chattingFacade.saveAndSend(content, memberId, playbackId, sendTime);
 
-        //then
+        // then
         verify(memberService).getByIdOrThrow(memberId);
         verify(chatMessageService).saveMessage(content, member, playbackId, sendTime);
 
@@ -70,7 +69,7 @@ class ChattingFacadeTest {
     @DisplayName("채팅 리스트 가져오기 테스트")
     @Test
     void getChatHistory(){
-        //given
+        // given
         ChatMessage chat1 = mock(ChatMessage.class);
         ChatMessage chat2 = mock(ChatMessage.class);
         String playbackId = "playbackId";
@@ -80,11 +79,11 @@ class ChattingFacadeTest {
         when(chatMessageService.getChatHistory(playbackId, lastSeenId, size))
                 .thenReturn(Arrays.asList(chat1, chat2));
 
-        //when
+        // when
         List<ChattingDto.Response> chatHistory = chattingFacade.getChatHistory(playbackId, lastSeenId, size
         );
 
-        //then
+        // then
         verify(chatMessageService).getChatHistory(playbackId, lastSeenId, size);
         verify(chatMessageService, never()).getChatHistoryFirst(anyString(), anyInt());
 
@@ -94,43 +93,37 @@ class ChattingFacadeTest {
     @DisplayName("채팅 리스트 처음 가져오기 테스트")
     @Test
     void getChatHistoryFirst(){
-        //given
+        // given
         ChatMessage chat1 = mock(ChatMessage.class);
         ChatMessage chat2 = mock(ChatMessage.class);
         String playbackId = "playbackId";
         int size = 2;
-
-        when(chatMessageService.getChatHistoryFirst("playbackId", 2))
+        when(chatMessageService.getChatHistoryFirst(playbackId, size))
                 .thenReturn(Arrays.asList(chat1, chat2));
 
-        //when
-        List<ChattingDto.Response> chatHistory = chattingFacade.getChatHistory("playbackId", null, 2);
+        // when
+        chattingFacade.getChatHistory(playbackId, null, size);
 
-        //then
+        // then
         verify(chatMessageService, never()).getChatHistory(anyString(), anyLong(), anyInt());
-        verify(chatMessageService).getChatHistoryFirst("playbackId", 2);
+        verify(chatMessageService).getChatHistoryFirst(playbackId, size);
     }
 
     @DisplayName("member == null일시 전송 실패")
     @Test
     void memberNullTest(){
+        // given
         Long memberId = 999L;
         when(memberService.getByIdOrThrow(memberId))
                 .thenThrow(new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
-
+        // when
         assertThatThrownBy(() ->
                 chattingFacade.saveAndSend("hi", memberId, "roomA", LocalDateTime.now())
         ).isInstanceOf(MoaException.class)
                 .hasMessage("올바른 사용자를 찾을 수 없습니다");
-
+        // then
         verify(chatMessageService, never()).saveMessage(any(), any(), any(), any());
-        verify(messagingTemplate, never()).convertAndSend(anyString(), Optional.ofNullable(any()));
-
+        verify(messagingTemplate, never()).convertAndSend(anyString(), any(ChattingDto.Response.class));
     }
-
-
-
-
-
 
 }

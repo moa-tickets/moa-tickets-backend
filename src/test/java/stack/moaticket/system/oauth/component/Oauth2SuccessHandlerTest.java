@@ -45,7 +45,7 @@ class Oauth2SuccessHandlerTest {
     @DisplayName("신규 회원 로그인시 회원가입 처리")
     @Test
     void newMemberLogin() throws Exception {
-        //given
+        // given
         ReflectionTestUtils.setField(handler, "profile", "dev");
         ReflectionTestUtils.setField(handler, "frontendUrl", "https://moatickets.dev");
         when(oauth2User.getAttribute("sub")).thenReturn("oauthId");
@@ -59,9 +59,9 @@ class Oauth2SuccessHandlerTest {
         when(jwtUtil.createJwt(1L, 60 * 60 * 1000 * 24L)).thenReturn("token");
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        //when
+        // when
         handler.onAuthenticationSuccess(request, response, authentication);
-        //then
+        // then
         String setCookie = response.getHeader("Set-Cookie");
         assertThat(setCookie).isNotBlank();
         assertThat(setCookie).contains("Authorization=token");
@@ -75,7 +75,7 @@ class Oauth2SuccessHandlerTest {
     @DisplayName("기존 회원 로그인시 회원가입 안함.")
     @Test
     void existMemberLogin() throws Exception {
-        //given
+        // given
         ReflectionTestUtils.setField(handler, "profile", "dev");
         ReflectionTestUtils.setField(handler, "frontendUrl", "https://moatickets.dev");
         when(oauth2User.getAttribute("sub")).thenReturn("oauthId");
@@ -89,9 +89,9 @@ class Oauth2SuccessHandlerTest {
         when(jwtUtil.createJwt(1L, 60 * 60 * 1000 * 24L)).thenReturn("token");
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        //when
+        // when
         handler.onAuthenticationSuccess(request, response, authentication);
-        //then
+        // then
         String setCookie = response.getHeader("Set-Cookie");
         assertThat(setCookie).isNotBlank();
         assertThat(setCookie).contains("Authorization=token");

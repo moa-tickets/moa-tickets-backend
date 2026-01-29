@@ -28,23 +28,19 @@ class StompEventListenerTest {
     @DisplayName("세션 연결 종료 시 registry에서 세션이 제거되는지 확인")
     @Test
     void disconnectHandle_unregistersSession(){
-        //given
+        // given
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.DISCONNECT);
         accessor.setSessionId("sessionId");
         Message<byte[]> message = MessageBuilder
                 .withPayload(new byte[0])
                 .setHeaders(accessor)
                 .build();
-
         SessionDisconnectEvent event =
                 new SessionDisconnectEvent(this, message, "sessionId", CloseStatus.NORMAL);
-
-        //when
+        // when
         stompEventListener.disconnectHandle(event);
-
         //then
         verify(stompRoomRegistry).unregisterBySession("sessionId");
     }
-
 
 }

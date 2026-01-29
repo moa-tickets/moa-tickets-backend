@@ -20,6 +20,7 @@ class OauthFacadeTest {
     MemberService memberService;
     @Mock
     OauthInfoService oauthInfoService;
+
     @InjectMocks
     OauthFacade oauthFacade;
 

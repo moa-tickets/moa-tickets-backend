@@ -4,15 +4,6 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-  sql:
-    init:
-      mode: never
-
   web:
     resources:
       add-mappings: false
@@ -42,3 +33,14 @@ management:
     web:
       exposure:
         include: prometheus
+
+app:
+  server:
+    scheduler:
+      session_start: true
+      ticket_release: true
+  ai:
+    url: ${AI_URL}
+
+alarm:
+  sender: sse

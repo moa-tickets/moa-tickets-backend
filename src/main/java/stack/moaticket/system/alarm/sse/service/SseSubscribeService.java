@@ -19,7 +19,7 @@ public class SseSubscribeService {
         String connectionId = sseEmitterRegister.insert(memberId, emitter);
 
         AlarmTarget target = new AlarmTarget(connectionId);
-        AlarmMessage message = AlarmMessageFactory.connect();
+        AlarmMessage message = AlarmMessageFactory.connect(connectionId);
 
         try {
             sseSendService.sendOrThrow(memberId, target, message);

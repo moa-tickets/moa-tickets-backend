@@ -1,6 +1,7 @@
 package stack.moaticket.application.job;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.*;
 
+@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class ConcertStartInformJobTest {
     @Mock private AlarmService alarmService;

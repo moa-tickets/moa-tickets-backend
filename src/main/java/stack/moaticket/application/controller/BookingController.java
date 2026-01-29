@@ -116,41 +116,4 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
-    //점유 해제 (HOLD -> AVAILABLE)
-    // 이미 만료되어 AVAILABLE 상태여도 성공(200)으로 처리
-    @Operation(
-            summary = "좌석 점유 해제(HOLD > AVAILABLE)",
-            description = "좌석 ticketHold의 점유 상태를 변경",
-            parameters = {
-                    @Parameter(
-                            name = "holdToken",
-                            description = "점유 해제할 holdToken",
-                            required = true,
-                            in = ParameterIn.PATH
-                    )
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "성공"
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "인증되지 않은 사용자"
-                    ),
-                    @ApiResponse(
-                            responseCode = "403",
-                            description = "권한이 없음"
-                    )
-            }
-
-    )
-    @PostMapping("/holds/{holdToken}/release")
-    public ResponseEntity<Void> releaseHold(
-            @AuthenticationPrincipal Long memberId,
-            @PathVariable String holdToken) {
-        bookingService.releaseHold(memberId, holdToken);
-        return ResponseEntity.ok().build();
-    }
-
 }

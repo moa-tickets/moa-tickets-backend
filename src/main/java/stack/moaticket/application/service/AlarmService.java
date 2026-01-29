@@ -2,7 +2,6 @@ package stack.moaticket.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -31,7 +30,6 @@ import java.util.Objects;
 public class AlarmService {
     private final Validator validator;
 
-    private final AlarmMessageFactory alarmMessageFactory;
     private final AlarmSendService alarmSendService;
 
     private final SseSubscribeService sseSubscribeService;
@@ -62,10 +60,24 @@ public class AlarmService {
         ticketAlarmService.createAndSave(member, ticket);
     }
 
+    @Transactional
+    public void unsubscribeTicketReleaseAlarm(Long memberId, Long ticketId) {
+        Member member = validator.of(memberService.findById(memberId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                .get();
+
+        Ticket ticket = validator.of(ticketService.get(ticketId))
+                .validateOrThrow(Objects::isNull, MoaExceptionType.TICKET_NOT_FOUND)
+                .get();
+
+        ticketAlarmService.delete(member, ticket);
+    }
+
     public void sendConcertStartInform(List<SessionStartAlarmMetaDto> alarmMetadata) {
         for(SessionStartAlarmMetaDto alarm : alarmMetadata) {
             Long memberId = alarm.memberId();
-            AlarmMessage message = alarmMessageFactory.sessionStart(alarm);
+            AlarmMessage message = AlarmMessageFactory.sessionStart(alarm);
             alarmSendService.sendAll(memberId, message);
         }
     }
@@ -85,7 +97,7 @@ public class AlarmService {
                     .toList();
             if(metaList.isEmpty()) continue;
 
-            AlarmMessage message = alarmMessageFactory.ticketRelease(metaList);
+            AlarmMessage message = AlarmMessageFactory.ticketRelease(metaList);
             alarmSendService.sendAll(memberId,message);
         }
     }

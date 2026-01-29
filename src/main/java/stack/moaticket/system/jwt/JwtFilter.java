@@ -17,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import stack.moaticket.application.util.FilterUtil;
 import stack.moaticket.domain.member.service.MemberService;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -62,20 +64,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (MalformedJwtException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(); // TODO
+            log.warn(e.getMessage());
+            throw new MoaException(MoaExceptionType.MISMATCH_TOKEN);
         } catch (ExpiredJwtException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(); // TODO
-        } catch (UnsupportedJwtException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(); // TODO
-        } catch (SignatureException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(); // TODO
+            log.info(e.getMessage());
+            throw new MoaException(MoaExceptionType.EXPIRED_TOKEN);
+        } catch (UnsupportedJwtException | SignatureException e) {
+            log.warn(e.getMessage());
+            throw new MoaException(MoaExceptionType.INVALID_TOKEN);
         } catch (RuntimeException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
+            log.warn(e.getMessage());
+            throw new MoaException(MoaExceptionType.UNAUTHORIZED);
         }
     }
 

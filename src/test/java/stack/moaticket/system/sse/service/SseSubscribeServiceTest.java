@@ -1,6 +1,7 @@
 package stack.moaticket.system.sse.service;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -8,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
+import stack.moaticket.system.alarm.sse.model.ConnectPayload;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 import stack.moaticket.system.exception.MoaException;
@@ -18,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.*;
 
+@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class SseSubscribeServiceTest {
     @Mock SseEmitterRegister sseEmitterRegister;
@@ -51,7 +54,7 @@ public class SseSubscribeServiceTest {
         assertThat(emitter).isSameAs(emitterCaptor.getValue());
         assertThat(targetCaptor.getValue().connectionId()).isEqualTo(cid);
         assertThat(messageCaptor.getValue().key()).isEqualTo("CONNECT");
-        assertThat(messageCaptor.getValue().payload()).isEqualTo("connected");
+        assertThat(messageCaptor.getValue().payload()).isEqualTo(new ConnectPayload(cid));
 
         then(sseEmitterRegister).shouldHaveNoMoreInteractions();
         then(sseSendService).shouldHaveNoMoreInteractions();

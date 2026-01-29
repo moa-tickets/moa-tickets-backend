@@ -1,6 +1,7 @@
 package stack.moaticket.system.sse.register;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class SseEmitterRegisterTest {
     private final SseEmitterRegister sseEmitterRegister = new SseEmitterRegister();

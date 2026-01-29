@@ -1,6 +1,7 @@
 package stack.moaticket.application.component.factory;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -9,6 +10,7 @@ import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
 import stack.moaticket.domain.session_start_alarm.type.SessionStartAlarmType;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
 import stack.moaticket.system.alarm.core.component.AlarmMessageFactory;
+import stack.moaticket.system.alarm.sse.model.ConnectPayload;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
@@ -18,18 +20,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.*;
 
+@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class AlarmMessageFactoryTest {
-    private final AlarmMessageFactory alarmMessageFactory = new AlarmMessageFactory();
 
     @Test
-    @DisplayName("연결 메시지는 CONNECT key에 connected payload로 고정 생성된다.")
+    @DisplayName("연결 메시지는 key가 CONNECT, payload로 connectionId를 전송한다.")
     void sessionConnectKey() {
+        // given
+        String cid = "c1";
+
         // when
-        AlarmMessage message = AlarmMessageFactory.connect();
+        AlarmMessage message = AlarmMessageFactory.connect(cid);
 
         // then
-        assertThat(message).isEqualTo(new AlarmMessage("CONNECT", "connected"));
+        assertThat(message).isEqualTo(new AlarmMessage("CONNECT", new ConnectPayload(cid)));
     }
 
     @Test
@@ -50,7 +55,7 @@ public class AlarmMessageFactoryTest {
         given(alarm.type()).willReturn(SessionStartAlarmType.LEFT_10);
 
         // when
-        AlarmMessage message = alarmMessageFactory.sessionStart(alarm);
+        AlarmMessage message = AlarmMessageFactory.sessionStart(alarm);
 
         // then
         assertThat(message.key()).isEqualTo("SS_LEFT_10");
@@ -65,7 +70,7 @@ public class AlarmMessageFactoryTest {
         given(alarm.type()).willReturn(SessionStartAlarmType.ON_HOUR);
 
         // when
-        AlarmMessage message = alarmMessageFactory.sessionStart(alarm);
+        AlarmMessage message = AlarmMessageFactory.sessionStart(alarm);
 
         // then
         assertThat(message.key()).isEqualTo("SS_ON_HOUR");
@@ -79,7 +84,7 @@ public class AlarmMessageFactoryTest {
         List<TicketMetaDto> alarmList = List.of(mock(TicketMetaDto.class));
 
         // when
-        AlarmMessage message = alarmMessageFactory.ticketRelease(alarmList);
+        AlarmMessage message = AlarmMessageFactory.ticketRelease(alarmList);
 
         // then
         assertThat(message.key()).isEqualTo("TR_SINGLE");
@@ -95,7 +100,7 @@ public class AlarmMessageFactoryTest {
                 mock(TicketMetaDto.class));
 
         // when
-        AlarmMessage message = alarmMessageFactory.ticketRelease(alarmList);
+        AlarmMessage message = AlarmMessageFactory.ticketRelease(alarmList);
 
         // then
         assertThat(message.key()).isEqualTo("TR_BULK");
@@ -109,7 +114,7 @@ public class AlarmMessageFactoryTest {
         List<TicketMetaDto> alarmList = List.of();
 
         // when & then
-        assertThatThrownBy(() -> alarmMessageFactory.ticketRelease(alarmList))
+        assertThatThrownBy(() -> AlarmMessageFactory.ticketRelease(alarmList))
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
                 .isEqualTo(MoaExceptionType.MISMATCH_PARAMETER);
@@ -119,7 +124,7 @@ public class AlarmMessageFactoryTest {
     @DisplayName("발송할 티켓 홀드 해제 알림이 NULL로 입력되면 MISMATCH_PARAMETER 오류를 발생시킨다.")
     void ticketReleaseNull() {
         // when & then
-        assertThatThrownBy(() -> alarmMessageFactory.ticketRelease(null))
+        assertThatThrownBy(() -> AlarmMessageFactory.ticketRelease(null))
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
                 .isEqualTo(MoaExceptionType.MISMATCH_PARAMETER);

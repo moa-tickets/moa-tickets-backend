@@ -21,3 +21,5 @@ logging:
 app:
   frontend:
     url: https://moatickets.dev
+  cookie:
+    url: moatickets.dev

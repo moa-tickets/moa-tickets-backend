@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 class OauthFacadeTest {
     @Mock
     MemberService memberService;
+    @Mock
+    OauthInfoService oauthInfoService;
     @InjectMocks
     OauthFacade oauthFacade;
 

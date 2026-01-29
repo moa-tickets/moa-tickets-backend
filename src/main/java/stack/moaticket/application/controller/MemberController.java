@@ -6,7 +6,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +27,10 @@ import stack.moaticket.domain.member.service.MemberService;
 @RequiredArgsConstructor
 public class MemberController {
 
+    @Value("${spring.profiles.active}")
+    private String profile;
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
     private final MemberInfoService memberInfoService;
     private final MemberService memberService;
 
@@ -45,6 +53,32 @@ public class MemberController {
     public ResponseEntity<GetMemberDto.Response> getMember(
             @AuthenticationPrincipal Long memberId) {
         return ResponseEntity.ok(memberInfoService.getMember(memberId));
+    }
+
+    @PostMapping("/api/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response, @AuthenticationPrincipal Long memberId){
+        if (memberId != null) {
+            response.addHeader("Set-Cookie", expireCookie(response).toString());
+        }
+        return ResponseEntity.ok().build();
+    }
+    private ResponseCookie expireCookie(HttpServletResponse response) {
+        if(profile.equals("dev")) {
+            return ResponseCookie.from("Authorization")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+        }
+        else {
+            return ResponseCookie.from("Authorization")
+                    .secure(true)
+                    .sameSite("Lax")
+                    .path("/")
+                    .domain(cookieDomain)
+                    .maxAge(0)
+                    .build();
+        }
     }
 
     @Operation(

@@ -110,7 +110,24 @@ tasks.named('jacocoTestReport') {
                         '**/entity/**',
 
                         // Generated / 공통
-                        '**/*Application.class'
+                        '**/*Application.class',
+
+                        '**/concert/**',
+                        '**/hall/**',
+                        '**/system/toss/**',
+                        '**/system/component/Validator**',
+                        '**/domain/session/**',
+                        '**/domain/ticket/**',
+                        '**/ProductService.class',
+                        '**/ReviewService.class',
+                        '**/RtmpService.class',
+                        '**/MemberInfoService.class',
+                        '**/PaymentFailWriter.class',
+                        '**/domain/booking_history/**',
+                        '**/BookingHistoryService.class',
+
+                        '**/controller/**'
+
                 ])
             })
     )

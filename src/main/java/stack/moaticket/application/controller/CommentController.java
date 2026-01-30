@@ -25,7 +25,7 @@ public class CommentController {
 
     @PatchMapping("/comment/{commentId}")
     public void fix(@AuthenticationPrincipal Long memberId,
-                    @RequestBody CommentDto.CommentFixRequest commentFixRequest,
+                    @Valid @RequestBody CommentDto.CommentFixRequest commentFixRequest,
                     @PathVariable Long commentId) {
         commentService.fix(memberId, commentFixRequest, commentId);
 

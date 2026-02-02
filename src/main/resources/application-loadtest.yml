@@ -1,3 +1,10 @@
+server:
+  port: 8080
+  tomcat:
+    accept-count: 2000        # 백로그 큐 크기(backlog)
+    max-connections: 10000    # 최대 연결 수(서버 소켓의 차일드 소켓들)
+    connection-timeout: 30000  # 연결 타임아웃
+
 spring:
   datasource:
     url: ${DB_URL}

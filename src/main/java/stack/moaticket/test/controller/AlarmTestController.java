@@ -1,12 +1,20 @@
 package stack.moaticket.test.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.test.service.AlarmTestService;
 
+@ConditionalOnProperty(
+        value = "app.server.test.load-test.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+)
+@RestController
 @RequestMapping("/test/alarm")
 @RequiredArgsConstructor
 public class AlarmTestController {

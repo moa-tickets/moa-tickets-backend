@@ -44,11 +44,11 @@ public class SseConfig {
     @Bean(name = "heartbeatExecutor")
     public Executor heartbeatExecutor() {
         ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
-        ex.setCorePoolSize(2);
-        ex.setMaxPoolSize(100);
-        ex.setQueueCapacity(0);
+        ex.setCorePoolSize(10);
+        ex.setMaxPoolSize(500); // 테스트하려는 동시 접속자 수보다 넉넉하게
+        ex.setQueueCapacity(1000); // 순간적인 몰림을 방지하는 완충 지대
         ex.setThreadNamePrefix(HEART_BEAT_EXECUTOR_PREFIX);
-        ex.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        //ex.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         ex.initialize();
         return ex;
     }

@@ -3,7 +3,7 @@ package stack.moaticket.application.util;
 import java.util.Set;
 
 public class FilterUtil {
-    private FilterUtil() {};
+    private FilterUtil() {}
     private static final Set<String> API_FILTER_SET = Set.of(
             "/login",
             "/rtmp/on-publish",
@@ -11,7 +11,8 @@ public class FilterUtil {
             "/favicon.ico",
             "/error",
             "/health",
-            "/actuator/prometheus"
+            "/actuator/prometheus",
+            "/test/alarm/sub"
     );
     private static final Set<String> PREFIX_FILTER_SET = Set.of(
             "/swagger-ui",

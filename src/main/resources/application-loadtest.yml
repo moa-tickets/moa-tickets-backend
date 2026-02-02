@@ -22,6 +22,6 @@ app:
   server:
     test:
       load-test:
-        enabled: false
+        enabled: true
   frontend:
     url: https://moatickets.dev

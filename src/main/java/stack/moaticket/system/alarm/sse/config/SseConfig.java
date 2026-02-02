@@ -45,7 +45,7 @@ public class SseConfig {
     public Executor heartbeatExecutor() {
         ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
         ex.setCorePoolSize(2);
-        ex.setMaxPoolSize(2);
+        ex.setMaxPoolSize(100);
         ex.setQueueCapacity(0);
         ex.setThreadNamePrefix(HEART_BEAT_EXECUTOR_PREFIX);
         ex.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());

@@ -199,7 +199,7 @@ class PaymentFinalizeServiceTest {
     }
 
     @Test
-    @DisplayName("티켓이 HOLD 상태가 아니면 FAILED로 저장 후 TICKET_ALREADY_SOLD 예외가 발생한다.")
+    @DisplayName("티켓이 PAYMENT_PENDING 상태가 아니면 FAILED로 저장 후 TICKET_ALREADY_SOLD 예외가 발생한다.")
     void finalizeAfterTossPaid_notAllHold_marksFailedAndThrowsTicketAlreadySold() {
         // given
         Long paymentId = 1L;
@@ -338,7 +338,7 @@ class PaymentFinalizeServiceTest {
         given(owner.getId()).willReturn(memberId);
         given(t1.getMember()).willReturn(owner);
         given(t1.getExpiresAt()).willReturn(now.plusMinutes(5));
-        given(t1.getState()).willReturn(TicketState.HOLD);
+        given(t1.getState()).willReturn(TicketState.PAYMENT_PENDING);
         given(t1.getId()).willReturn(101L);
 
         given(ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate("hold_123"))

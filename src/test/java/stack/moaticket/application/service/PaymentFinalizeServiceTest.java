@@ -429,7 +429,7 @@ class PaymentFinalizeServiceTest {
         given(owner.getId()).willReturn(memberId);
         given(t1.getMember()).willReturn(owner);
         given(t1.getExpiresAt()).willReturn(now.plusMinutes(5));
-        given(t1.getState()).willReturn(TicketState.HOLD);
+        given(t1.getState()).willReturn(TicketState.PAYMENT_PENDING);
         given(t1.getId()).willReturn(101L);
 
         given(ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate("hold_123"))

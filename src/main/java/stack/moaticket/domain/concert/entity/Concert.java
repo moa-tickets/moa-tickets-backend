@@ -28,7 +28,7 @@ public class Concert extends Base {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hall_id", nullable = false)
     private Hall hall;
 

@@ -26,7 +26,7 @@ public class PaymentConfirmFacade {
 
     public PaymentDto.ConfirmResponse confirm(Long memberId, PaymentDto.ConfirmRequest request) {
         // 1) TX1 : 검증 + payment 락 조회
-        ConfirmContext ctx = validatorService.validateAndLockPayment(memberId, request);
+        ConfirmContext ctx = validatorService.confirmPrepare(memberId, request);
 
         // 이미 결제된 것이 있다면 멱등하게 반환
         if (ctx.alreadyPaid()){
@@ -48,14 +48,8 @@ public class PaymentConfirmFacade {
             throw new MoaException(MoaExceptionType.INTERNAL_SERVER_ERROR);
         }
 
-        // 3) TX2 (REQUIRES_NEW) : 확정 finalize
+        // 3) TX2 : 확정 finalize
         paymentFinalizeService.finalizeAfterTossPaid(ctx.paymentId(), tossResponse.getPaymentKey(), memberId, LocalDateTime.now());
-//        try {
-//        } catch (MoaException e){
-//            tossPaymentsFacade.cancel(tossResponse.getPaymentKey(), "quota exceeded");
-//            throw e;
-//        }
-
 
         // 4) 결과 조회 (payment를 다시 조회해서 최신 상태로)
         Payment paid = paymentRepositoryQueryDsl.findByOrderId(ctx.orderId());

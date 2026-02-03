@@ -61,7 +61,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                validatorService.validateAndLockPayment(1L, validRequest())
+                validatorService.confirmPrepare(1L, validRequest())
         )
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
@@ -78,7 +78,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                validatorService.validateAndLockPayment(1L, validRequest())
+                validatorService.confirmPrepare(1L, validRequest())
         )
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
@@ -93,7 +93,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                validatorService.validateAndLockPayment(1L, null)
+                validatorService.confirmPrepare(1L, null)
         )
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
@@ -113,7 +113,7 @@ class PaymentConfirmValidatorServiceTest {
                 .build();
 
         // when & then
-        assertThatThrownBy(() -> validatorService.validateAndLockPayment(1L, req))
+        assertThatThrownBy(() -> validatorService.confirmPrepare(1L, req))
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
                 .isEqualTo(MoaExceptionType.MISMATCH_PARAMETER);
@@ -136,7 +136,7 @@ class PaymentConfirmValidatorServiceTest {
                 .build();
 
         // when & then
-        assertThatThrownBy(() -> validatorService.validateAndLockPayment(1L, req))
+        assertThatThrownBy(() -> validatorService.confirmPrepare(1L, req))
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
                 .isEqualTo(MoaExceptionType.MISMATCH_PARAMETER);
@@ -155,7 +155,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                validatorService.validateAndLockPayment(1L, validRequest())
+                validatorService.confirmPrepare(1L, validRequest())
         )
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
@@ -176,7 +176,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                validatorService.validateAndLockPayment(1L, validRequest())
+                validatorService.confirmPrepare(1L, validRequest())
         )
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
@@ -198,7 +198,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when & then
         assertThatThrownBy(() ->
-                validatorService.validateAndLockPayment(1L, validRequest())
+                validatorService.confirmPrepare(1L, validRequest())
         )
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
@@ -223,7 +223,7 @@ class PaymentConfirmValidatorServiceTest {
                 .willReturn(payment);
 
         // when & then
-        assertThatThrownBy(() -> validatorService.validateAndLockPayment(1L, validRequest()))
+        assertThatThrownBy(() -> validatorService.confirmPrepare(1L, validRequest()))
                 .isInstanceOf(MoaException.class)
                 .extracting(e -> ((MoaException) e).getType())
                 .isEqualTo(MoaExceptionType.INVALID_PAYMENT_AMOUNT);
@@ -258,7 +258,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when
         ConfirmContext ctx =
-                validatorService.validateAndLockPayment(1L, validRequest());
+                validatorService.confirmPrepare(1L, validRequest());
 
         // then
         assertThat(ctx.alreadyPaid()).isFalse();
@@ -283,7 +283,7 @@ class PaymentConfirmValidatorServiceTest {
 
         // when
         ConfirmContext ctx =
-                validatorService.validateAndLockPayment(1L, validRequest());
+                validatorService.confirmPrepare(1L, validRequest());
 
         // then
         assertThat(ctx.alreadyPaid()).isTrue();

@@ -65,7 +65,7 @@ class PaymentConfirmFacadeTest {
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, true
         );
-        given(validatorService.validateAndLockPayment(memberId, request)).willReturn(ctx);
+        given(validatorService.confirmPrepare(memberId, request)).willReturn(ctx);
 
         Payment paid = mock(Payment.class);
         LocalDateTime paidAt = LocalDateTime.of(2026, 1, 26, 12, 0);
@@ -89,7 +89,7 @@ class PaymentConfirmFacadeTest {
         assertThat(response.getAmount()).isEqualTo(10000L);
         assertThat(response.getOrderName()).isEqualTo("콘서트A");
 
-        then(validatorService).should().validateAndLockPayment(memberId, request);
+        then(validatorService).should().confirmPrepare(memberId, request);
         then(paymentRepositoryQueryDsl).should().findByOrderId("order_123");
 
         then(tossPaymentsFacade).shouldHaveNoInteractions();
@@ -106,7 +106,7 @@ class PaymentConfirmFacadeTest {
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
         );
-        given(validatorService.validateAndLockPayment(memberId, request)).willReturn(ctx);
+        given(validatorService.confirmPrepare(memberId, request)).willReturn(ctx);
 
         TossConfirmResponse tossResponse = mock(TossConfirmResponse.class);
         given(tossPaymentsFacade.confirm("payKey_abc", "order_123", 10000L)).willReturn(tossResponse);
@@ -132,7 +132,7 @@ class PaymentConfirmFacadeTest {
         assertThat(response.getPaymentState()).isEqualTo(PaymentState.PAID);
         assertThat(response.getPaidAt()).isEqualTo(paidAt);
 
-        then(validatorService).should().validateAndLockPayment(memberId, request);
+        then(validatorService).should().confirmPrepare(memberId, request);
         then(tossPaymentsFacade).should().confirm("payKey_abc", "order_123", 10000L);
 
         // LocalDateTime.now()는 고정값이 아니라 any(LocalDateTime.class)로 검증
@@ -156,7 +156,7 @@ class PaymentConfirmFacadeTest {
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
         );
-        given(validatorService.validateAndLockPayment(memberId, request)).willReturn(ctx);
+        given(validatorService.confirmPrepare(memberId, request)).willReturn(ctx);
 
         given(tossPaymentsFacade.confirm("payKey_abc", "order_123", 10000L)).willReturn(null);
 
@@ -180,7 +180,7 @@ class PaymentConfirmFacadeTest {
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
         );
-        given(validatorService.validateAndLockPayment(memberId, request)).willReturn(ctx);
+        given(validatorService.confirmPrepare(memberId, request)).willReturn(ctx);
 
         TossConfirmResponse tossResponse = mock(TossConfirmResponse.class);
         given(tossPaymentsFacade.confirm("payKey_abc", "order_123", 10000L)).willReturn(tossResponse);
@@ -206,7 +206,7 @@ class PaymentConfirmFacadeTest {
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
         );
-        given(validatorService.validateAndLockPayment(memberId, request)).willReturn(ctx);
+        given(validatorService.confirmPrepare(memberId, request)).willReturn(ctx);
 
         TossConfirmResponse tossResponse = mock(TossConfirmResponse.class);
         given(tossPaymentsFacade.confirm("payKey_abc", "order_123", 10000L)).willReturn(tossResponse);
@@ -232,7 +232,7 @@ class PaymentConfirmFacadeTest {
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
         );
-        given(validatorService.validateAndLockPayment(memberId, request)).willReturn(ctx);
+        given(validatorService.confirmPrepare(memberId, request)).willReturn(ctx);
 
         given(tossPaymentsFacade.confirm("payKey_abc", "order_123", 10000L))
                 .willThrow(new RuntimeException("toss error"));
@@ -256,7 +256,7 @@ class PaymentConfirmFacadeTest {
         ConfirmContext ctx = new ConfirmContext(
                 55L, memberId, "order_123", "payKey_abc", 10000L, false
         );
-        given(validatorService.validateAndLockPayment(memberId, request)).willReturn(ctx);
+        given(validatorService.confirmPrepare(memberId, request)).willReturn(ctx);
 
         TossConfirmResponse tossResponse = mock(TossConfirmResponse.class);
         given(tossPaymentsFacade.confirm("payKey_abc", "order_123", 10000L)).willReturn(tossResponse);

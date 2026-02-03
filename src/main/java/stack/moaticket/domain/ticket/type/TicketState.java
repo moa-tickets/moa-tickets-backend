@@ -1,5 +1,5 @@
 package stack.moaticket.domain.ticket.type;
 
 public enum TicketState {
-    AVAILABLE, HOLD, SOLD
+    AVAILABLE, HOLD, PAYMENT_PENDING, SOLD
 }

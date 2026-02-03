@@ -28,7 +28,7 @@ public class PaymentFinalizeService {
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl;
     private final PaymentTicketRepository paymentTicketRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void finalizeAfterTossPaid(Long paymentId, String paymentKey, Long memberId, LocalDateTime now) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new MoaException(MoaExceptionType.PAYMENT_NOT_FOUND));
@@ -39,14 +39,14 @@ public class PaymentFinalizeService {
     private void finalizeSoldAndPersist(Payment payment, String paymentKey, Long memberId, LocalDateTime now) {
         String holdToken = payment.getHoldToken();
 
-        // holdToken으로 티켓 락
+        // 1. holdToken으로 티켓 락
         List<Ticket> tickets = ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate(holdToken);
         if (tickets.isEmpty()) {
             markFailedWithFailReason(payment, "holdToken으로 티켓이 안 잡힘");
             throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
-        // 소유자/상태/만료 최종 검증
+        // 2. 소유자 검증
         boolean owner = tickets.stream().allMatch(t ->
                 t.getMember() != null && t.getMember().getId().equals(memberId)
         );
@@ -55,31 +55,39 @@ public class PaymentFinalizeService {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
 
+        // 3. 만료 검증 (HOLD / PENDING 공통)
         boolean expired = tickets.stream().anyMatch(t -> t.getExpiresAt() == null || !t.getExpiresAt().isAfter(now));
         if (expired) {
             markFailedWithFailReason(payment, "토큰 만료");
             throw new MoaException(MoaExceptionType.HOLD_EXPIRED);
         }
 
-        boolean allHold = tickets.stream().allMatch(t -> t.getState() == TicketState.HOLD);
-        if (!allHold) {
-            markFailedWithFailReason(payment, "HOLD 상태 아님");
+        boolean allPending = tickets.stream().allMatch(t -> t.getState() == TicketState.PAYMENT_PENDING);
+        if (!allPending) {
+            boolean alreadySold = tickets.stream()
+                    .allMatch(t -> t.getState() == TicketState.SOLD);
+
+            if (alreadySold && payment.getState() == PaymentState.PAID) {
+                return; // 멱등 finalize 성공
+            }
+
+            markFailedWithFailReason(payment, "PAYMENT_PENDING 상태 아님");
             throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
         }
 
-        // SOLD 처리 + hold 필드 정리
+        // 4. SOLD 처리 + hold 필드 정리
         for (Ticket t : tickets) {
             t.setState(TicketState.SOLD);
             t.setHoldToken(null);
             t.setExpiresAt(null);
         }
 
-        // Payment 상태 업데이트
+        // 5. Payment 확정
         payment.setPaymentKey(paymentKey);
         payment.setPaidAt(now);
         payment.setState(PaymentState.PAID);
 
-        // PaymentTicket 생성
+        // 6. PaymentTicket 생성
         List<PaymentTicket> paymentTickets = tickets.stream()
                 .map(t -> PaymentTicket.builder()
                         .payment(payment)
@@ -92,7 +100,7 @@ public class PaymentFinalizeService {
         try {
             paymentTicketRepository.saveAll(paymentTickets);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            // 1) 내 payment가 이미 이 티켓들을 다 매핑했으면 => 중복 confirm(멱등 성공)
+            // 내 payment가 이미 이 티켓들을 다 매핑했으면 => 중복 confirm(멱등 성공)
             long mapped = paymentTicketRepository.countByPaymentIdAndTicketIdIn(payment.getId(), ticketIds);
             if (mapped == ticketIds.size()) {
                 // payment 상태 보정 (PAID로)
@@ -104,12 +112,9 @@ public class PaymentFinalizeService {
                 return;
             }
 
-            // 2) 그렇지 않다면 => 다른 결제가 이 티켓을 이미 먹었거나, 진짜 DB 문제
-            // 여기서는 "FAILED로 박기"보단 READY 유지 + 보정 대상 표시가 더 안전하지만,
-            // 사용자에게는 CONFLICT / TRY_AGAIN 같은 응답을 주는 게 맞음
+            // 그 외의 경우
             payment.setFailReason("payment_ticket conflict or DB error after toss paid.");
             paymentRepository.save(payment);
-
             throw new MoaException(MoaExceptionType.CONFLICT);
 
         }

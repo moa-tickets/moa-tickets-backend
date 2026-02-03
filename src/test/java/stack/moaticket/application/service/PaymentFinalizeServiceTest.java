@@ -199,7 +199,7 @@ class PaymentFinalizeServiceTest {
     }
 
     @Test
-    @DisplayName("티켓이 HOLD 상태가 아니면 FAILED로 저장 후 TICKET_ALREADY_SOLD 예외가 발생한다.")
+    @DisplayName("티켓이 PAYMENT_PENDING 상태가 아니면 FAILED로 저장 후 TICKET_ALREADY_SOLD 예외가 발생한다.")
     void finalizeAfterTossPaid_notAllHold_marksFailedAndThrowsTicketAlreadySold() {
         // given
         Long paymentId = 1L;
@@ -228,7 +228,7 @@ class PaymentFinalizeServiceTest {
                 .isEqualTo(MoaExceptionType.TICKET_ALREADY_SOLD);
 
         then(payment).should().setState(PaymentState.FAILED);
-        then(payment).should().setFailReason("HOLD 상태 아님");
+        then(payment).should().setFailReason("PAYMENT_PENDING 상태 아님");
         then(paymentRepository).should().save(payment);
 
         then(paymentTicketRepository).shouldHaveNoInteractions();
@@ -252,7 +252,7 @@ class PaymentFinalizeServiceTest {
         given(owner.getId()).willReturn(memberId);
         given(t1.getMember()).willReturn(owner);
         given(t1.getExpiresAt()).willReturn(now.plusMinutes(5));
-        given(t1.getState()).willReturn(TicketState.HOLD);
+        given(t1.getState()).willReturn(TicketState.PAYMENT_PENDING);
 
         given(ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate("hold_123"))
                 .willReturn(List.of(t1));
@@ -294,7 +294,7 @@ class PaymentFinalizeServiceTest {
         given(owner.getId()).willReturn(memberId);
         given(t1.getMember()).willReturn(owner);
         given(t1.getExpiresAt()).willReturn(now.plusMinutes(5));
-        given(t1.getState()).willReturn(TicketState.HOLD);
+        given(t1.getState()).willReturn(TicketState.PAYMENT_PENDING);
         given(t1.getId()).willReturn(101L);
 
         given(ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate("hold_123"))
@@ -338,7 +338,7 @@ class PaymentFinalizeServiceTest {
         given(owner.getId()).willReturn(memberId);
         given(t1.getMember()).willReturn(owner);
         given(t1.getExpiresAt()).willReturn(now.plusMinutes(5));
-        given(t1.getState()).willReturn(TicketState.HOLD);
+        given(t1.getState()).willReturn(TicketState.PAYMENT_PENDING);
         given(t1.getId()).willReturn(101L);
 
         given(ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate("hold_123"))
@@ -384,7 +384,7 @@ class PaymentFinalizeServiceTest {
         given(owner.getId()).willReturn(memberId);
         given(t1.getMember()).willReturn(owner);
         given(t1.getExpiresAt()).willReturn(now.plusMinutes(5));
-        given(t1.getState()).willReturn(TicketState.HOLD);
+        given(t1.getState()).willReturn(TicketState.PAYMENT_PENDING);
         given(t1.getId()).willReturn(101L);
 
         given(ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate("hold_123"))
@@ -429,7 +429,7 @@ class PaymentFinalizeServiceTest {
         given(owner.getId()).willReturn(memberId);
         given(t1.getMember()).willReturn(owner);
         given(t1.getExpiresAt()).willReturn(now.plusMinutes(5));
-        given(t1.getState()).willReturn(TicketState.HOLD);
+        given(t1.getState()).willReturn(TicketState.PAYMENT_PENDING);
         given(t1.getId()).willReturn(101L);
 
         given(ticketRepositoryQueryDsl.findTicketsByHoldTokenForUpdate("hold_123"))

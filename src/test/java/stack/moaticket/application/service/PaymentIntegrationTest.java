@@ -254,9 +254,9 @@ public class PaymentIntegrationTest {
                 .extracting(e -> ((MoaException) e).getType())
                 .isEqualTo(MoaExceptionType.CONFLICT);
 
-        // then - ticket SOLD 금지 (HOLD 그대로여야 함)
+        // then - ticket SOLD 금지 (PAYMENT_PENDING 그대로여야 함)
         Ticket reloaded = ticketFixture.findById(t1.getId());
-        assertThat(reloaded.getState()).isEqualTo(TicketState.HOLD);
+        assertThat(reloaded.getState()).isEqualTo(TicketState.PAYMENT_PENDING);
 
         // payment는 READY 유지(정책) 확인
         Payment payment = paymentRepositoryQueryDsl.findByOrderId(prepared.getOrderId());
@@ -333,7 +333,6 @@ public class PaymentIntegrationTest {
         assertThat(reloaded2.getHoldToken()).isEqualTo(hold.holdToken());
     }
 
-/*
     @Test
     @DisplayName("[quota][concurrency] 동일 사용자가 브라우저 2개로 1장씩 동시 결제하면 1건만 PAID, 다른 1건은 quota로 Toss 호출 전 차단된다.")
     void confirm_concurrent_sameBuyer_exceedLimit_onlyOnePaid_otherBlockedBeforeToss() throws Exception {
@@ -458,7 +457,6 @@ public class PaymentIntegrationTest {
         verify(tossPaymentsFacade, times(2))
                 .confirm(anyString(), anyString(), anyLong());
     }
-*/
 
 
 

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
+import stack.moaticket.domain.ticket.dto.TicketHoldDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.type.TicketState;
 
@@ -52,6 +53,39 @@ public class TicketRepositoryQueryDsl {
         return cnt == null ? 0 : cnt;
     }
 
+     // SOLD + PAYMENT_PENDING 장수 조회
+    public long countByMemberAndSessionAndStates(Long memberId, Long sessionId, List<TicketState> states) {
+        Long cnt = jpaQueryFactory
+                .select(ticket.id.count())
+                .from(ticket)
+                .where(ticket.member.id.eq(memberId)
+                        .and(ticket.session.id.eq(sessionId))
+                        .and(ticket.state.in(states)))
+                .fetchOne();
+
+        return cnt == null ? 0L : cnt;
+    }
+
+    // HOLD -> PAYMENT_PENDING
+    public long updateHoldToPaymentPending(
+            List<Long> ticketIds,
+            Long memberId,
+            Long sessionId,
+            String holdToken,
+            LocalDateTime now
+    ) {
+        return jpaQueryFactory
+                .update(ticket)
+                .set(ticket.state, TicketState.PAYMENT_PENDING)
+                .where(ticket.id.in(ticketIds)
+                        .and(ticket.state.eq(TicketState.HOLD))
+                        .and(ticket.expiresAt.gt(now))
+                        .and(ticket.holdToken.eq(holdToken))
+                        .and(ticket.member.id.eq(memberId))
+                        .and(ticket.session.id.eq(sessionId)))
+                .execute();
+    }
+
     // 같은 멤버 + 세션이고 만료되지 않은 hold token이 있는 경우 해제 (만료된 token은 스케줄러가 처리)
     public void releaseActiveHoldsByMemberAndSession(Long memberId, Long sessionId, LocalDateTime now) {
         jpaQueryFactory.update(ticket)
@@ -84,6 +118,16 @@ public class TicketRepositoryQueryDsl {
                 .join(ticket.member).fetchJoin()
                 .where(ticket.holdToken.eq(holdToken))
                 .fetch();
+    }
+
+    public List<TicketHoldDto> findTicketsDto(String holdToken) {
+        return jpaQueryFactory.select(Projections.constructor(
+                TicketHoldDto.class,
+                ticket.id,
+                ticket.state,
+                ticket.expiresAt,
+                ticket.session.id
+        )).from(ticket).where(ticket.holdToken.eq(holdToken)).fetch();
     }
 
     // holdToken으로 티켓 목록 조회 + 비관적 락 (confirm 용)
@@ -134,7 +178,7 @@ public class TicketRepositoryQueryDsl {
 
     public void releaseHoldTickets(LocalDateTime now, List<Long> ticketIdList) {
         BooleanExpression condition = ticket.id.in(ticketIdList)
-                .and(ticket.state.eq(TicketState.HOLD))
+                .and(ticket.state.in(TicketState.HOLD, TicketState.PAYMENT_PENDING))
                 .and(ticket.expiresAt.loe(now))
                 .and(ticket.holdToken.isNotNull())
                 .and(ticket.member.id.isNotNull());

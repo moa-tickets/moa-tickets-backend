@@ -228,7 +228,7 @@ class PaymentFinalizeServiceTest {
                 .isEqualTo(MoaExceptionType.TICKET_ALREADY_SOLD);
 
         then(payment).should().setState(PaymentState.FAILED);
-        then(payment).should().setFailReason("HOLD 상태 아님");
+        then(payment).should().setFailReason("PAYMENT_PENDING 상태 아님");
         then(paymentRepository).should().save(payment);
 
         then(paymentTicketRepository).shouldHaveNoInteractions();

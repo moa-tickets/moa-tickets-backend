@@ -94,7 +94,7 @@ public class PaymentConfirmValidatorService {
 //        boolean allHoldValid = tickets.stream().allMatch(t -> t.isHoldValidAt(now));
 
         // 수정 코드
-        boolean allHoldValid = tickets.stream().allMatch(t -> t.expiresAt().isAfter(now));
+        boolean allHoldValid = tickets.stream().allMatch(t -> t.state() == TicketState.HOLD);
 
         if (!allHoldValid) {
             throw new MoaException(MoaExceptionType.HOLD_EXPIRED);

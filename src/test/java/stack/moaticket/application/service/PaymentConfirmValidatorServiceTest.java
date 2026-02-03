@@ -13,8 +13,10 @@ import stack.moaticket.domain.member.service.MemberService;
 import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.payment.entity.Payment;
 import stack.moaticket.domain.payment.repository.PaymentRepositoryQueryDsl;
+import stack.moaticket.domain.ticket.dto.TicketHoldDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.repository.TicketRepositoryQueryDsl;
+import stack.moaticket.domain.ticket.type.TicketState;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
@@ -247,13 +249,22 @@ class PaymentConfirmValidatorServiceTest {
         given(paymentRepositoryQueryDsl.findByOrderIdForUpdate("order-1"))
                 .willReturn(payment);
 
-        Ticket ticket = mock(Ticket.class);
-        given(ticket.isHoldValidAt(any(LocalDateTime.class))).willReturn(true);
+        TicketHoldDto ticket = mock(TicketHoldDto.class);
 
-        given(ticketRepositoryQueryDsl.findTicketsByHoldToken("hold-1"))
+        LocalDateTime now = LocalDateTime.now();
+        given(ticket.sessionId()).willReturn(100L);
+        given(ticket.state()).willReturn(TicketState.HOLD);
+
+        given(ticketRepositoryQueryDsl.findTicketsDto("hold-1"))
                 .willReturn(List.of(ticket));
 
-        assertThat(validatorService).isNotNull();
+        given(ticketRepositoryQueryDsl.countByMemberAndSessionAndStates(
+                eq(1L), eq(100L), anyList()
+        )).willReturn(0L);
+
+        given(ticketRepositoryQueryDsl.updateHoldToPaymentPending(
+                anyList(), eq(1L), eq(100L), eq("hold-1"), any(LocalDateTime.class)
+        )).willReturn(1L);
 
 
         // when
@@ -261,6 +272,10 @@ class PaymentConfirmValidatorServiceTest {
                 validatorService.confirmPrepare(1L, validRequest());
 
         // then
+        assertThat(ctx.paymentId()).isEqualTo(10L);
+        assertThat(ctx.orderId()).isEqualTo("order-1");
+        assertThat(ctx.alreadyPaid()).isFalse();
+
         assertThat(ctx.alreadyPaid()).isFalse();
     }
 

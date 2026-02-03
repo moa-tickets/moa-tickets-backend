@@ -64,6 +64,13 @@ public class PaymentFinalizeService {
 
         boolean allPending = tickets.stream().allMatch(t -> t.getState() == TicketState.PAYMENT_PENDING);
         if (!allPending) {
+            boolean alreadySold = tickets.stream()
+                    .allMatch(t -> t.getState() == TicketState.SOLD);
+
+            if (alreadySold && payment.getState() == PaymentState.PAID) {
+                return; // 멱등 finalize 성공
+            }
+
             markFailedWithFailReason(payment, "PAYMENT_PENDING 상태 아님");
             throw new MoaException(MoaExceptionType.TICKET_ALREADY_SOLD);
         }

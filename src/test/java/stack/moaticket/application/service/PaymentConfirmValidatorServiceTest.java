@@ -275,8 +275,6 @@ class PaymentConfirmValidatorServiceTest {
         assertThat(ctx.paymentId()).isEqualTo(10L);
         assertThat(ctx.orderId()).isEqualTo("order-1");
         assertThat(ctx.alreadyPaid()).isFalse();
-
-        assertThat(ctx.alreadyPaid()).isFalse();
     }
 
     @Test

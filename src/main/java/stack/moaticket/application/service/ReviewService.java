@@ -17,6 +17,7 @@ import stack.moaticket.domain.review.repository.ReviewRepository;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
+import stack.moaticket.system.kafka.ReviewPostKafkaProducer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,8 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ConcertService concertService;
+
+    private final ReviewPostKafkaProducer reviewPostKafkaProducer;
 
     @Transactional
     public ReviewDto.ReviewResponseDto createReview(Long memberId, ReviewDto.ReviewRequestDto request) {
@@ -54,16 +57,23 @@ public class ReviewService {
         Review saved = reviewRepository.save(review);
 
 //        ai 서버의 api랑 통신(HTTP, RestAPI)을 하면된다
-        RestTemplate restTemplate = new RestTemplate();
-        String url = AI_SERVER_URL + "/api/reviews";
-        restTemplate.postForEntity(
-                url,
-                new ReviewDto.SpringReviewItemDto(
-                        review.getId(),
-                        review.getContent(),
-                        member.getId(),
-                        review.getConcert().getId()),
-                ReviewDto.SpringReviewItemDto.class);
+        ReviewDto.SpringReviewItemDto reviewItemDto = new ReviewDto.SpringReviewItemDto(
+                review.getId(),
+                review.getContent(),
+                member.getId(),
+                review.getConcert().getId());
+        reviewPostKafkaProducer.sendReviewPost(reviewItemDto);
+
+//        RestTemplate restTemplate = new RestTemplate();
+//        String url = AI_SERVER_URL + "/api/reviews";
+//        restTemplate.postForEntity(
+//                url,
+//                new ReviewDto.SpringReviewItemDto(
+//                        review.getId(),
+//                        review.getContent(),
+//                        member.getId(),
+//                        review.getConcert().getId()),
+//                ReviewDto.SpringReviewItemDto.class);
 
         return toResponse(saved);
     }

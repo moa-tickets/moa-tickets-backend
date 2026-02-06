@@ -11,14 +11,20 @@ public class SentimentService {
 
     private final SentimentKeywordRedisRepository redisRepository;
 
-    private static final String POSITIVE_KEY = "positive_keywords";
-    private static final String NEGATIVE_KEY = "negative_keywords";
     private static final int TOP_N = 7;
 
-    public SentimentKeywordDto getTopKeywords() {
+    private static String positiveKey(long concertId) {
+        return "concert:" + concertId + ":positive_keywords";
+    }
+
+    private static String negativeKey(long concertId) {
+        return "concert:" + concertId + ":negative_keywords";
+    }
+
+    public SentimentKeywordDto getTopKeywords(long concertId) {
         return SentimentKeywordDto.of(
-                redisRepository.findTopKeywordsWithCount(POSITIVE_KEY, TOP_N),
-                redisRepository.findTopKeywordsWithCount(NEGATIVE_KEY, TOP_N)
+                redisRepository.findTopKeywordsWithCount(positiveKey(concertId), TOP_N),
+                redisRepository.findTopKeywordsWithCount(negativeKey(concertId), TOP_N)
         );
     }
 }

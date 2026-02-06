@@ -98,6 +98,7 @@ public class ReviewService {
     private ReviewDto.ReviewResponseDto toResponse(Review review) {
         return new ReviewDto.ReviewResponseDto(
                 review.getId(),
+                review.getConcert().getId(),
                 review.getMember().getNickname(),
                 review.getConcert().getName(),
                 review.getScore(),

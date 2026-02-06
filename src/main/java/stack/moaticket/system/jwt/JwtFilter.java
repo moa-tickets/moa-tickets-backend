@@ -77,6 +77,4 @@ public class JwtFilter extends OncePerRequestFilter {
             throw new MoaException(MoaExceptionType.UNAUTHORIZED);
         }
     }
-
-
 }

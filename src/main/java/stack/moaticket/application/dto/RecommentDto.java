@@ -1,5 +1,6 @@
 package stack.moaticket.application.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ public class RecommentDto {
 
     @Getter
     public static class Request {
-        @NotNull
+        @NotBlank
         private String content;
     }
 
@@ -24,7 +25,7 @@ public class RecommentDto {
     }
 
     public record RecommentFixRequest(
-            @NotNull String content
+            @NotBlank String content
     ) {
     }
 }

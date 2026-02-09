@@ -57,7 +57,7 @@ public class RecommentService {
                 .get();
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
 
         Recomment recomment = requestToEntity(member, request, comment);
         recommentRepository.save(recomment);
@@ -70,7 +70,7 @@ public class RecommentService {
                 .get();
 
         Recomment recommentEntity = recommentRepository.findById(recommentId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
 
         if (!recommentEntity.getRecommenter().getId().equals(memberId)) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
@@ -86,9 +86,9 @@ public class RecommentService {
                 .get();
 
         Recomment recommentEntity = recommentRepository.findById(recommentId)
-                .orElseThrow(() -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MoaException(MoaExceptionType.NOT_FOUND));
 
-        if (!recommentEntity.getCommenter().getId().equals(memberId)) {
+        if (!recommentEntity.getRecommenter().getId().equals(memberId)) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
 

@@ -35,11 +35,11 @@ public class RecommentController {
         recommentService.create(memberId, request, commentId);
     }
 
-    @PatchMapping("/recomments/{recommendId}")
+    @PatchMapping("/recomments/{recommentId}")
     public void fixRecomment(@AuthenticationPrincipal Long memberId,
                              @Valid @RequestBody RecommentDto.RecommentFixRequest recommentFixRequest,
-                             @PathVariable Long recommendId) {
-        recommentService.fix(memberId, recommentFixRequest, recommendId);
+                             @PathVariable Long recommentId) {
+        recommentService.fix(memberId, recommentFixRequest, recommentId);
     }
 
     @DeleteMapping("/recomments/{recommentId}")

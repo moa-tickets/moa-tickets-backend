@@ -9,6 +9,7 @@ import stack.moaticket.system.alarm.sse.component.SseHeartbeatScheduler;
 import stack.moaticket.system.alarm.sse.config.SseConfig;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
 import stack.moaticket.system.alarm.sse.service.SseHeartbeatService;
+import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 
 import java.util.concurrent.CountDownLatch;
@@ -33,10 +34,9 @@ public class SseConfigTest {
             assertThat(context).hasSingleBean(SseHeartbeatScheduler.class);
             assertThat(context).hasSingleBean(SseSubscribeService.class);
             assertThat(context).hasSingleBean(SseHeartbeatService.class);
-            assertThat(context).hasBean("syncSseSendService");
-            assertThat(context).hasBean("asyncSseSendService");
+            assertThat(context).hasSingleBean(SseSendService.class);
             assertThat(context).hasBean("heartbeatInformScheduler");
-            assertThat(context).hasBean("heartbeatExecutor");
+            assertThat(context).hasBean("asyncExecutor");
         });
     }
 
@@ -55,10 +55,9 @@ public class SseConfigTest {
                     assertThat(context).hasSingleBean(SseHeartbeatScheduler.class);
                     assertThat(context).hasSingleBean(SseSubscribeService.class);
                     assertThat(context).hasSingleBean(SseHeartbeatService.class);
-                    assertThat(context).hasBean("syncSseSendService");
-                    assertThat(context).hasBean("asyncSseSendService");
+                    assertThat(context).hasSingleBean(SseSendService.class);
                     assertThat(context).hasBean("heartbeatInformScheduler");
-                    assertThat(context).hasBean("heartbeatExecutor");
+                    assertThat(context).hasBean("asyncExecutor");
                 });
     }
 
@@ -77,10 +76,9 @@ public class SseConfigTest {
                     assertThat(context).doesNotHaveBean(SseHeartbeatScheduler.class);
                     assertThat(context).doesNotHaveBean(SseSubscribeService.class);
                     assertThat(context).doesNotHaveBean(SseHeartbeatService.class);
-                    assertThat(context).doesNotHaveBean("syncSseSendService");
-                    assertThat(context).doesNotHaveBean("asyncSseSendService");
+                    assertThat(context).doesNotHaveBean(SseSendService.class);
                     assertThat(context).doesNotHaveBean("heartbeatInformScheduler");
-                    assertThat(context).doesNotHaveBean("heartbeatExecutor");
+                    assertThat(context).doesNotHaveBean("asyncExecutor");
                 });
     }
 

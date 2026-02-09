@@ -11,13 +11,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import stack.moaticket.system.alarm.sse.job.SseHeartbeatInformJob;
 import stack.moaticket.system.alarm.sse.component.SseHeartbeatScheduler;
 import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
-import stack.moaticket.system.alarm.sse.service.AsyncSseSendService;
 import stack.moaticket.system.alarm.sse.service.SseHeartbeatService;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @ConditionalOnProperty(
         value = "alarm.sender",
@@ -41,11 +39,11 @@ public class SseConfig {
         return ts;
     }
 
-    @Bean(name = "heartbeatExecutor")
-    public Executor heartbeatExecutor() {
+    @Bean(name = "asyncExecutor")
+    public Executor asyncExecutor() {
         ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
-        ex.setCorePoolSize(10);
-        ex.setMaxPoolSize(500); // 테스트하려는 동시 접속자 수보다 넉넉하게
+        ex.setCorePoolSize(8);
+        ex.setMaxPoolSize(20); // 테스트하려는 동시 접속자 수보다 넉넉하게
         ex.setQueueCapacity(1000); // 순간적인 몰림을 방지하는 완충 지대
         ex.setThreadNamePrefix(HEART_BEAT_EXECUTOR_PREFIX);
         //ex.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
@@ -74,27 +72,21 @@ public class SseConfig {
     @Bean
     public SseSubscribeService sseSubscribeService(
             SseEmitterRegister sseEmitterRegister,
-            @Qualifier("syncSseSendService") SseSendService sseSendService) {
+            @Qualifier("syncSendService") SseSendService sseSendService) {
         return new SseSubscribeService(sseEmitterRegister, sseSendService);
     }
 
-    @Bean(name = "syncSseSendService")
+    @Bean(name = "syncSendService")
     @Primary
     public SseSendService sseSendService(SseEmitterRegister register) {
         return new SseSendService(register);
     }
 
-    @Bean(name = "asyncSseSendService")
-    public AsyncSseSendService asyncSseSendService(
-            @Qualifier("syncSseSendService") SseSendService sseSendService,
-            @Qualifier("heartbeatExecutor") Executor heartbeatExecutor) {
-        return new AsyncSseSendService(sseSendService, heartbeatExecutor);
-    }
-
     @Bean
     public SseHeartbeatService sseHeartbeatService(
             SseEmitterRegister sseEmitterRegister,
-            @Qualifier("asyncSseSendService") AsyncSseSendService asyncSseSendService) {
-        return new SseHeartbeatService(sseEmitterRegister, asyncSseSendService);
+            SseSendService sseSendService,
+            @Qualifier("asyncExecutor") Executor asyncExecutor) {
+        return new SseHeartbeatService(sseEmitterRegister, sseSendService, asyncExecutor);
     }
 }

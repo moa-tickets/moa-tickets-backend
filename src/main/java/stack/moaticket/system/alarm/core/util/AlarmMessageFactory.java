@@ -1,4 +1,4 @@
-package stack.moaticket.system.alarm.core.component;
+package stack.moaticket.system.alarm.core.util;
 
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;

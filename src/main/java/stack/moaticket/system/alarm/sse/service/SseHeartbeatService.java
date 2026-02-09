@@ -53,7 +53,7 @@ public class SseHeartbeatService {
 
                         Long memberId = meta.getMemberId();
                         AlarmTarget target = new AlarmTarget(meta.getConnectionId());
-                        sseSendService.sendOrThrow(memberId, target, message);
+                        sseSendService.send(memberId, target, message);
                     }
                 });
             }

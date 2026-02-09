@@ -23,7 +23,7 @@ public class CommentController {
 
     }
 
-    @PatchMapping("/comment/{commentId}")
+    @PatchMapping("/comments/{commentId}")
     public void fix(@AuthenticationPrincipal Long memberId,
                     @Valid @RequestBody CommentDto.CommentFixRequest commentFixRequest,
                     @PathVariable Long commentId) {
@@ -31,7 +31,7 @@ public class CommentController {
 
     }
 
-    @DeleteMapping("/comment/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     public void delete(@AuthenticationPrincipal Long memberId, @PathVariable Long commentId) {
         commentService.delete(memberId, commentId);
     }

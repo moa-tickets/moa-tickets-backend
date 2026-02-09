@@ -17,6 +17,7 @@ public class RecommentDto {
     @Getter
     @SuperBuilder
     public static class RecommentResponse {
+        private Long commentId;
         private Long recommentId;
         private String nickName;
         private String content;

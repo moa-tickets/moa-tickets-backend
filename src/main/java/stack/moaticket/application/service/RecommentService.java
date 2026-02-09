@@ -43,7 +43,11 @@ public class RecommentService {
                 .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
                 .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
                 .get();
-        return null;
+
+        Recomment recommentEntity = recommentRepository.findById(memberId)
+                .orElseThrow(() -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+
+        return entityToResponse(recommentEntity);
     }
 
     public void create(Long memberId, RecommentDto.Request request, Long commentId) {
@@ -95,6 +99,7 @@ public class RecommentService {
     private RecommentDto.RecommentResponse entityToResponse(Recomment recomment) {
         return RecommentDto.RecommentResponse.builder()
                 .recommentId(recomment.getId())
+                .commentId(recomment.getCommenter().getId())
                 .nickName(recomment.getRecommenter().getNickname())
                 .content(recomment.getContent())
                 .build();

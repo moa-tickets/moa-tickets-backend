@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.RecommentDto;
-import stack.moaticket.application.service.CommentService;
 import stack.moaticket.application.service.RecommentService;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.List;
 public class RecommentController {
     private final RecommentService recommentService;
 
-    @GetMapping("/recommnets")
+    @GetMapping("/recomments")
     public List<RecommentDto.RecommentResponse> readRecomments() {
         return recommentService.reads();
     }
@@ -28,7 +27,7 @@ public class RecommentController {
         return recommentService.read(id);
     }
 
-    @PostMapping("/recomments/{commentId}")
+    @PostMapping("/comments/{commentId}/recomment")
     public void createRecomment(
             @AuthenticationPrincipal Long memberId,
             @Valid @RequestBody RecommentDto.Request request,

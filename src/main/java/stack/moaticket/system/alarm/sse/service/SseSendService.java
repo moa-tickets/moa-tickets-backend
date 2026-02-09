@@ -41,7 +41,7 @@ public class SseSendService implements AlarmSendService {
     }
 
     private <T> void sendToMember(Long memberId, String connectionId, EmitterMeta meta, String type, T payload, boolean rethrow) {
-        if(meta == null) return;
+        if(meta == null || !meta.isAlive()) return;
         SseEmitter emitter = meta.getEmitter();
         try {
             emitter.send(SseEmitter
@@ -50,7 +50,9 @@ public class SseSendService implements AlarmSendService {
                     .data(payload));
             meta.updateLastSentAt(LocalDateTime.now());
         } catch (IOException | IllegalStateException e) {
-            cleanup(memberId, connectionId, emitter, e);
+            if(meta.markDead()) {
+                cleanup(memberId, connectionId, emitter, e);
+            }
             if(rethrow) {
                 throw new MoaException(MoaExceptionType.SSE_ERROR);
             }

@@ -8,17 +8,24 @@ import stack.moaticket.system.util.KeyGeneratorUtil;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 @Slf4j
 public class SseEmitterRegister {
+    private final AtomicLong total = new AtomicLong(0);
     private final ConcurrentMap<Long, ConcurrentHashMap<String, EmitterMeta>> memberEmitterMap = new ConcurrentHashMap<>();
+
+    private static final int SHARD_COUNT = 8;
 
     public String insert(Long memberId, SseEmitter emitter) {
         String connectionId = KeyGeneratorUtil.genUuidV7();
-        memberEmitterMap
-                .computeIfAbsent(memberId, k -> new ConcurrentHashMap<>())
-                .put(connectionId, new EmitterMeta(emitter));
+        ConcurrentMap<String, EmitterMeta> inner = memberEmitterMap
+                .computeIfAbsent(memberId, k -> new ConcurrentHashMap<>());
+
+        EmitterMeta prev = inner.putIfAbsent(connectionId, new EmitterMeta(memberId, connectionId, emitter));
+        if(prev == null) total.incrementAndGet();
+
         return connectionId;
     }
 
@@ -47,10 +54,41 @@ public class SseEmitterRegister {
         return snapshot;
     }
 
+    public Map<Integer, List<EmitterMeta>> getFilteredForShard(Predicate<EmitterMeta> predicate) {
+        if(memberEmitterMap.isEmpty()) return Collections.emptyMap();
+        Map<Integer, List<EmitterMeta>> shardMap = createShardMap();
+
+        memberEmitterMap.forEach((mid, inner) -> {
+            inner.forEach((cid, meta) -> {
+                if(!predicate.test(meta)) return;
+                shardMap.get(shard(mid)).add(meta);
+            });
+        });
+
+        return shardMap;
+    }
+
     public void remove(Long memberId, String connectionId) {
         memberEmitterMap.computeIfPresent(memberId, (id, emitters) -> {
-            emitters.remove(connectionId);
+            EmitterMeta removed = emitters.remove(connectionId);
+            if(removed != null) {
+                total.decrementAndGet();
+                removed.markDead();
+            }
+
             return emitters.isEmpty() ? null : emitters;
         });
+    }
+
+    private Map<Integer, List<EmitterMeta>> createShardMap() {
+        Map<Integer, List<EmitterMeta>> shardMap = new HashMap<>();
+        for(int i=0; i<SHARD_COUNT; i++) {
+            shardMap.put(i, new ArrayList<>());
+        }
+        return shardMap;
+    }
+
+    private int shard(Long memberId) {
+        return Math.floorMod(memberId, SHARD_COUNT);
     }
 }

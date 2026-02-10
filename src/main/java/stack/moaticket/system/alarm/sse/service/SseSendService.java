@@ -2,33 +2,37 @@ package stack.moaticket.system.alarm.sse.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
 import stack.moaticket.system.alarm.core.service.AlarmSendService;
+import stack.moaticket.system.alarm.sse.component.gauge.SseGaugeManager;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @Slf4j
 public class SseSendService implements AlarmSendService {
     private final SseEmitterRegister sseEmitterRegister;
-    private final Executor asyncExecutor;
+    private final ThreadPoolTaskExecutor asyncExecutor;
+    private final SseGaugeManager sseGaugeManager;
 
     public SseSendService(
             SseEmitterRegister sseEmitterRegister,
-            @Qualifier("asyncExecutor") Executor asyncExecutor) {
+            @Qualifier("asyncExecutor") ThreadPoolTaskExecutor asyncExecutor,
+            SseGaugeManager sseGaugeManager) {
         this.asyncExecutor = asyncExecutor;
         this.sseEmitterRegister = sseEmitterRegister;
+        this.sseGaugeManager = sseGaugeManager;
     }
 
     @Override
@@ -84,20 +88,24 @@ public class SseSendService implements AlarmSendService {
         String type = message.key();
         Object payload = message.payload();
 
-        try {
-            emitter.send(SseEmitter
-                    .event()
-                    .name(type)
-                    .data(payload));
-            meta.updateLastSentAt(LocalDateTime.now());
-        } catch (IOException | IllegalStateException e) {
-            if(meta.markDead()) {
-                cleanup(memberId, connectionId, emitter, e);
+        sseGaugeManager.recordSend(fail -> {
+            try {
+                emitter.send(SseEmitter
+                        .event()
+                        .name(type)
+                        .data(payload));
+                meta.updateLastSentAt(LocalDateTime.now());
+            } catch (IOException | IllegalStateException e) {
+                fail.run();
+
+                if(meta.markDead()) {
+                    cleanup(memberId, connectionId, emitter, e);
+                }
+                if(rethrow) {
+                    throw new MoaException(MoaExceptionType.SSE_ERROR);
+                }
             }
-            if(rethrow) {
-                throw new MoaException(MoaExceptionType.SSE_ERROR);
-            }
-        }
+        });
     }
 
     private <T> void internalShard(List<T> metaList, Consumer<T> action, int cutoff) {
@@ -117,7 +125,6 @@ public class SseSendService implements AlarmSendService {
                 } catch (Exception ex) {
                     log.warn("Shard task failed. range=[{}, {}]", s, e, ex);
                 }
-
             });
         }
     }

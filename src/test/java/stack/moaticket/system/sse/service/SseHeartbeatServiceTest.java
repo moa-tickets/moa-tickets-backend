@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 import stack.moaticket.system.alarm.sse.service.SseHeartbeatService;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 

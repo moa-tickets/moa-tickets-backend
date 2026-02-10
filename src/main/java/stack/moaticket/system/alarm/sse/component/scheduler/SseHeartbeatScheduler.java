@@ -1,4 +1,4 @@
-package stack.moaticket.system.alarm.sse.component;
+package stack.moaticket.system.alarm.sse.component.scheduler;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;

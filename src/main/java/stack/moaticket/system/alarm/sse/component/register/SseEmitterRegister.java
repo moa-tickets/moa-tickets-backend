@@ -1,4 +1,4 @@
-package stack.moaticket.system.alarm.sse.register;
+package stack.moaticket.system.alarm.sse.component.register;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,5 +81,13 @@ public class SseEmitterRegister {
 
             return emitters.isEmpty() ? null : emitters;
         });
+    }
+
+    public Long getTotalEmitterCount() {
+        return total.get();
+    }
+
+    public int getTotalMemberCount() {
+        return memberEmitterMap.size();
     }
 }

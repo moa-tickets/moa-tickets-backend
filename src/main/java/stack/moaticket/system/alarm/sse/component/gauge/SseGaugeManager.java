@@ -28,10 +28,14 @@ public class SseGaugeManager {
         AtomicBoolean failed = new AtomicBoolean(false);
         Runnable markFailed = () -> failed.set(true);
 
-        timer.record(() -> actionWhenFail.accept(markFailed));
-
-        if(failed.get()) {
-            fail.increment();
+        try {
+            timer.record(() -> actionWhenFail.accept(markFailed));
+        } catch (RuntimeException e) {
+            failed.set(true);
+        } finally {
+            if(failed.get()) {
+                fail.increment();
+            }
         }
     }
 }

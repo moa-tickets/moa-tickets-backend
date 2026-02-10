@@ -2,6 +2,7 @@ package stack.moaticket.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -16,13 +17,12 @@ import stack.moaticket.domain.ticket.dto.TicketMetaDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
 import stack.moaticket.domain.ticket.service.TicketService;
 import stack.moaticket.domain.ticket_alarm.service.TicketAlarmService;
+import stack.moaticket.system.alarm.core.util.AlarmShardUtil;
 import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -37,6 +37,9 @@ public class AlarmService {
     private final MemberService memberService;
     private final TicketService ticketService;
     private final TicketAlarmService ticketAlarmService;
+
+    @Value("${app.server.alarm.shard-count}")
+    private int shardCount;
 
     public SseEmitter subscribe(Long memberId) {
         validator.of(memberService.findById(memberId))
@@ -75,15 +78,31 @@ public class AlarmService {
     }
 
     public void sendConcertStartInform(List<SessionStartAlarmMetaDto> alarmMetadata) {
+        final int cutoff = 200;
+        Map<Integer, List<SessionStartAlarmMetaDto>> shardMap = AlarmShardUtil.createShardMap(shardCount);
+
         for(SessionStartAlarmMetaDto alarm : alarmMetadata) {
-            Long memberId = alarm.memberId();
-            AlarmMessage message = AlarmMessageFactory.sessionStart(alarm);
-            alarmSendService.sendAll(memberId, message);
+            int shardNum = AlarmShardUtil.getShardNum(alarm.memberId(), shardCount);
+
+            shardMap.get(shardNum).add(alarm);
         }
+
+        alarmSendService.sendToShards(
+                shardMap,
+                t -> {
+                    Long memberId = t.memberId();
+                    AlarmMessage message = AlarmMessageFactory.sessionStart(t);
+
+                    alarmSendService.sendAll(memberId, message);
+                },
+                cutoff);
     }
 
     // 홀드 풀릴떄 보내는 알림
     public void sendTicketReleaseInform(Map<Long, List<Long>> receiverMap, Map<Long, TicketMetaDto> ticketMetadata) {
+        Map<Integer, List<TicketReleaseSendData>> shardMap = AlarmShardUtil.createShardMap(shardCount);
+        final int cutoff = 200;
+
         // 보내야할 유저가 많으면 키가 많아지고 루프가 많이 실행됨 o(n) 속도 체크 필요하다
         for(Map.Entry<Long, List<Long>> entry : receiverMap.entrySet()) {
             Long memberId = entry.getKey();
@@ -91,14 +110,28 @@ public class AlarmService {
             List<Long> ticketIdList = entry.getValue();
             if(ticketIdList == null || ticketIdList.isEmpty()) continue;
 
-            List<TicketMetaDto> metaList = ticketIdList.stream()
-                    .map(ticketMetadata::get)
-                    .filter(Objects::nonNull)
-                    .toList();
-            if(metaList.isEmpty()) continue;
+            List<TicketMetaDto> metaList = new ArrayList<>(ticketIdList.size());
+            for (Long ticketId : ticketIdList) {
+                TicketMetaDto meta = ticketMetadata.get(ticketId);
+                if (meta != null) metaList.add(meta);
+            }
+            if (metaList.isEmpty()) continue;
 
             AlarmMessage message = AlarmMessageFactory.ticketRelease(metaList);
-            alarmSendService.sendAll(memberId, message);
+
+            int shardNum = AlarmShardUtil.getShardNum(memberId, shardCount);
+            shardMap.get(shardNum).add(new TicketReleaseSendData(memberId, message));
         }
+
+        alarmSendService.sendToShards(
+                shardMap,
+                data -> alarmSendService.sendAll(data.memberId(), data.message()),
+                cutoff
+        );
     }
+
+    private record TicketReleaseSendData(
+            Long memberId,
+            AlarmMessage message
+    ) {}
 }

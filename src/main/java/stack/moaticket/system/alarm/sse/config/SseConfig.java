@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -18,8 +17,8 @@ import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 import java.util.concurrent.Executor;
 
 @ConditionalOnProperty(
-        value = "alarm.sender",
-        havingValue = "sse",
+        value = "app.server.alarm.type",
+        havingValue = "SSE",
         matchIfMissing = true
 )
 @Configuration
@@ -72,14 +71,15 @@ public class SseConfig {
     @Bean
     public SseSubscribeService sseSubscribeService(
             SseEmitterRegister sseEmitterRegister,
-            @Qualifier("syncSendService") SseSendService sseSendService) {
+            SseSendService sseSendService) {
         return new SseSubscribeService(sseEmitterRegister, sseSendService);
     }
 
-    @Bean(name = "syncSendService")
-    @Primary
-    public SseSendService sseSendService(SseEmitterRegister register) {
-        return new SseSendService(register);
+    @Bean
+    public SseSendService sseSendService(
+            SseEmitterRegister register,
+            @Qualifier("asyncExecutor")Executor asyncExecutor) {
+        return new SseSendService(register, asyncExecutor);
     }
 
     @Bean

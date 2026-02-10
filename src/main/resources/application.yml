@@ -36,11 +36,12 @@ management:
 
 app:
   server:
+    alarm:
+      type: SSE
+      shard-count: 8
+
     scheduler:
       session_start: true
       ticket_release: true
   ai:
     url: ${AI_URL}
-
-alarm:
-  sender: sse

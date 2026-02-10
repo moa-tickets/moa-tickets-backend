@@ -1,7 +1,9 @@
 package stack.moaticket.system.alarm.sse.register;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import stack.moaticket.system.alarm.core.util.AlarmShardUtil;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.util.KeyGeneratorUtil;
 
@@ -16,7 +18,8 @@ public class SseEmitterRegister {
     private final AtomicLong total = new AtomicLong(0);
     private final ConcurrentMap<Long, ConcurrentHashMap<String, EmitterMeta>> memberEmitterMap = new ConcurrentHashMap<>();
 
-    private static final int SHARD_COUNT = 8;
+    @Value("${app.server.alarm.shard-count}")
+    private int shardCount;
 
     public String insert(Long memberId, SseEmitter emitter) {
         String connectionId = KeyGeneratorUtil.genUuidV7();
@@ -56,12 +59,12 @@ public class SseEmitterRegister {
 
     public Map<Integer, List<EmitterMeta>> getFilteredForShard(Predicate<EmitterMeta> predicate) {
         if(memberEmitterMap.isEmpty()) return Collections.emptyMap();
-        Map<Integer, List<EmitterMeta>> shardMap = createShardMap();
+        Map<Integer, List<EmitterMeta>> shardMap = AlarmShardUtil.createShardMap(shardCount);
 
         memberEmitterMap.forEach((mid, inner) -> {
             inner.forEach((cid, meta) -> {
                 if(!predicate.test(meta)) return;
-                shardMap.get(shard(mid)).add(meta);
+                shardMap.get(AlarmShardUtil.getShardNum(mid, shardCount)).add(meta);
             });
         });
 
@@ -78,17 +81,5 @@ public class SseEmitterRegister {
 
             return emitters.isEmpty() ? null : emitters;
         });
-    }
-
-    private Map<Integer, List<EmitterMeta>> createShardMap() {
-        Map<Integer, List<EmitterMeta>> shardMap = new HashMap<>();
-        for(int i=0; i<SHARD_COUNT; i++) {
-            shardMap.put(i, new ArrayList<>());
-        }
-        return shardMap;
-    }
-
-    private int shard(Long memberId) {
-        return Math.floorMod(memberId, SHARD_COUNT);
     }
 }

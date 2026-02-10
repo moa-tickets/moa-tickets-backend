@@ -45,9 +45,6 @@ public class SessionStartAlarm extends Base {
     @Column(name = "session_start_alarm_at", nullable = false, updatable = false)
     private LocalDateTime alarmAt;
 
-    @Column(name = "session_start_claimed_at")
-    private LocalDateTime claimedAt;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "session_start_alarm_state", nullable = false)
     private SessionStartAlarmState state;

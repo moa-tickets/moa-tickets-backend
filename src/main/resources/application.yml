@@ -33,6 +33,10 @@ management:
     web:
       exposure:
         include: prometheus,env
+  metrics:
+    distribution:
+      percentiles-histogram:
+        alarm.sse.send.seconds: true
 
 app:
   server:

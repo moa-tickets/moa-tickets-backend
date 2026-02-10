@@ -7,14 +7,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import stack.moaticket.system.alarm.sse.component.gauge.SseGaugeManager;
 import stack.moaticket.system.alarm.sse.job.SseHeartbeatInformJob;
-import stack.moaticket.system.alarm.sse.component.SseHeartbeatScheduler;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
+import stack.moaticket.system.alarm.sse.component.scheduler.SseHeartbeatScheduler;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 import stack.moaticket.system.alarm.sse.service.SseHeartbeatService;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
-
-import java.util.concurrent.Executor;
 
 @ConditionalOnProperty(
         value = "app.server.alarm.type",
@@ -24,7 +23,7 @@ import java.util.concurrent.Executor;
 @Configuration
 public class SseConfig {
     private static final String HEART_BEAT_SCHEDULER_PREFIX = "sch-hb-";
-    private static final String HEART_BEAT_EXECUTOR_PREFIX = "ex-hb-";
+    private static final String SEND_EXECUTOR_PREFIX = "ex-sd-";
 
     @Bean(name = "heartbeatInformScheduler")
     public ThreadPoolTaskScheduler heartbeatInformScheduler() {
@@ -39,13 +38,12 @@ public class SseConfig {
     }
 
     @Bean(name = "asyncExecutor")
-    public Executor asyncExecutor() {
+    public ThreadPoolTaskExecutor asyncExecutor() {
         ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
         ex.setCorePoolSize(8);
         ex.setMaxPoolSize(20); // 테스트하려는 동시 접속자 수보다 넉넉하게
         ex.setQueueCapacity(1000); // 순간적인 몰림을 방지하는 완충 지대
-        ex.setThreadNamePrefix(HEART_BEAT_EXECUTOR_PREFIX);
-        //ex.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        ex.setThreadNamePrefix(SEND_EXECUTOR_PREFIX);
         ex.initialize();
         return ex;
     }
@@ -78,15 +76,14 @@ public class SseConfig {
     @Bean
     public SseSendService sseSendService(
             SseEmitterRegister register,
-            @Qualifier("asyncExecutor")Executor asyncExecutor) {
-        return new SseSendService(register, asyncExecutor);
+            @Qualifier("asyncExecutor") ThreadPoolTaskExecutor asyncExecutor,
+            SseGaugeManager manager) {
+        return new SseSendService(register, asyncExecutor, manager);
     }
 
     @Bean
     public SseHeartbeatService sseHeartbeatService(
-            SseEmitterRegister sseEmitterRegister,
-            SseSendService sseSendService,
-            @Qualifier("asyncExecutor") Executor asyncExecutor) {
-        return new SseHeartbeatService(sseEmitterRegister, sseSendService, asyncExecutor);
+            SseSendService sseSendService) {
+        return new SseHeartbeatService(sseSendService);
     }
 }

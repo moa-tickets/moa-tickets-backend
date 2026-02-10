@@ -24,10 +24,6 @@ import java.time.LocalDateTime;
         @Index(
                 name = "idx_session_start_alarm_state_alarm_at",
                 columnList = "session_start_alarm_state, session_start_alarm_at"),
-        @Index(
-                name = "idx_session_start_alarm_state_claimed_at",
-                columnList = "session_start_alarm_state, session_start_claimed_at"
-        )
 })
 public class SessionStartAlarm extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

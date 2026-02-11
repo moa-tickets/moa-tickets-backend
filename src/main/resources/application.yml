@@ -48,3 +48,7 @@ app:
       ticket_release: ${APP_SERVER_SCHEDULER_TICKET_RELEASE:true}
   ai:
     url: ${AI_URL}
+  frontend:
+    url: ${APP_FRONTEND_URL}
+  cookie:
+    domain: ${APP_COOKIE_DOMAIN}

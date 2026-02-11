@@ -17,9 +17,3 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-
-app:
-  frontend:
-    url: http://localhost:5173
-  cookie:
-    domain: localhost

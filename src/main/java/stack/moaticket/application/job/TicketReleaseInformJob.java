@@ -3,6 +3,7 @@ package stack.moaticket.application.job;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import stack.moaticket.application.component.scheduler.JobSchedulerProperties;
 import stack.moaticket.application.facade.HoldCleanedInformFacade;
 import stack.moaticket.application.service.AlarmService;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
@@ -24,17 +25,19 @@ public class TicketReleaseInformJob {
     private final AlarmService alarmService;
     private final TicketAlarmService ticketAlarmService;
     private final HoldCleanedInformFacade holdCleanedInformFacade;
+    private final JobSchedulerProperties properties;
 
-    private static final Long BATCH_SIZE = 200L;
+    private final Long batchSize = properties.ticketRelease().batchSize();
+    private final int loopCount = properties.ticketRelease().loopCount();
+    private final int pageLimit = properties.ticketRelease().pageLimit();
 
     public void runEpoch() {
-        int retry = 5;
-        int limit = 200;
+        int retry = loopCount;
 
         while(retry-- > 0) {
             LocalDateTime now = LocalDateTime.now();
 
-            List<Long> ticketIdList = holdCleanedInformFacade.extractCandidates(now, BATCH_SIZE);
+            List<Long> ticketIdList = holdCleanedInformFacade.extractCandidates(now, batchSize);
             if(ticketIdList.isEmpty()) break;
 
             holdCleanedInformFacade.release(now, ticketIdList);
@@ -46,7 +49,7 @@ public class TicketReleaseInformJob {
                     ));
             if(ticketMetadata.isEmpty()) break;
 
-            sendByPages(ticketIdList, ticketMetadata, limit);
+            sendByPages(ticketIdList, ticketMetadata, pageLimit);
         }
     }
 

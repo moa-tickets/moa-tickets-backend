@@ -20,9 +20,7 @@ spring:
   kafka:
     # 브로커 주소 목록 (클러스터 구성)
     bootstrap-servers:
-      - localhost:9092
-      - localhost:9093
-      - localhost:9094
+      - ec2-3-35-241-141.ap-northeast-2.compute.amazonaws.com:9092
 
     producer:
       # key/value 직렬화 클래스

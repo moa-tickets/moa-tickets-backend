@@ -20,9 +20,6 @@ public class SentimentKeywordRedisRepository {
         Set<ZSetOperations.TypedTuple<String>> tuples =
                 redisTemplate.opsForZSet().reverseRangeWithScores(redisKey, 0, topN - 1);
 
-        System.out.println("[DEBUG] redisKey=" + redisKey);
-        System.out.println("[DEBUG] exists=" + Boolean.TRUE.equals(redisTemplate.hasKey(redisKey)));
-
         if (tuples == null || tuples.isEmpty()) {
             return Collections.emptyList();
         }

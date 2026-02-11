@@ -41,11 +41,10 @@ management:
 app:
   server:
     alarm:
-      type: SSE
+      type: ${APP_SERVER_ALARM:SSE}
       shard-count: 8
-
     scheduler:
-      session_start: true
-      ticket_release: true
+      session_start: ${APP_SERVER_SCHEDULER_SESSION_START:true}
+      ticket_release: ${APP_SERVER_SCHEDULER_TICKET_RELEASE:true}
   ai:
     url: ${AI_URL}

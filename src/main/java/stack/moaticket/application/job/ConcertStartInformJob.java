@@ -19,11 +19,9 @@ public class ConcertStartInformJob {
     private final ConcertInformFacade concertInformFacade;
     private final JobSchedulerProperties properties;
 
-    private final Long batchSize = properties.sessionStart().batchSize();
-    private final int loopCount = properties.sessionStart().loopCount();
-
     public void runEpoch() {
-        int retry = loopCount;
+        Long batchSize = properties.sessionStart().batchSize();
+        int retry = properties.sessionStart().loopCount();
         LocalDateTime now = LocalDateTime.now();
 
         while(retry-- > 0) {

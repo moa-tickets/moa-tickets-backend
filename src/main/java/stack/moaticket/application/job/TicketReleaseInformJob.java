@@ -27,12 +27,10 @@ public class TicketReleaseInformJob {
     private final HoldCleanedInformFacade holdCleanedInformFacade;
     private final JobSchedulerProperties properties;
 
-    private final Long batchSize = properties.ticketRelease().batchSize();
-    private final int loopCount = properties.ticketRelease().loopCount();
-    private final int pageLimit = properties.ticketRelease().pageLimit();
-
     public void runEpoch() {
-        int retry = loopCount;
+        Long batchSize = properties.ticketRelease().batchSize();
+        int retry = properties.ticketRelease().loopCount();
+        int pageLimit = properties.ticketRelease().pageLimit();
 
         while(retry-- > 0) {
             LocalDateTime now = LocalDateTime.now();

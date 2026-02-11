@@ -7,12 +7,12 @@ import lombok.Getter;
 @Getter
 @Builder
 public class SentimentKeywordDto {
-    private List<KeywordCountDto> positive;
-    private List<KeywordCountDto> negative;
+    private List<AspectKeywordsDto> positive;
+    private List<AspectKeywordsDto> negative;
 
     public static SentimentKeywordDto of(
-            List<KeywordCountDto> positive,
-            List<KeywordCountDto> negative
+            List<AspectKeywordsDto> positive,
+            List<AspectKeywordsDto> negative
     ) {
         return SentimentKeywordDto.builder()
                 .positive(positive)

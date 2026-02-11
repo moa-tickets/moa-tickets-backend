@@ -21,4 +21,11 @@ public class SentimentController {
         SentimentKeywordDto response = sentimentService.getTopKeywords(concertId);
         return ResponseEntity.ok(response);
     }
+
+    // temp code
+    @GetMapping("/debug-redis")
+    public ResponseEntity<String> debugRedis() {
+        return ResponseEntity.ok(sentimentService.debugRedis());
+    }
+
 }

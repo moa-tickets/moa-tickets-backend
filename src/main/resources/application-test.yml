@@ -13,8 +13,3 @@ spring:
   sql:
     init:
       mode: never
-app:
-  frontend:
-    url: http://localhost:5173
-  cookie:
-    domain: localhost

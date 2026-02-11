@@ -33,14 +33,18 @@ management:
     web:
       exposure:
         include: prometheus,env
+  metrics:
+    distribution:
+      percentiles-histogram:
+        alarm.sse.send.seconds: true
 
 app:
   server:
+    alarm:
+      type: ${APP_SERVER_ALARM:SSE}
+      shard-count: 8
     scheduler:
-      session_start: true
-      ticket_release: true
+      session_start: ${APP_SERVER_SCHEDULER_SESSION_START:true}
+      ticket_release: ${APP_SERVER_SCHEDULER_TICKET_RELEASE:true}
   ai:
     url: ${AI_URL}
-
-alarm:
-  sender: sse

@@ -14,7 +14,7 @@ import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

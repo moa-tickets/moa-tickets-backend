@@ -27,6 +27,9 @@ public class SessionStartAlarmQueryDslRepositoryImpl implements SessionStartAlar
                 .from(sessionStartAlarm)
                 .where(condition)
                 .limit(batchSize)
+                .orderBy(
+                        sessionStartAlarm.alarmAt.asc(),
+                        sessionStartAlarm.id.asc())
                 .fetch();
     }
 
@@ -77,7 +80,9 @@ public class SessionStartAlarmQueryDslRepositoryImpl implements SessionStartAlar
                 )
                 .from(sessionStartAlarm)
                 .where(condition)
-                .orderBy(sessionStartAlarm.alarmAt.asc())
+                .orderBy(
+                        sessionStartAlarm.alarmAt.asc(),
+                        sessionStartAlarm.id.asc())
                 .fetch();
     }
 }

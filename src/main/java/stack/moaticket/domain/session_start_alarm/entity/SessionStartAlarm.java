@@ -22,8 +22,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "session_start_alarm", indexes = {
         @Index(
-                name = "idx_session_start_alarm_state_alarm_at",
-                columnList = "session_start_alarm_state, session_start_alarm_at"),
+                name = "session_start_alarm_send",
+                columnList = "session_start_alarm_state, session_start_alarm_at, session_start_alarm_id"),
 })
 public class SessionStartAlarm extends Base {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

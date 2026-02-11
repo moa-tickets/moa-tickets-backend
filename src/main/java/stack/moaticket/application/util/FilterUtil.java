@@ -11,8 +11,7 @@ public class FilterUtil {
             "/favicon.ico",
             "/error",
             "/health",
-            "/actuator/prometheus",
-            "/test/alarm/sub"
+            "/actuator/prometheus"
     );
     private static final Set<String> PREFIX_FILTER_SET = Set.of(
             "/swagger-ui",
@@ -20,7 +19,8 @@ public class FilterUtil {
             "/v3/api-docs",
             "/api/product/detail",
             "/api/product/concertList",
-            "/ws"
+            "/ws",
+            "/test"
     );
 
     public static boolean checkFilter(String uri) {

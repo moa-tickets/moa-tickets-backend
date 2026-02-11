@@ -24,9 +24,9 @@ spring:
 
 logging:
   level:
-    root: WARN                     # 프로덕션에서는 경고 이상만 로깅
-    com.my.investment_mentor: WARN # 애플리케이션 로그는 INFO 수준
-    org.springframework: WARN      # Spring 로그는 경고 이상만
+    root: INFO                     # 프로덕션에서는 경고 이상만 로깅
+    com.my.investment_mentor: INFO # 애플리케이션 로그는 INFO 수준
+    org.springframework: INFO      # Spring 로그는 경고 이상만
 
 app:
   server:

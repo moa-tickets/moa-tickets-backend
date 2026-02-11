@@ -5,7 +5,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
+import stack.moaticket.system.jwt.JwtUtil;
 import stack.moaticket.test.service.AlarmTestService;
+import stack.moaticket.test.service.LoadTestAuthService;
 
 @EnableConfigurationProperties(LoadTestProperties.class)
 @ConditionalOnProperty(
@@ -19,5 +21,10 @@ public class LoadTestConfig {
     @Bean
     public AlarmTestService alarmTestService(SseSubscribeService sseSubscribeService) {
         return new AlarmTestService(sseSubscribeService);
+    }
+
+    @Bean
+    public LoadTestAuthService loadTestAuthService(JwtUtil jwtUtil) {
+        return new LoadTestAuthService(jwtUtil);
     }
 }

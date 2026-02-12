@@ -15,6 +15,8 @@ import stack.moaticket.system.component.Validator;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -26,6 +28,23 @@ public class CommentService {
     private final MemberService memberService;
     private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
+
+    public CommentDto.CommentResponse read(Long id) {
+
+        Comment commentEntity = commentRepository.findById(id).orElseThrow(()
+        -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+        return entityToResponse(commentEntity);
+    }
+
+    public List<CommentDto.CommentResponse> reads() {
+        List<Comment> commentList = commentRepository.findAll();
+        List<CommentDto.CommentResponse> res = new ArrayList<>();
+
+        for (Comment comment : commentList) {
+            res.add(this.entityToResponse(comment));
+        }
+        return res;
+    }
 
     public void create(Long memberId, Long boardId, CommentDto.Request commentRequest) {
         Member member = validator.of(memberService.findById(memberId))
@@ -78,6 +97,15 @@ public class CommentService {
                 .commenter(member)
                 .board(board)
                 .content(request.getContent())
+                .build();
+    }
+
+    private CommentDto.CommentResponse entityToResponse(Comment comment) {
+        return CommentDto.CommentResponse.builder()
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .nickName(comment.getCommenter().getNickname())
+                .createdAt((comment.getCreatedAt()))
                 .build();
     }
 }

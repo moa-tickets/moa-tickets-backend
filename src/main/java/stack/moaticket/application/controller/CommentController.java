@@ -7,12 +7,26 @@ import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.CommentDto;
 import stack.moaticket.application.service.CommentService;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class CommentController {
 
     private final CommentService commentService;
+
+    @GetMapping("/comments/{commentId}")
+    public CommentDto.CommentResponse read(
+            @PathVariable Long commentId
+    ) {
+        return commentService.read(commentId);
+    }
+
+    @GetMapping("/comments")
+    public List<CommentDto.CommentResponse> reads() {
+        return commentService.reads();
+    }
 
     @PostMapping("/board/{boardId}/comments")
     public void createComment(

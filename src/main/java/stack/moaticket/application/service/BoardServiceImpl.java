@@ -40,6 +40,8 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public BoardDto.BoardResponse read(Long id) {
+//        if(id <0)  throw new MoaException(MoaExceptionType.MEMBER_NOT_FOUND("Id가 음수가 될수 없습니다"));
+
         Board boardEntity = boardRepository.findById(id).orElseThrow(() ->
                 new MoaException(MoaExceptionType.ENTITY_NOT_FOUND));
         return entityToResponse(boardEntity);

@@ -14,7 +14,7 @@ import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -43,7 +43,7 @@ public class SseSendServiceTest {
         given(message.payload()).willReturn("payload");
 
         SseEmitter emitter = mock(SseEmitter.class);
-        EmitterMeta meta = new EmitterMeta(emitter);
+        EmitterMeta meta = new EmitterMeta(mid, cid, emitter);
 
         given(sseEmitterRegister.get(mid, cid)).willReturn(meta);
 
@@ -70,7 +70,7 @@ public class SseSendServiceTest {
         given(message.payload()).willReturn("payload");
 
         SseEmitter emitter = mock(SseEmitter.class);
-        EmitterMeta meta = new EmitterMeta(emitter);
+        EmitterMeta meta = new EmitterMeta(mid, cid, emitter);
 
         IOException cause = new IOException("boom");
         willThrow(cause).given(emitter).send(any(SseEmitter.SseEventBuilder.class));
@@ -97,7 +97,7 @@ public class SseSendServiceTest {
         given(message.payload()).willReturn("payload");
 
         SseEmitter emitter = mock(SseEmitter.class);
-        EmitterMeta meta = new EmitterMeta(emitter);
+        EmitterMeta meta = new EmitterMeta(mid, cid, emitter);
 
         given(sseEmitterRegister.get(mid, cid)).willReturn(meta);
         doThrow(new IllegalStateException("closed"))
@@ -146,8 +146,8 @@ public class SseSendServiceTest {
         SseEmitter fail = mock(SseEmitter.class);
         SseEmitter succeed = mock(SseEmitter.class);
 
-        EmitterMeta failMeta = new EmitterMeta(fail);
-        EmitterMeta succeedMeta = new EmitterMeta(succeed);
+        EmitterMeta failMeta = new EmitterMeta(mid, failCid, fail);
+        EmitterMeta succeedMeta = new EmitterMeta(mid, succeedCid, succeed);
 
         willThrow(new IOException("fail"))
                 .given(fail).send(any(SseEmitter.SseEventBuilder.class));

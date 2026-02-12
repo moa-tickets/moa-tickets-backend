@@ -23,7 +23,3 @@ app:
     test:
       load-test:
         enabled: false
-  frontend:
-    url: https://moatickets.dev
-  cookie:
-    domain: moatickets.dev

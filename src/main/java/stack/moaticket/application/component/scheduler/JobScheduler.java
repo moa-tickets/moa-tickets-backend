@@ -33,21 +33,19 @@ public class JobScheduler {
         this.properties = properties;
     }
 
-    private static final int DELAY = 2;
-
     @PostConstruct
     public void start() {
-        if(properties.sessionStart()) {
+        if(properties.sessionStart().enabled()) {
             sessionStartScheduler.scheduleWithFixedDelay(
                     concertStartInformJob::runEpoch,
-                    Duration.ofSeconds(DELAY)
+                    Duration.ofSeconds(properties.sessionStart().delay())
             );
         }
 
-        if(properties.ticketRelease()) {
+        if(properties.ticketRelease().enabled()) {
             ticketReleaseScheduler.scheduleWithFixedDelay(
                     ticketReleaseInformJob::runEpoch,
-                    Duration.ofSeconds(DELAY)
+                    Duration.ofSeconds(properties.ticketRelease().delay())
             );
         }
     }

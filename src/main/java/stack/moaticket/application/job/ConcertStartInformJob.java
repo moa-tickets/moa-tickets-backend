@@ -3,6 +3,7 @@ package stack.moaticket.application.job;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import stack.moaticket.application.component.scheduler.JobSchedulerProperties;
 import stack.moaticket.application.facade.ConcertInformFacade;
 import stack.moaticket.application.service.AlarmService;
 import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
@@ -16,15 +17,15 @@ import java.util.List;
 public class ConcertStartInformJob {
     private final AlarmService alarmService;
     private final ConcertInformFacade concertInformFacade;
-
-    private static final Long BATCH_SIZE = 200L;
+    private final JobSchedulerProperties properties;
 
     public void runEpoch() {
-        int retry = 5;
+        Long batchSize = properties.sessionStart().batchSize();
+        int retry = properties.sessionStart().loopCount();
         LocalDateTime now = LocalDateTime.now();
 
         while(retry-- > 0) {
-            List<Long> alarmList = concertInformFacade.extractAlarms(now, BATCH_SIZE);
+            List<Long> alarmList = concertInformFacade.extractAlarms(now, batchSize);
             if(alarmList.isEmpty()) break;
 
             concertInformFacade.passAndProcess(now, alarmList);

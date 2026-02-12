@@ -9,12 +9,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
-import stack.moaticket.system.alarm.sse.model.ConnectPayload;
+import stack.moaticket.system.alarm.core.model.ConnectPayload;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 import stack.moaticket.system.exception.MoaException;
 import stack.moaticket.system.exception.MoaExceptionType;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,8 +53,8 @@ public class SseSubscribeServiceTest {
 
         assertThat(emitter).isSameAs(emitterCaptor.getValue());
         assertThat(targetCaptor.getValue().connectionId()).isEqualTo(cid);
-        assertThat(messageCaptor.getValue().key()).isEqualTo("CONNECT");
-        assertThat(messageCaptor.getValue().payload()).isEqualTo(new ConnectPayload(cid));
+        assertThat(messageCaptor.getValue().getKey()).isEqualTo("CONNECT");
+        assertThat(messageCaptor.getValue().getPayload().payload()).isEqualTo(new ConnectPayload(cid));
 
         then(sseEmitterRegister).shouldHaveNoMoreInteractions();
         then(sseSendService).shouldHaveNoMoreInteractions();

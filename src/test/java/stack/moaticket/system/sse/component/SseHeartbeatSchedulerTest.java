@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.TaskScheduler;
-import stack.moaticket.system.alarm.sse.component.SseHeartbeatScheduler;
+import stack.moaticket.system.alarm.sse.component.scheduler.SseHeartbeatScheduler;
 import stack.moaticket.system.alarm.sse.job.SseHeartbeatInformJob;
 
 import java.time.Duration;

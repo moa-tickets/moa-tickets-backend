@@ -33,14 +33,31 @@ management:
     web:
       exposure:
         include: prometheus,env
+  metrics:
+    distribution:
+      percentiles-histogram:
+        alarm.sse.send.seconds: true
 
 app:
   server:
+    alarm:
+      type: ${APP_SERVER_ALARM:SSE}
+      shard-count: 8
     scheduler:
-      session_start: true
-      ticket_release: true
+      session-start:
+        enabled: ${APP_SERVER_SCHEDULER_SESSION_START_ENABLED:true}
+        delay: ${APP_SERVER_SCHEDULER_SESSION_START_DELAY:2}
+        batch-size: ${APP_SERVER_SCHEDULER_SESSION_START_BATCH_SIZE:200}
+        loop-count: ${APP_SERVER_SCHEDULER_SESSION_START_LOOP_COUNT:5}
+      ticket-release:
+        enabled: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_ENABLED:true}
+        delay: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_DELAY:2}
+        batch-size: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_BATCH_SIZE:200}
+        loop-count: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_LOOP_COUNT:5}
+        page-limit: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_PAGE_LIMIT:200}
   ai:
     url: ${AI_URL}
-
-alarm:
-  sender: sse
+  frontend:
+    url: ${APP_FRONTEND_URL}
+  cookie:
+    domain: ${APP_COOKIE_DOMAIN}

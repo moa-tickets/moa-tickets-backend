@@ -13,7 +13,7 @@ import stack.moaticket.domain.member.type.MemberState;
 import stack.moaticket.domain.session_start_alarm.type.SessionStartAlarmType;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
 import stack.moaticket.domain.ticket.entity.Ticket;
-import stack.moaticket.system.alarm.core.component.AlarmMessageFactory;
+import stack.moaticket.system.alarm.core.util.AlarmMessageFactory;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.service.AlarmSendService;
 import stack.moaticket.domain.member.service.MemberService;

@@ -4,30 +4,26 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import stack.moaticket.system.alarm.sse.component.gauge.SseGaugeManager;
 import stack.moaticket.system.alarm.sse.job.SseHeartbeatInformJob;
-import stack.moaticket.system.alarm.sse.component.SseHeartbeatScheduler;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
-import stack.moaticket.system.alarm.sse.service.AsyncSseSendService;
+import stack.moaticket.system.alarm.sse.component.scheduler.SseHeartbeatScheduler;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 import stack.moaticket.system.alarm.sse.service.SseHeartbeatService;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
-
 @ConditionalOnProperty(
-        value = "alarm.sender",
-        havingValue = "sse",
+        value = "app.server.alarm.type",
+        havingValue = "SSE",
         matchIfMissing = true
 )
 @Configuration
 public class SseConfig {
     private static final String HEART_BEAT_SCHEDULER_PREFIX = "sch-hb-";
-    private static final String HEART_BEAT_EXECUTOR_PREFIX = "ex-hb-";
+    private static final String SEND_EXECUTOR_PREFIX = "ex-sd-";
 
     @Bean(name = "heartbeatInformScheduler")
     public ThreadPoolTaskScheduler heartbeatInformScheduler() {
@@ -41,14 +37,13 @@ public class SseConfig {
         return ts;
     }
 
-    @Bean(name = "heartbeatExecutor")
-    public Executor heartbeatExecutor() {
+    @Bean(name = "asyncExecutor")
+    public ThreadPoolTaskExecutor asyncExecutor() {
         ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
-        ex.setCorePoolSize(10);
-        ex.setMaxPoolSize(500); // 테스트하려는 동시 접속자 수보다 넉넉하게
+        ex.setCorePoolSize(8);
+        ex.setMaxPoolSize(20); // 테스트하려는 동시 접속자 수보다 넉넉하게
         ex.setQueueCapacity(1000); // 순간적인 몰림을 방지하는 완충 지대
-        ex.setThreadNamePrefix(HEART_BEAT_EXECUTOR_PREFIX);
-        //ex.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        ex.setThreadNamePrefix(SEND_EXECUTOR_PREFIX);
         ex.initialize();
         return ex;
     }
@@ -74,27 +69,21 @@ public class SseConfig {
     @Bean
     public SseSubscribeService sseSubscribeService(
             SseEmitterRegister sseEmitterRegister,
-            @Qualifier("syncSseSendService") SseSendService sseSendService) {
+            SseSendService sseSendService) {
         return new SseSubscribeService(sseEmitterRegister, sseSendService);
     }
 
-    @Bean(name = "syncSseSendService")
-    @Primary
-    public SseSendService sseSendService(SseEmitterRegister register) {
-        return new SseSendService(register);
-    }
-
-    @Bean(name = "asyncSseSendService")
-    public AsyncSseSendService asyncSseSendService(
-            @Qualifier("syncSseSendService") SseSendService sseSendService,
-            @Qualifier("heartbeatExecutor") Executor heartbeatExecutor) {
-        return new AsyncSseSendService(sseSendService, heartbeatExecutor);
+    @Bean
+    public SseSendService sseSendService(
+            SseEmitterRegister register,
+            @Qualifier("asyncExecutor") ThreadPoolTaskExecutor asyncExecutor,
+            SseGaugeManager manager) {
+        return new SseSendService(register, asyncExecutor, manager);
     }
 
     @Bean
     public SseHeartbeatService sseHeartbeatService(
-            SseEmitterRegister sseEmitterRegister,
-            @Qualifier("asyncSseSendService") AsyncSseSendService asyncSseSendService) {
-        return new SseHeartbeatService(sseEmitterRegister, asyncSseSendService);
+            SseSendService sseSendService) {
+        return new SseHeartbeatService(sseSendService);
     }
 }

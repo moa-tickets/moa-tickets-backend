@@ -2,10 +2,10 @@ package stack.moaticket.system.alarm.sse.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import stack.moaticket.system.alarm.core.component.AlarmMessageFactory;
+import stack.moaticket.system.alarm.core.util.AlarmMessageFactory;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
-import stack.moaticket.system.alarm.sse.register.SseEmitterRegister;
+import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 
 @RequiredArgsConstructor
 public class SseSubscribeService {

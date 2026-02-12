@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import stack.moaticket.application.job.ConcertStartInformJob;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 import stack.moaticket.test.service.AlarmTestService;
 
@@ -17,7 +18,9 @@ import stack.moaticket.test.service.AlarmTestService;
 public class LoadTestConfig {
 
     @Bean
-    public AlarmTestService alarmTestService(SseSubscribeService sseSubscribeService) {
-        return new AlarmTestService(sseSubscribeService);
+    public AlarmTestService alarmTestService(
+            SseSubscribeService sseSubscribeService,
+            ConcertStartInformJob concertStartInformJob) {
+        return new AlarmTestService(sseSubscribeService, concertStartInformJob);
     }
 }

@@ -2,10 +2,8 @@ package stack.moaticket.test.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.test.service.AlarmTestService;
 
@@ -24,5 +22,11 @@ public class AlarmTestController {
     public SseEmitter subscribe(
             @RequestHeader("X-LoadTest-Id") String memberId) {
         return alarmTestService.subscribe(Long.parseLong(memberId));
+    }
+
+    @PostMapping("/trigger/session_start")
+    public ResponseEntity<Void> triggerSessionStartAlarm() {
+        alarmTestService.triggerSessionStartAlarm();
+        return ResponseEntity.noContent().build();
     }
 }

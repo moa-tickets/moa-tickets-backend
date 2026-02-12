@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import stack.moaticket.system.alarm.core.model.AlarmEnvelope;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
+import stack.moaticket.system.alarm.core.model.AlarmPayload;
 import stack.moaticket.system.alarm.core.model.AlarmTarget;
 import stack.moaticket.system.alarm.core.service.AlarmSendService;
 import stack.moaticket.system.alarm.sse.component.gauge.SseGaugeManager;
@@ -14,7 +16,6 @@ import stack.moaticket.system.exception.MoaExceptionType;
 import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -36,21 +37,21 @@ public class SseSendService implements AlarmSendService {
     }
 
     @Override
-    public void send(Long memberId, AlarmTarget target, AlarmMessage message) {
+    public void send(Long memberId, AlarmTarget target, AlarmMessage<? extends AlarmPayload> message) {
         String connectionId = target.connectionId();
         EmitterMeta meta = sseEmitterRegister.get(memberId, connectionId);
         sendToMember(meta, message, false);
     }
 
     @Override
-    public void sendOrThrow(Long memberId, AlarmTarget target, AlarmMessage message) {
+    public void sendOrThrow(Long memberId, AlarmTarget target, AlarmMessage<? extends AlarmPayload> message) {
         String connectionId = target.connectionId();
         EmitterMeta meta = sseEmitterRegister.get(memberId, connectionId);
         sendToMember(meta, message, true);
     }
 
     @Override
-    public void sendAll(Long memberId, AlarmMessage message) {
+    public void sendAll(Long memberId, AlarmMessage<? extends AlarmPayload> message) {
         Map<String, EmitterMeta> emitterMap = sseEmitterRegister.getSseEmitters(memberId);
         for(Map.Entry<String, EmitterMeta> entry : emitterMap.entrySet()) {
             sendToMember(entry.getValue(), message, false);
@@ -64,9 +65,8 @@ public class SseSendService implements AlarmSendService {
             int cutoff) {
         Map<Integer, List<EmitterMeta>> receiver = sseEmitterRegister.getFilteredForShard(predicate);
 
-        receiver.forEach((shardKey, metaList) -> {
-            internalShard(metaList, action, cutoff);
-        });
+        receiver.forEach((shardKey, metaList) ->
+            internalShard(metaList, action, cutoff));
     }
 
     @Override
@@ -79,14 +79,14 @@ public class SseSendService implements AlarmSendService {
         );
     }
 
-    private void sendToMember(EmitterMeta meta, AlarmMessage message, boolean rethrow) {
+    private void sendToMember(EmitterMeta meta, AlarmMessage<? extends AlarmPayload> message, boolean rethrow) {
         if(meta == null || !meta.isAlive()) return;
 
         Long memberId = meta.getMemberId();
         String connectionId = meta.getConnectionId();
         SseEmitter emitter = meta.getEmitter();
-        String type = message.key();
-        Object payload = message.payload();
+        String type = message.getKey();
+        AlarmEnvelope<? extends AlarmPayload> payload = message.getPayload().materialize();
 
         sseGaugeManager.recordSend(fail -> {
             try {
@@ -94,7 +94,7 @@ public class SseSendService implements AlarmSendService {
                         .event()
                         .name(type)
                         .data(payload));
-                meta.updateLastSentAt(LocalDateTime.now());
+                meta.updateLastSentAt(System.currentTimeMillis());
             } catch (IOException | IllegalStateException e) {
                 fail.run();
 

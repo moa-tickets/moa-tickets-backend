@@ -27,6 +27,8 @@ public class AlarmMessageFactory {
     }
 
     public static AlarmMessage<TicketReleasePayload> ticketRelease(List<TicketMetaDto> metaList) {
+        if (metaList == null || metaList.isEmpty()) throw new stack.moaticket.system.exception.MoaException(stack.moaticket.system.exception.MoaExceptionType.MISMATCH_PARAMETER);
+
         TicketReleasePayload payload = new TicketReleasePayload(metaList);
 
         String key = (metaList.size() > 1) ? "TR_BULK" : "TR_SINGLE";

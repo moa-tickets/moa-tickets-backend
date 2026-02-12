@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import stack.moaticket.system.alarm.core.model.SessionStartPayload;
+import stack.moaticket.system.alarm.core.model.TicketReleasePayload;
 import stack.moaticket.system.alarm.core.util.AlarmMessageFactory;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
 import stack.moaticket.system.alarm.core.service.AlarmSendService;
@@ -91,7 +93,7 @@ public class AlarmService {
                 shardMap,
                 t -> {
                     Long memberId = t.memberId();
-                    AlarmMessage message = AlarmMessageFactory.sessionStart(t);
+                    AlarmMessage<SessionStartPayload> message = AlarmMessageFactory.sessionStart(t);
 
                     alarmSendService.sendAll(memberId, message);
                 },
@@ -117,7 +119,7 @@ public class AlarmService {
             }
             if (metaList.isEmpty()) continue;
 
-            AlarmMessage message = AlarmMessageFactory.ticketRelease(metaList);
+            AlarmMessage<TicketReleasePayload> message = AlarmMessageFactory.ticketRelease(metaList);
 
             int shardNum = AlarmShardUtil.getShardNum(memberId, shardCount);
             shardMap.get(shardNum).add(new TicketReleaseSendData(memberId, message));
@@ -132,6 +134,6 @@ public class AlarmService {
 
     private record TicketReleaseSendData(
             Long memberId,
-            AlarmMessage message
+            AlarmMessage<TicketReleasePayload> message
     ) {}
 }

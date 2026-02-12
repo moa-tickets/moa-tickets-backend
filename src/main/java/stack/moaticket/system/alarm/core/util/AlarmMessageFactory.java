@@ -1,35 +1,35 @@
 package stack.moaticket.system.alarm.core.util;
 
-import stack.moaticket.system.alarm.core.model.AlarmMessage;
+import stack.moaticket.system.alarm.core.model.*;
 import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
-import stack.moaticket.system.alarm.sse.model.ConnectPayload;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.List;
 
 public class AlarmMessageFactory {
-    public static AlarmMessage connect(String connectionId) {
-        return new AlarmMessage("CONNECT", new ConnectPayload(connectionId));
+    public static AlarmMessage<ConnectPayload> connect(String connectionId) {
+        ConnectPayload payload = new ConnectPayload(connectionId);
+        return new AlarmMessage<>("CONNECT", payload);
     }
 
-    public static AlarmMessage heartbeat() {
-        return new AlarmMessage("HEARTBEAT", "ping");
+    public static AlarmMessage<HeartbeatPayload> heartbeat() {
+        HeartbeatPayload payload = new HeartbeatPayload("ping");
+        return new AlarmMessage<>("HEARTBEAT", payload);
     }
 
-    public static AlarmMessage sessionStart(SessionStartAlarmMetaDto alarm) {
+    public static AlarmMessage<SessionStartPayload> sessionStart(SessionStartAlarmMetaDto alarm) {
+        SessionStartPayload payload = new SessionStartPayload(alarm);
         String key = switch (alarm.type()) {
             case LEFT_10 -> "SS_LEFT_10";
             case ON_HOUR -> "SS_ON_HOUR";
         };
-        return new AlarmMessage(key, alarm);
+        return new AlarmMessage<>(key, payload);
     }
 
-    public static AlarmMessage ticketRelease(List<TicketMetaDto> metaList) {
-        if(metaList == null || metaList.isEmpty()) throw new MoaException(MoaExceptionType.MISMATCH_PARAMETER);
+    public static AlarmMessage<TicketReleasePayload> ticketRelease(List<TicketMetaDto> metaList) {
+        TicketReleasePayload payload = new TicketReleasePayload(metaList);
 
         String key = (metaList.size() > 1) ? "TR_BULK" : "TR_SINGLE";
-        return new AlarmMessage(key, metaList);
+        return new AlarmMessage<>(key, payload);
     }
 }

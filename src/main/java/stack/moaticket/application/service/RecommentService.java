@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+
+//TODO: 게시판 및 대글 페이징 쿼리 구현해야함(페이징 쿼리가 왜 필요한지도 공부하시고, 문서화하시고)
 @RequiredArgsConstructor
 @Service
 public class RecommentService {
@@ -75,6 +77,8 @@ public class RecommentService {
         if (!recommentEntity.getRecommenter().getId().equals(memberId)) {
             throw new MoaException(MoaExceptionType.FORBIDDEN);
         }
+
+        //TODO: 둘중 하나만 있으면 된다.
         recommentEntity.fix(recommentFixRequest);
         recommentRepository.save(recommentEntity);
     }

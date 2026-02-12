@@ -15,8 +15,10 @@ import stack.moaticket.domain.member.entity.Member;
 @NoArgsConstructor
 @Entity
 @SuperBuilder
+@Table(name = "comment")
 public class Comment extends Base {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
     private Long id;
 

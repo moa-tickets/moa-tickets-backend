@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 
 @NoArgsConstructor
 public abstract class BoardDto {
@@ -23,6 +25,7 @@ public abstract class BoardDto {
         private String title;
         private String content;
         private String nickName;
+        private LocalDateTime createdAt;
     }
 
     public record BoardFixRequest(

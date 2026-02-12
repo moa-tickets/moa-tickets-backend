@@ -28,6 +28,7 @@ public enum MoaExceptionType {
 
     // 404
     ENTITY_NOT_FOUND("해당 게시글을 찾을 수 없습니다.", 404),
+    COMMENT_NOT_FOUND("해당 댓글을 찾을 수 없습니다", 404),
     NOT_FOUND("요청한 리소스를 찾을 수 없습니다.", 404),
     TICKET_NOT_FOUND("티켓 정보를 찾을 수 없습니다.", 404),
     SESSION_NOT_FOUND("회차 정보를 찾을 수 없습니다.", 404),

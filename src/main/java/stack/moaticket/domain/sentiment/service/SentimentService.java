@@ -40,10 +40,4 @@ public class SentimentService {
                 loadAspectTop(concertId, "neg")
         );
     }
-
-    // temp code
-    public String debugRedis() {
-        return redisRepository.debugWriteAndRead();
-    }
-
 }

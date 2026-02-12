@@ -31,11 +31,4 @@ public class SentimentKeywordRedisRepository {
                 ))
                 .toList();
     }
-
-    // temp code
-    public String debugWriteAndRead() {
-        redisTemplate.opsForValue().set("debug:spring", "ok");
-        return redisTemplate.opsForValue().get("debug:spring");
-    }
-
 }

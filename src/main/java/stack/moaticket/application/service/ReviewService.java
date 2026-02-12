@@ -64,17 +64,6 @@ public class ReviewService {
                 review.getConcert().getId());
         reviewPostKafkaProducer.sendReviewPost(reviewItemDto);
 
-//        RestTemplate restTemplate = new RestTemplate();
-//        String url = AI_SERVER_URL + "/api/reviews";
-//        restTemplate.postForEntity(
-//                url,
-//                new ReviewDto.SpringReviewItemDto(
-//                        review.getId(),
-//                        review.getContent(),
-//                        member.getId(),
-//                        review.getConcert().getId()),
-//                ReviewDto.SpringReviewItemDto.class);
-
         return toResponse(saved);
     }
 

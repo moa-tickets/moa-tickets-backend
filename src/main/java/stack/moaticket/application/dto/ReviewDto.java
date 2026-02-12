@@ -23,13 +23,15 @@ public abstract class ReviewDto {
     public static class ReviewResponseDto {
 
         private final Long reviewId;
+        private final Long concertId;
         private final String memberNickname;
         private final String concertName;
         private final double score;
         private final String content;
 
-        public ReviewResponseDto(Long reviewId, String memberNickname, String concertName, double score, String content) {
+        public ReviewResponseDto(Long reviewId, Long concertId, String memberNickname, String concertName, double score, String content) {
             this.reviewId = reviewId;
+            this.concertId = concertId;
             this.memberNickname = memberNickname;
             this.concertName = concertName;
             this.score = score;

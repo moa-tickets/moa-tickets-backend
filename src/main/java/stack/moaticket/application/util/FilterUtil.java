@@ -11,7 +11,9 @@ public class FilterUtil {
             "/favicon.ico",
             "/error",
             "/health",
-            "/actuator/prometheus"
+            "/actuator/prometheus",
+            "/test/alarm/sub",
+            "/api/sentiments/keywords"
     );
     private static final Set<String> PREFIX_FILTER_SET = Set.of(
             "/swagger-ui",

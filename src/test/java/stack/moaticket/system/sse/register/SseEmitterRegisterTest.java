@@ -10,7 +10,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.sse.model.EmitterMeta;
 import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -143,7 +142,7 @@ public class SseEmitterRegisterTest {
         last2.set(now);
         last3.set(now - 60_000);
 
-        LocalDateTime current = LocalDateTime.now();
+        long current = System.currentTimeMillis();
 
         Predicate<EmitterMeta> predicate = meta ->
                 meta.tryMarkHeartbeat(current);

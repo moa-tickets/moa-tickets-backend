@@ -32,18 +32,21 @@ public class CommentService {
     public CommentDto.CommentResponse read(Long id) {
 
         Comment commentEntity = commentRepository.findById(id).orElseThrow(()
-        -> new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
+        -> new MoaException(MoaExceptionType.COMMENT_NOT_FOUND));
         return entityToResponse(commentEntity);
     }
 
     public List<CommentDto.CommentResponse> reads() {
-        List<Comment> commentList = commentRepository.findAll();
-        List<CommentDto.CommentResponse> res = new ArrayList<>();
-
-        for (Comment comment : commentList) {
-            res.add(this.entityToResponse(comment));
-        }
-        return res;
+        return commentRepository.findAll().stream()
+                .map(this::entityToResponse)
+                .toList();
+//        List<Comment> commentList = commentRepository.findAll();
+//        List<CommentDto.CommentResponse> res = new ArrayList<>();
+//
+//        for (Comment comment : commentList) {
+//            res.add(this.entityToResponse(comment));
+//        }
+//        return res;
     }
 
     public void create(Long memberId, Long boardId, CommentDto.Request commentRequest) {

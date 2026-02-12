@@ -49,13 +49,16 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<BoardDto.BoardResponse> reads() {
-        List<Board> boardList = boardRepository.findAll();
-        List<BoardDto.BoardResponse> res = new ArrayList<>();
-
-        for (Board b : boardList) {
-            res.add(this.entityToResponse(b));
-        }
-        return res;
+        return boardRepository.findAll().stream()
+                .map(this::entityToResponse)
+                .toList();
+//        List<Board> boardList = boardRepository.findAll();
+//        List<BoardDto.BoardResponse> res = new ArrayList<>();
+//
+//        for (Board b : boardList) {
+//            res.add(this.entityToResponse(b));
+//        }
+//        return res;
     }
 
     @Override

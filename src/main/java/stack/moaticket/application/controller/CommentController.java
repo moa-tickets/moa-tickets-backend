@@ -18,13 +18,17 @@ public class CommentController {
 
     @GetMapping("/comments/{commentId}")
     public CommentDto.CommentResponse read(
+            @AuthenticationPrincipal Long memberId,
             @PathVariable Long commentId
     ) {
         return commentService.read(commentId);
     }
 
-    @GetMapping("/comments")
-    public List<CommentDto.CommentResponse> reads() {
+    @GetMapping("/boards/{boardId}/comments")
+    public List<CommentDto.CommentResponse> reads(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long boardId
+    ) {
         return commentService.reads();
     }
 

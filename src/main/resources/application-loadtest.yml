@@ -23,7 +23,7 @@ spring:
       mode: never
   data:
     redis:
-      host: 127.0.0.1
+      host: 3.35.241.141
       port: 6379
   kafka:
     # 브로커 주소 목록 (클러스터 구성)

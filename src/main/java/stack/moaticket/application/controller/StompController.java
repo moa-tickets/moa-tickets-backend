@@ -29,7 +29,7 @@ public class StompController {
         Long memberId = (Long) sessionAttributes.get("memberId");
         LocalDateTime sendTime = (LocalDateTime) sessionAttributes.get("sendTime");
         String subscribedRoom = (String) sessionAttributes.get("roomId");
-
+        String memberNickname = (String) sessionAttributes.get("memberNickname");
         if (memberId == null) {
             log.error("세션에서 memberId를 찾을 수 없습니다. playbackId: {}", playbackId);
             throw new MoaException(MoaExceptionType.UNAUTHORIZED);
@@ -40,7 +40,7 @@ public class StompController {
         }
 
 
-        chattingFacade.saveAndSend(request.getMessage(), memberId, playbackId, sendTime);
+        chattingFacade.saveAndSend(request.getMessage(), memberId, playbackId, sendTime, memberNickname);
 
     }
 }

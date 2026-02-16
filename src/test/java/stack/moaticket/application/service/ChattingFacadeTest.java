@@ -44,19 +44,18 @@ class ChattingFacadeTest {
         Long memberId = 1L;
         String playbackId = "playbackId";
         String content = "content";
+        String memberNickname = "memberNickname";
         LocalDateTime sendTime = LocalDateTime.now();
 
         Member member = mock(Member.class);
         when(memberService.getByIdOrThrow(memberId)).thenReturn(member);
 
         ChatMessage saved = mock(ChatMessage.class);
-        when(chatMessageService.saveMessage(content, member, playbackId, sendTime)).thenReturn(saved);
         // when
-        chattingFacade.saveAndSend(content, memberId, playbackId, sendTime);
+        chattingFacade.saveAndSend(content, memberId, playbackId, sendTime, memberNickname);
 
         // then
         verify(memberService).getByIdOrThrow(memberId);
-        verify(chatMessageService).saveMessage(content, member, playbackId, sendTime);
 
         verify(messagingTemplate).convertAndSend(
                 eq("/sub/" + playbackId + "/messages"),
@@ -114,15 +113,15 @@ class ChattingFacadeTest {
     void memberNullTest(){
         // given
         Long memberId = 999L;
+        String memberNickname = "memberNickname";
         when(memberService.getByIdOrThrow(memberId))
                 .thenThrow(new MoaException(MoaExceptionType.MEMBER_NOT_FOUND));
         // when
         assertThatThrownBy(() ->
-                chattingFacade.saveAndSend("hi", memberId, "roomA", LocalDateTime.now())
+                chattingFacade.saveAndSend("hi", memberId, "roomA", LocalDateTime.now(), memberNickname)
         ).isInstanceOf(MoaException.class)
                 .hasMessage("올바른 사용자를 찾을 수 없습니다");
         // then
-        verify(chatMessageService, never()).saveMessage(any(), any(), any(), any());
         verify(messagingTemplate, never()).convertAndSend(anyString(), any(ChattingDto.Response.class));
     }
 

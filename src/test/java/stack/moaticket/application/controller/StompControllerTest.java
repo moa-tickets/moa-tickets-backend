@@ -40,7 +40,7 @@ class StompControllerTest {
         stompController.sendMessage(map, request, playbackId);
 
         // then
-        verify(chattingFacade, times(1)).saveAndSend(any(), anyLong(), anyString(), any());
+        verify(chattingFacade, times(1)).saveAndSend(any(), anyLong(), anyString(), any(), any());
     }
 
 
@@ -56,7 +56,7 @@ class StompControllerTest {
                 .isInstanceOf(MoaException.class)
                 .hasMessage("인증되지 않은 사용자입니다.");
         // then
-        verify(chattingFacade, never()).saveAndSend(any(), anyLong(), anyString(), any());
+        verify(chattingFacade, never()).saveAndSend(any(), anyLong(), anyString(), any(), any());
     }
 
 
@@ -76,6 +76,6 @@ class StompControllerTest {
                 .hasMessage("권한이 없습니다.");
 
         // then
-        verify(chattingFacade, never()).saveAndSend(any(), anyLong(), anyString(), any());
+        verify(chattingFacade, never()).saveAndSend(any(), anyLong(), anyString(), any(), any());
     }
 }

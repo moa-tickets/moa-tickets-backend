@@ -62,7 +62,7 @@ public class StompHandler  implements ChannelInterceptor {
                     }
 
                     String nickname = member.getNickname();
-                    sessionAttributes.put("userNickname", nickname);
+                    sessionAttributes.put("memberNickname", nickname);
                     sessionAttributes.put("memberId", memberId);
                     sessionAttributes.put("roomId", roomId);
 
@@ -78,10 +78,10 @@ public class StompHandler  implements ChannelInterceptor {
 
 
                 String oldSessionId = registry.register(memberId, newSessionId, roomId);
-                if (oldSessionId != null && !oldSessionId.equals(newSessionId)) {
-                    registry.closeSession(oldSessionId, CloseStatus.POLICY_VIOLATION);
-                    log.info("같은 방 중복 접속 차단 memberId={}, roomId={}, oldSessionId={}", memberId, roomId, oldSessionId);
-                }
+//                if (oldSessionId != null && !oldSessionId.equals(newSessionId)) {
+//                    registry.closeSession(oldSessionId, CloseStatus.POLICY_VIOLATION);
+//                    log.info("같은 방 중복 접속 차단 memberId={}, roomId={}, oldSessionId={}", memberId, roomId, oldSessionId);
+//                }
                 registry.touch(newSessionId);
                 // 필요 시 특정 방 구독 권한 체크 로직 추가 가능
                 break;

@@ -25,16 +25,17 @@ public class ChattingFacade {
     private final SimpMessageSendingOperations messagingTemplate;
 
     @Transactional
-    public void saveAndSend(String content, Long memberId, String playbackId, LocalDateTime sendTime) {
-
-        Member member = memberService.getByIdOrThrow(memberId);
-
-        ChatMessage chatMessage = chatMessageService.saveMessage(content, member, playbackId, sendTime);
-
-        ChattingDto.Response response = ChattingDto.Response.toResponse(chatMessage);
-
-        //TODO: w/s 전송 부분이 속도가 느리면.. 전체 트랜잭션의 생명주기는 어떻게 되나요? 분리가 필요하다고 생각이 드나요?
+    public void saveAndSend(String content, Long memberId, String playbackId, LocalDateTime sendTime, String memberNickname) {
+        ChattingDto.Response response = ChattingDto.Response.builder()
+                .message(content)
+                .timeStamp(sendTime)
+                .senderNickname(memberNickname)
+                .build();
         messagingTemplate.convertAndSend("/sub/" + playbackId + "/messages", response);
+
+//        chatMessageService.saveMessage(content, memberId, playbackId, sendTime, memberNickname);
+        chatMessageService.addToBuffer(content, memberId, playbackId, sendTime, memberNickname);
+
     }
 
 

@@ -2,6 +2,7 @@ package stack.moaticket.application.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,5 +55,15 @@ public abstract class ReviewDto {
 
         private record Review (Long reviewId, String content, Long userId, Long concertId) {}
 
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class AiReturnDto {
+        private final String status;
+        private final String message;
+        private final Long totalReviews;
+        private final List<Object> positiveKeywords;
+        private final List<Object> negativeKeywords;
     }
 }

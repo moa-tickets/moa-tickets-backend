@@ -37,7 +37,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security:4.0.1'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
     implementation 'org.springframework.boot:spring-boot-starter-kafka'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // 기존 JWT (JWT 라이브러리 버전 업데이트 필요 (보안 이슈로 0.12.6으로 변경 추천))
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'

@@ -163,36 +163,7 @@ public class TicketRepositoryQueryDsl {
                 .fetchFirst();
     }
 
-    public List<Long> getHoldTicketIdList(LocalDateTime now, Long batchSize) {
-        BooleanExpression condition = ticket.state.eq(TicketState.HOLD)
-                .and(ticket.expiresAt.loe(now))
-                .and(ticket.holdToken.isNotNull())
-                .and(ticket.member.id.isNotNull());
-
-        return jpaQueryFactory.select(ticket.id)
-                .from(ticket)
-                .where(condition)
-                .limit(batchSize)
-                .fetch();
-    }
-
-    public void releaseHoldTickets(LocalDateTime now, List<Long> ticketIdList) {
-        BooleanExpression condition = ticket.id.in(ticketIdList)
-                .and(ticket.state.in(TicketState.HOLD, TicketState.PAYMENT_PENDING))
-                .and(ticket.expiresAt.loe(now))
-                .and(ticket.holdToken.isNotNull())
-                .and(ticket.member.id.isNotNull());
-
-        jpaQueryFactory.update(ticket)
-                .set(ticket.state, TicketState.AVAILABLE)
-                .set(ticket.holdToken, (String) null)
-                .set(ticket.expiresAt, (LocalDateTime) null)
-                .set(ticket.member.id, (Long) null)
-                .where(condition)
-                .execute();
-    }
-
-    public List<TicketMetaDto> getTicketEssentialInfoList(List<Long> ticketIdList) {
+    public List<TicketMetaDto> getTicketMetaList(List<Long> ticketIdList) {
         BooleanExpression condition = ticket.id.in(ticketIdList)
                 .and(ticket.state.eq(TicketState.AVAILABLE))
                 .and(ticket.expiresAt.isNull())
@@ -210,6 +181,7 @@ public class TicketRepositoryQueryDsl {
                 ))
                 .from(ticket)
                 .where(condition)
+                .orderBy(ticket.id.asc())
                 .fetch();
     }
 

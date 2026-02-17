@@ -35,14 +35,14 @@ public class TicketService {
     }
 
     public List<Long> getHoldTicketIdList(LocalDateTime now, Long batchSize) {
-        return ticketRepositoryQueryDsl.getHoldTicketIdList(now, batchSize);
+        return ticketRepository.getHoldTicketIdList(now, batchSize);
     }
 
     public void releaseHoldTickets(LocalDateTime now, List<Long> ticketIdList) {
-        ticketRepositoryQueryDsl.releaseHoldTickets(now, ticketIdList);
+        ticketRepository.releaseHoldTickets(now, ticketIdList);
     }
 
-    public List<TicketMetaDto> getTicketEssentialInfoList(List<Long> ticketIdList) {
-        return ticketRepositoryQueryDsl.getTicketEssentialInfoList(ticketIdList);
+    public List<TicketMetaDto> getTicketMetadataList(List<Long> ticketIdList) {
+        return ticketRepositoryQueryDsl.getTicketMetaList(ticketIdList);
     }
 }

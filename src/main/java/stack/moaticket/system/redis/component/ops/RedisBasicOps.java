@@ -52,9 +52,7 @@ public class RedisBasicOps implements RedisOps<RedisBasicOps.Bound> {
         }
 
         <T extends RedisValue> T get(BasicKey<T> key) {
-            log.info("inner-key, {}", key.get());
             String json = template.opsForValue().get(key.get());
-            log.info("inner-value, {}", json);
             if(json == null) return null;
 
             try {

@@ -1,5 +1,6 @@
 package stack.moaticket.system.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,16 @@ public class GlobalExceptionHandler {
 
     // 비즈니스 예외 처리
     @ExceptionHandler(MoaException.class)
-    public ResponseEntity<ExceptionDto> handleCustomException(MoaException ex) {
+    public ResponseEntity<ExceptionDto> handleCustomException(MoaException ex, HttpServletRequest req) {
+
+        if (ex.getType() == MoaExceptionType.TICKET_ALREADY_HELD) {
+            // 정상적인 경합 → info/warn, stacktrace X
+            log.info("Hold conflict: type={}, path={}, msg={}",
+                    ex.getType(), req.getRequestURI(), ex.getMessage());
+
+            return ex.toResponse();
+        }
+
         log.error("MoaException 발생: type={}, message={}",
                 ex.getType(), ex.getMessage(), ex);
         return ex.toResponse();

@@ -53,13 +53,13 @@ public class StompRoomRegistry {
 
         SessionInfo oldInfo = userSessionMap.put(memberId, newInfo);
 
-//        if (oldInfo != null) {
-//            String oldRoomId = sessionRoomMap.get(oldInfo.getSessionId());
-//            if (Objects.equals(oldRoomId, roomId)) {
-//                sessionMemberMap.remove(oldInfo.getSessionId());
-//                sessionRoomMap.remove(oldInfo.getSessionId());
-//            }
-//        }
+        if (oldInfo != null) {
+            String oldRoomId = sessionRoomMap.get(oldInfo.getSessionId());
+            if (Objects.equals(oldRoomId, roomId)) {
+                sessionMemberMap.remove(oldInfo.getSessionId());
+                sessionRoomMap.remove(oldInfo.getSessionId());
+            }
+        }
         sessionRoomMap.put(sessionId, roomId);
         sessionMemberMap.put(sessionId, memberId);
 

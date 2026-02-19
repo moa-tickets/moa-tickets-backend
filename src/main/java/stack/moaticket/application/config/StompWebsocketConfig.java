@@ -81,7 +81,7 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/connect")
                 .addInterceptors(stompHandshakeInterceptor)
-                .setAllowedOriginPatterns("http://localhost:5173", "https://moatickets.dev", "https://app.moatickets.dev", "*")
+                .setAllowedOriginPatterns("http://localhost:5173", "https://moatickets.dev", "https://app.moatickets.dev")
                 .withSockJS(); //ws://가 아닌 http://엔드 포인트를 사용할 수 있게 해주는 sockJs를 통한 요청을 혀용하는 설정
     }
 

@@ -1,6 +1,7 @@
 package stack.moaticket.domain.chat_message.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatMessageService {
@@ -54,7 +56,14 @@ public class ChatMessageService {
         }
 
         if (!batchList.isEmpty()) {
-            chatMessageBulkRepository.saveAllMessages(batchList);
+            try {
+                chatMessageBulkRepository.saveAllMessages(batchList);
+            } catch (Exception e) {
+                // 실패 시 buffer에 다시 반환
+                buffer.addAll(batchList);
+                log.error("bulk save 실패, buffer에 {} 건 반환", batchList.size(), e);
+                throw e; // @Transactional 롤백을 위해 재던지기
+            }
         }
     }
 

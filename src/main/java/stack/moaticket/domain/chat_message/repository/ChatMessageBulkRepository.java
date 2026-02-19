@@ -21,10 +21,10 @@ public class ChatMessageBulkRepository {
         String sql = "INSERT INTO chat_message " +
                 "(content, nickname, chatroom_id, timestamp, member_id, created_at, updated_at)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?)";
+        LocalDateTime now = LocalDateTime.now();
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                LocalDateTime now = LocalDateTime.now();
                 ChatMessage chatMessage = messages.get(i);
                 ps.setString(1, chatMessage.getContent());
                 ps.setString(2, chatMessage.getNickname());

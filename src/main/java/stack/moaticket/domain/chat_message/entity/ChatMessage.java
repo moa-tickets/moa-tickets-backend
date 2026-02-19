@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
         @Index(name= "idx_message_room_timestamp", columnList = "chatroom_id, timestamp")
     }
 )
-public class ChatMessage extends Base{
+public class ChatMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_message_id")

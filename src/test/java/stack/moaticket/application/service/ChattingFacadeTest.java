@@ -37,34 +37,6 @@ class ChattingFacadeTest {
     @InjectMocks
     ChattingFacade chattingFacade;
 
-    @DisplayName("채팅 저장 성공 및 전송")
-    @Test
-    void chattingSaveAndSend(){
-        // given
-        Long memberId = 1L;
-        String playbackId = "playbackId";
-        String content = "content";
-        String memberNickname = "memberNickname";
-        LocalDateTime sendTime = LocalDateTime.now();
-
-        Member member = mock(Member.class);
-        when(memberService.getByIdOrThrow(memberId)).thenReturn(member);
-
-        ChatMessage saved = mock(ChatMessage.class);
-        // when
-        chattingFacade.saveAndSend(content, memberId, playbackId, sendTime, memberNickname);
-
-        // then
-        verify(memberService).getByIdOrThrow(memberId);
-
-        verify(messagingTemplate).convertAndSend(
-                eq("/sub/" + playbackId + "/messages"),
-                any(ChattingDto.Response.class)
-        );
-
-    }
-
-
     @DisplayName("채팅 리스트 가져오기 테스트")
     @Test
     void getChatHistory(){

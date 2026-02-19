@@ -3,6 +3,7 @@ package stack.moaticket.domain.chat_message.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.domain.chat_message.entity.ChatMessage;
@@ -27,7 +28,6 @@ public class ChatMessageService {
     private final Queue<ChatMessage> buffer = new ConcurrentLinkedQueue<>();
     private static final int BATCH_SIZE = 100;
 
-
     @Async("chatAsyncExecutor")
     public void addToBuffer(String content, Long memberId, String playbackId, LocalDateTime sendTime, String memberNickname) {
         ChatMessage chatMessage = ChatMessage.builder()
@@ -42,7 +42,14 @@ public class ChatMessageService {
             saveBulk();
         }
     }
+
     @Transactional
+    @Scheduled(fixedDelay = 5000)
+    public void scheduledSave() {
+        saveBulk();
+    }
+
+
     public void saveBulk() {
         if (buffer.isEmpty()) return;
 

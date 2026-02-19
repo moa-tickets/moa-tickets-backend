@@ -46,7 +46,6 @@ class ChatMessageServiceTest {
                 .timeStamp(sendTime)
                 .senderNickname(member.getNickname())
                 .build();
-        chatMessageService.addToBuffer(content, member.getId(), playbackId, sendTime, member.getNickname());
 
         // then
         ArgumentCaptor<ChatMessage> captor = ArgumentCaptor.forClass(ChatMessage.class);

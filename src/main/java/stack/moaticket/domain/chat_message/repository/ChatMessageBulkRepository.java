@@ -24,14 +24,15 @@ public class ChatMessageBulkRepository {
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
+                LocalDateTime now = LocalDateTime.now();
                 ChatMessage chatMessage = messages.get(i);
                 ps.setString(1, chatMessage.getContent());
                 ps.setString(2, chatMessage.getNickname());
                 ps.setString(3, chatMessage.getChatroomId());
                 ps.setTimestamp(4, Timestamp.valueOf(chatMessage.getTimestamp()));
                 ps.setLong(5, chatMessage.getMemberId());
-                ps.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
-                ps.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+                ps.setTimestamp(6, Timestamp.valueOf(now));
+                ps.setTimestamp(7, Timestamp.valueOf(now));
             }
 
             @Override

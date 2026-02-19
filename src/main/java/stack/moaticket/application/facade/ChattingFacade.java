@@ -2,6 +2,7 @@ package stack.moaticket.application.facade;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.application.dto.ChattingDto;
@@ -14,6 +15,8 @@ import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +27,8 @@ public class ChattingFacade {
     private final MemberService memberService;
     private final SimpMessageSendingOperations messagingTemplate;
 
+    private static final int BATCH_SIZE = 100;
+
     @Transactional
     public void saveAndSend(String content, Long memberId, String playbackId, LocalDateTime sendTime, String memberNickname) {
         ChattingDto.Response response = ChattingDto.Response.builder()
@@ -33,7 +38,6 @@ public class ChattingFacade {
                 .build();
         messagingTemplate.convertAndSend("/sub/" + playbackId + "/messages", response);
 
-//        chatMessageService.saveMessage(content, memberId, playbackId, sendTime, memberNickname);
         chatMessageService.addToBuffer(content, memberId, playbackId, sendTime, memberNickname);
 
     }

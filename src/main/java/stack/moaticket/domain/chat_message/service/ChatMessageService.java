@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.domain.chat_message.entity.ChatMessage;
 import stack.moaticket.domain.chat_message.repository.ChatMessageBulkRepository;
@@ -21,9 +22,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Service
 @RequiredArgsConstructor
 public class ChatMessageService {
-    private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageRepositoryQueryDsl chatMessageRepositoryQueryDsl;
-    private final ChatMessageBulkRepository chatMessageBulkRepository;
+    private final ChatMessageBulkService chatMessageBulkService;
 
     private final Queue<ChatMessage> buffer = new ConcurrentLinkedQueue<>();
     private static final int BATCH_SIZE = 100;
@@ -39,40 +39,15 @@ public class ChatMessageService {
                 .build();
         buffer.add(chatMessage);
         if (buffer.size() >= BATCH_SIZE) {
-            saveBulk();
+            chatMessageBulkService.saveBulk(buffer);
         }
     }
 
-    @Transactional
     @Scheduled(fixedDelay = 5000)
     public void scheduledSave() {
-        saveBulk();
+        chatMessageBulkService.saveBulk(buffer);
     }
 
-
-    public void saveBulk() {
-        if (buffer.isEmpty()) return;
-
-        List<ChatMessage> batchList = new ArrayList<>();
-        while (!buffer.isEmpty() && batchList.size() < BATCH_SIZE) {
-            ChatMessage chatMessage = buffer.poll();
-            if (chatMessage == null) {
-                break;
-            }
-            batchList.add(chatMessage);
-        }
-
-        if (!batchList.isEmpty()) {
-            try {
-                chatMessageBulkRepository.saveAllMessages(batchList);
-            } catch (Exception e) {
-                // 실패 시 buffer에 다시 반환
-                buffer.addAll(batchList);
-                log.error("bulk save 실패, buffer에 {} 건 반환", batchList.size(), e);
-                throw e; // @Transactional 롤백을 위해 재던지기
-            }
-        }
-    }
 
     public List<ChatMessage> getChatHistoryFirst(String playbackId, int size) {
         return chatMessageRepositoryQueryDsl.getChatHistoryFirst(playbackId, size);

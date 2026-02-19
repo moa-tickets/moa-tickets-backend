@@ -24,12 +24,9 @@ import java.util.stream.Collectors;
 public class ChattingFacade {
 
     private final ChatMessageService chatMessageService;
-    private final MemberService memberService;
     private final SimpMessageSendingOperations messagingTemplate;
 
-    private static final int BATCH_SIZE = 100;
 
-    @Transactional
     public void saveAndSend(String content, Long memberId, String playbackId, LocalDateTime sendTime, String memberNickname) {
         ChattingDto.Response response = ChattingDto.Response.builder()
                 .message(content)

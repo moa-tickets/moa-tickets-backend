@@ -49,7 +49,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: prometheus,env
+        include: prometheus,env,metrics,websocket
   metrics:
     distribution:
       percentiles-histogram:

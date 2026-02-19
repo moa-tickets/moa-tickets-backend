@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import stack.moaticket.application.dto.ChattingDto;
 import stack.moaticket.domain.chat_message.entity.ChatMessage;
 import stack.moaticket.domain.chat_message.repository.ChatMessageRepository;
 import stack.moaticket.domain.chat_message.repository.ChatMessageRepositoryQueryDsl;
@@ -16,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,15 +40,14 @@ class ChatMessageServiceTest {
         Member member = mock(Member.class);
         when(member.getNickname()).thenReturn("soonil");
 
-        ChatMessage saved = mock(ChatMessage.class);
-        when(chatMessageRepository.save(any(ChatMessage.class))).thenReturn(saved);
-
         // when
-        ChatMessage result = chatMessageService.saveMessage(content, member, playbackId, sendTime);
+        ChattingDto.Response response = ChattingDto.Response.builder()
+                .message(content)
+                .timeStamp(sendTime)
+                .senderNickname(member.getNickname())
+                .build();
 
         // then
-        assertThat(result).isSameAs(saved);
-
         ArgumentCaptor<ChatMessage> captor = ArgumentCaptor.forClass(ChatMessage.class);
         verify(chatMessageRepository, times(1)).save(captor.capture());
 
@@ -56,10 +55,9 @@ class ChatMessageServiceTest {
         assertThat(toSave.getChatroomId()).isEqualTo(playbackId);
         assertThat(toSave.getContent()).isEqualTo(content);
         assertThat(toSave.getNickname()).isEqualTo("soonil");
-        assertThat(toSave.getMember()).isSameAs(member);
         assertThat(toSave.getTimestamp()).isEqualTo(sendTime);
 
-        verify(member, times(1)).getNickname();
+        verify(member, times(2)).getNickname();
     }
 
     @DisplayName("이전 채팅 처음 조회")

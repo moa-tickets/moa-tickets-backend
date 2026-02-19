@@ -28,3 +28,11 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+server:
+  tomcat:
+    max-connections: 16000
+app:
+  frontend:
+    url: http://localhost:5173
+  cookie:
+    domain: localhost

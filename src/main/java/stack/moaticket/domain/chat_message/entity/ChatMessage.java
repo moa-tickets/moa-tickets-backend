@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import stack.moaticket.domain.base.Base;
-import stack.moaticket.domain.member.entity.Member;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +19,7 @@ import java.time.LocalDateTime;
         @Index(name= "idx_message_room_timestamp", columnList = "chatroom_id, timestamp")
     }
 )
-public class ChatMessage extends Base {
+public class ChatMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "chat_message_id")
@@ -32,9 +31,8 @@ public class ChatMessage extends Base {
     @Column(name = "nickname", nullable = false, updatable = false)
     private String nickname;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false, updatable = false)
-    private Member member;
+    @Column(name = "member_id", nullable = false, updatable = false)
+    private Long memberId;
 
     @Column(name = "content", nullable = false, updatable = false)
     private String content;
@@ -42,5 +40,9 @@ public class ChatMessage extends Base {
     @Column(name = "timestamp", nullable = false, updatable = false)
     private LocalDateTime timestamp;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false, updatable = true)
+    private LocalDateTime updatedAt;
 }

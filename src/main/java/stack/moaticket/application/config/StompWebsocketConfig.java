@@ -1,11 +1,16 @@
 package stack.moaticket.application.config;
 
+import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
@@ -16,7 +21,10 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import stack.moaticket.application.component.handler.StompHandler;
 import stack.moaticket.application.component.interceptor.StompHandshakeInterceptor;
+import stack.moaticket.application.component.interceptor.WebSocketMessageMetricsInterceptor;
 import stack.moaticket.application.component.registry.StompRoomRegistry;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 @RequiredArgsConstructor
@@ -25,6 +33,8 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
     private final StompHandler stompHandler;
     private final StompHandshakeInterceptor stompHandshakeInterceptor;
     private final StompRoomRegistry stompRoomRegistry;
+
+    private final WebSocketMessageMetricsInterceptor metricsInterceptor;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -45,7 +55,26 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
     //웹소켓 요청(connect, sub, disconnect)등의 요청시에는 http heade등 http메세지를 넣어올 수 있고 이를 interceptor를 통해 가로채 토큰등을 검증할 수 있음
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadFactory(Thread.ofVirtual().name("stomp-inbound-", 0).factory());
+        executor.setCorePoolSize(0);
+        executor.setMaxPoolSize(Integer.MAX_VALUE);
+        executor.setQueueCapacity(0);
+        executor.initialize();
+        registration.taskExecutor(executor);
         registration.interceptors(stompHandler);
+        registration.interceptors(metricsInterceptor);
+    }
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadFactory(Thread.ofVirtual().name("stomp-outbound-", 0).factory());
+        executor.setCorePoolSize(0);
+        executor.setMaxPoolSize(Integer.MAX_VALUE);
+        executor.setQueueCapacity(0);
+        executor.initialize();
+        registration.taskExecutor(executor);
+        registration.interceptors(metricsInterceptor);
     }
 
     @Override
@@ -68,6 +97,7 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
             @Override
             public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+                stompRoomRegistry.unregisterBySession(session.getId());
                 stompRoomRegistry.unregisterWsSession(session.getId());
                 super.afterConnectionClosed(session, closeStatus);
             }

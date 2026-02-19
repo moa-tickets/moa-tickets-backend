@@ -62,7 +62,7 @@ public class StompHandler  implements ChannelInterceptor {
                     }
 
                     String nickname = member.getNickname();
-                    sessionAttributes.put("userNickname", nickname);
+                    sessionAttributes.put("memberNickname", nickname);
                     sessionAttributes.put("memberId", memberId);
                     sessionAttributes.put("roomId", roomId);
 

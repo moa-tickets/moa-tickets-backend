@@ -34,8 +34,8 @@ public class SessionStartAlarmService {
         return sessionStartAlarmRepository.getSessionStartAlarmIdList(now, batchSize);
     }
 
-    public void updateAlarmIdList(List<Long> alarmIdList, LocalDateTime now) {
-        sessionStartAlarmRepository.updateSessionStartAlarm(alarmIdList, now.minusMinutes(5));
+    public long updateAlarmIdList(List<Long> alarmIdList, LocalDateTime now) {
+        return sessionStartAlarmRepository.updateSessionStartAlarm(alarmIdList, now.minusMinutes(5));
     }
 
     public List<SessionStartAlarmMetaDto> getProcessedSessionAlarmList(List<Long> alarmIdList) {

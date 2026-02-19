@@ -37,6 +37,8 @@ public class ConcertStartInformJob {
             LocalDateTime now = LocalDateTime.now();
 
             List<Long> idList = concertInformFacade.passAndProcess(now, batchSize);
+            if(idList.isEmpty()) return;
+
             List<SessionStartAlarmMetaDto> alarmMetaData = concertInformFacade.getCurrentProcessedCandidates(idList);
             if(alarmMetaData.isEmpty()) return;
 

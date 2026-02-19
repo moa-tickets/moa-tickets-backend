@@ -17,6 +17,7 @@ public interface SessionStartAlarmRepository extends JpaRepository<SessionStartA
         FROM session_start_alarm
         WHERE session_start_alarm_state = 'PENDING'
             AND session_start_alarm_at <= :now
+        ORDER BY session_start_alarm_id
         LIMIT :batch
         FOR UPDATE SKIP LOCKED;
     """, nativeQuery = true)

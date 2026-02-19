@@ -56,4 +56,24 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     """, nativeQuery = true)
     List<Ticket> findForUpdateSkipLocked(@Param("sessionId") Long sessionId,
                                          @Param("ids") List<Long> ids);
+
+    // booking availbale -> hold 원자적 업데이트
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+        UPDATE ticket
+           SET ticket_state = 'HOLD',
+               member_id    = :memberId,
+               hold_token   = :holdToken,
+               expires_at   = :expiresAt
+         WHERE session_id   = :sessionId
+           AND ticket_id IN (:ticketIds)
+           AND ticket_state = 'AVAILABLE'
+        """, nativeQuery = true)
+    int holdAtomicAvailableOnly(
+            @Param("sessionId") Long sessionId,
+            @Param("memberId") Long memberId,
+            @Param("holdToken") String holdToken,
+            @Param("expiresAt") LocalDateTime expiresAt,
+            @Param("ticketIds") List<Long> ticketIds
+    );
 }

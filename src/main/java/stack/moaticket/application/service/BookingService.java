@@ -37,7 +37,7 @@ public class BookingService {
     private static final int MAX_TICKETS_PER_HOLD = 4;
 
     // 좌석 임시 점유 (AVAILABLE -> HOLD)
-    @Transactional()
+    @Transactional
     public HoldResult holdTickets(Long memberId, Long sessionId, List<Long> ticketIds) {
         // Member에 락을 걸어 동일 사용자 동시 처리 방지하는 방법도 있는데 쓰면 DB 성능에 영향이 있을지 체크하기
         Member member = validator.of(memberService.findById(memberId))
@@ -50,39 +50,30 @@ public class BookingService {
         // 데드락 방지: 항상 같은 순서로 락 획득
         List<Long> sortedIds = ticketIds.stream().distinct().sorted().toList();
 
-        // 구매 장수 제한(SOLD 기준)
-        long alreadyBought = ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId);
-        if(alreadyBought + sortedIds.size() > MAX_TICKETS_PER_HOLD) {
-            throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
-        }
+
 
         // 비관적 락으로 티켓들 조회
 //        List<Ticket> tickets = ticketRepositoryQueryDsl.findTicketsForUpdate(sortedIds, sessionId);
 
-        // After (2쿼리 분리)
-        // ① 정합성 확인 (락 없음, 빠름)
-        long count = ticketRepositoryQueryDsl.countByIdsAndSession(sortedIds, sessionId);
-        if (count != sortedIds.size()) throw new MoaException(MISMATCH_PARAMETER);
-
-        // ② 락 시도 (SKIP LOCKED = 경합이면 즉시 반환)
-        List<Ticket> tickets = ticketRepository.findForUpdateSkipLocked(sessionId, sortedIds);
-        if (tickets.size() != sortedIds.size()) throw new MoaException(TICKET_ALREADY_HELD);
-
-        boolean allHold = tickets.stream().allMatch(Ticket::isHold);
-        boolean allOwnedByMe = tickets.stream().allMatch(t -> t.isOwnedBy(memberId));
-
-        if(allHold && allOwnedByMe) {
-            String existingToken = tickets.getFirst().getHoldToken();
-            LocalDateTime existingExpiresAt = tickets.getFirst().getExpiresAt();
-
-            boolean sameToken = tickets.stream().allMatch(t -> existingToken != null && existingToken.equals(t.getHoldToken()));
-            boolean sameExpiresAt = tickets.stream().allMatch(t -> existingExpiresAt != null && existingExpiresAt.equals(t.getExpiresAt()));
-
-            // holdToken/expiresAt이 정합한 경우에만 멱등 성공 처리
-            if (sameToken && sameExpiresAt) {
-                return new HoldResult(existingToken, existingExpiresAt);
-            }
-        }
+        // 락 시도 (SKIP LOCKED = 경합이면 즉시 반환) affectedRows == 요청개수면 성공, 아니면 즉시 409.
+//        List<Ticket> tickets = ticketRepository.findForUpdateSkipLocked(sessionId, sortedIds);
+//        if (tickets.size() != sortedIds.size()) throw new MoaException(TICKET_ALREADY_HELD);
+//
+//        boolean allHold = tickets.stream().allMatch(Ticket::isHold);
+//        boolean allOwnedByMe = tickets.stream().allMatch(t -> t.isOwnedBy(memberId));
+//
+//        if(allHold && allOwnedByMe) {
+//            String existingToken = tickets.getFirst().getHoldToken();
+//            LocalDateTime existingExpiresAt = tickets.getFirst().getExpiresAt();
+//
+//            boolean sameToken = tickets.stream().allMatch(t -> existingToken != null && existingToken.equals(t.getHoldToken()));
+//            boolean sameExpiresAt = tickets.stream().allMatch(t -> existingExpiresAt != null && existingExpiresAt.equals(t.getExpiresAt()));
+//
+//            // holdToken/expiresAt이 정합한 경우에만 멱등 성공 처리
+//            if (sameToken && sameExpiresAt) {
+//                return new HoldResult(existingToken, existingExpiresAt);
+//            }
+//        }
 
         // 요청한 개수만큼 전부 조회됐는지(세션/존재 검증)
 //        if(tickets.size() != sortedIds.size()) {
@@ -99,10 +90,23 @@ public class BookingService {
         String holdToken = TokenGenerator.generateHoldToken();
         LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
-        // 엔티티에 hold 정보 세팅 (영속성 컨텍스트(메모리)만 변경)
-        for (Ticket t : tickets) {
-            t.holdBy(member, holdToken, expiresAt);
+        int affected = ticketRepository.holdAtomicAvailableOnly(sessionId, memberId, holdToken, expiresAt, sortedIds);
+
+        // 전부 못 잡았으면 즉시 실패
+        if (affected != sortedIds.size()) {
+            throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
         }
+
+        // 구매 장수 제한(SOLD 기준)
+        long alreadyBought = ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId);
+        if(alreadyBought + sortedIds.size() > MAX_TICKETS_PER_HOLD) {
+            throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
+        }
+
+        // 엔티티에 hold 정보 세팅 (영속성 컨텍스트(메모리)만 변경)
+//        for (Ticket t : tickets) {
+//            t.holdBy(member, holdToken, expiresAt);
+//        }
         // 트랜잭션 커밋 시점에 JPA flush -> UPDATE (영속성 컨텍스트 → DB 버퍼 풀)
 
         return new HoldResult(holdToken, expiresAt);

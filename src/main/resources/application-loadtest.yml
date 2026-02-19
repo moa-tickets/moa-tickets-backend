@@ -5,6 +5,9 @@ server:
     max-connections: 40000    # 최대 연결 수(서버 소켓의 차일드 소켓들)
     connection-timeout: 30000  # 연결 타임아웃
     keep-alive-timeout: 60000
+    threads:
+      max: 80
+      min-spare: 10
 
 spring:
   datasource:

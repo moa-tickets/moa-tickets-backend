@@ -13,6 +13,7 @@ public class FilterUtil {
             "/health",
             "/actuator/prometheus",
             "/test/alarm/sub",
+            "/test/auth/token",
             "/api/sentiments/keywords"
     );
     private static final Set<String> PREFIX_FILTER_SET = Set.of(
@@ -21,8 +22,7 @@ public class FilterUtil {
             "/v3/api-docs",
             "/api/product/detail",
             "/api/product/concertList",
-            "/ws",
-            "/test"
+            "/ws"
     );
 
     public static boolean checkFilter(String uri) {

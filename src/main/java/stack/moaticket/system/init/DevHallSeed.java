@@ -20,5 +20,7 @@ public class DevHallSeed implements ApplicationRunner {
         hallService.upsertHall("MOA HALL SMALL", HallType.SMALL);
         hallService.upsertHall("MOA HALL MEDIUM", HallType.MEDIUM);
         hallService.upsertHall("MOA HALL LARGE", HallType.LARGE);
+        hallService.upsertHall("MOA HALL XLARGE", HallType.XLARGE);
+        hallService.upsertHall("MOA HALL XXLARGE", HallType.XXLARGE);
     }
 }

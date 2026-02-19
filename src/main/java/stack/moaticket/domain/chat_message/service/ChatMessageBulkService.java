@@ -26,27 +26,28 @@ public class ChatMessageBulkService {
     @Transactional
     public void saveBulk(Queue<ChatMessage> buffer) {
         if (buffer.isEmpty() || !isSaving.compareAndSet(false, true)) return;
-
-        List<ChatMessage> batchList = new ArrayList<>();
-        while (!buffer.isEmpty() && batchList.size() < BATCH_SIZE) {
-            ChatMessage chatMessage = buffer.poll();
-            if (chatMessage == null) {
-                break;
+        try {
+            List<ChatMessage> batchList = new ArrayList<>();
+            while (!buffer.isEmpty() && batchList.size() < BATCH_SIZE) {
+                ChatMessage chatMessage = buffer.poll();
+                if (chatMessage == null) {
+                    break;
+                }
+                batchList.add(chatMessage);
             }
-            batchList.add(chatMessage);
-        }
 
-        if (!batchList.isEmpty()) {
-            try {
-                chatMessageBulkRepository.saveAllMessages(batchList);
-            } catch (Exception e) {
-                // 실패 시 buffer에 다시 반환
-                buffer.addAll(batchList);
-                log.error("bulk save 실패, buffer에 {} 건 반환", batchList.size(), e);
-                throw new MoaException(MoaExceptionType.INTERNAL_SERVER_ERROR); // @Transactional 롤백을 위해 재던지기
-            } finally {
-                isSaving.set(false);
+            if (!batchList.isEmpty()) {
+                try {
+                    chatMessageBulkRepository.saveAllMessages(batchList);
+                } catch (Exception e) {
+                    // 실패 시 buffer에 다시 반환
+                    buffer.addAll(batchList);
+                    log.error("bulk save 실패, buffer에 {} 건 반환", batchList.size(), e);
+                    throw new MoaException(MoaExceptionType.INTERNAL_SERVER_ERROR); // @Transactional 롤백을 위해 재던지기
+                }
             }
+        } finally {
+            isSaving.set(false);
         }
     }
 

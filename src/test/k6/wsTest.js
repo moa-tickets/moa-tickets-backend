@@ -54,7 +54,7 @@ export default function () {
     // 쿠키 설정 (로그에 찍혔던 인증 과정을 통과하기 위해 필수)
     const params = {
         headers: {
-            'Cookie': `Authorization=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzcwOTQ1MDE3LCJleHAiOjE3NzEwMzE0MTd9.DSuTaKC1uxMq5eluIVZCZHYonKCL545kC7u6SAbRypU;`, // 실제 유효한 쿠키/토큰 값
+            'Cookie': `Authorization=;`, // 실제 유효한 쿠키/토큰 값
                 'Origin': 'http://localhost:8080',
         },
     };

@@ -38,14 +38,14 @@ public class JobScheduler {
         if(properties.sessionStart().enabled()) {
             sessionStartScheduler.scheduleAtFixedRate(
                     concertStartInformJob::runEpoch,
-                    Duration.ofSeconds(properties.sessionStart().delay())
+                    Duration.ofMillis(properties.sessionStart().rateMillis())
             );
         }
 
         if(properties.ticketRelease().enabled()) {
             ticketReleaseScheduler.scheduleAtFixedRate(
                     ticketReleaseInformJob::runEpoch,
-                    Duration.ofSeconds(properties.ticketRelease().delay())
+                    Duration.ofMillis(properties.ticketRelease().rateMillis())
             );
         }
     }

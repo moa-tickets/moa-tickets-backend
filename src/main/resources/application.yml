@@ -64,13 +64,13 @@ app:
     scheduler:
       session-start:
         enabled: ${APP_SERVER_SCHEDULER_SESSION_START_ENABLED:true}
-        delay: ${APP_SERVER_SCHEDULER_SESSION_START_DELAY:2}
+        rate-millis: ${APP_SERVER_SCHEDULER_SESSION_START_DELAY:1000}
         batch-size: ${APP_SERVER_SCHEDULER_SESSION_START_BATCH_SIZE:200}
         executor:
           max-thread: ${APP_SERVER_SCHEDULER_SESSION_START_EXECUTOR_MAX_THREAD:10}
       ticket-release:
         enabled: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_ENABLED:true}
-        delay: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_DELAY:2}
+        rate-millis: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_DELAY:1000}
         batch-size: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_BATCH_SIZE:200}
         executor:
           max-thread: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_MAX_THREAD:10}

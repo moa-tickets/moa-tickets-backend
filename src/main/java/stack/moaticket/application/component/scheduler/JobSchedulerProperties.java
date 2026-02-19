@@ -9,7 +9,7 @@ public record JobSchedulerProperties(
     public record SessionStart(
             boolean enabled,
             Long batchSize,
-            int delay,
+            int rateMillis,
             Executor executor
     ) {
         public record Executor(
@@ -19,7 +19,7 @@ public record JobSchedulerProperties(
     public record TicketRelease(
             boolean enabled,
             Long batchSize,
-            int delay,
+            int rateMillis,
             Executor executor
     ) {
         public record Executor(

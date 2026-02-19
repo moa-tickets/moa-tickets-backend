@@ -13,6 +13,17 @@ spring:
   sql:
     init:
       mode: never
+  kafka:
+    # 브로커 주소 목록 (클러스터 구성)
+    bootstrap-servers:
+      - ec2-3-35-241-141.ap-northeast-2.compute.amazonaws.com:9092
+
+    producer:
+      # key/value 직렬화 클래스
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # 메시지를 즉시 보내지 않고, 최대 1ms 동안 배치 모으기
+      linger-ms: 1
 
 logging:
   level:

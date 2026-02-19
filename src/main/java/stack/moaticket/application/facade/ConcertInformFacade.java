@@ -13,15 +13,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ConcertInformFacade {
     private final SessionStartAlarmService sessionStartAlarmService;
-    
-    public List<Long> extractAlarms(LocalDateTime now, Long batchSize) {
-        return sessionStartAlarmService.getPendingSessionAlarmIdList(now, batchSize);
-    }
 
     @Transactional
-    public void passAndProcess(LocalDateTime now, List<Long> alarmList) {
-        sessionStartAlarmService.updatePendingToPassed(now, alarmList);
-        sessionStartAlarmService.updatePendingToProcessed(now, alarmList);
+    public List<Long> passAndProcess(LocalDateTime now, Long batchSize) {
+        List<Long> idList = sessionStartAlarmService.getPendingSessionAlarmIdList(now, batchSize);
+
+        sessionStartAlarmService.updateAlarmIdList(idList, now);
+        return idList;
     }
 
     public List<SessionStartAlarmMetaDto> getCurrentProcessedCandidates(List<Long> alarmIdList) {

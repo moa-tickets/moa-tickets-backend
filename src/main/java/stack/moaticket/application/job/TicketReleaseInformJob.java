@@ -1,74 +1,71 @@
 package stack.moaticket.application.job;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import stack.moaticket.application.component.producer.TicketReleaseProducer;
+import stack.moaticket.application.component.scheduler.JobSchedulerProperties;
 import stack.moaticket.application.facade.HoldCleanedInformFacade;
-import stack.moaticket.application.service.AlarmService;
+import stack.moaticket.application.model.*;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
-import stack.moaticket.domain.ticket_alarm.dto.TicketAlarmDto;
-import stack.moaticket.domain.ticket_alarm.service.TicketAlarmService;
+import stack.moaticket.system.redis.model.RedisKey;
+import stack.moaticket.system.redis.model.RedisValue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class TicketReleaseInformJob {
-    private final AlarmService alarmService;
-    private final TicketAlarmService ticketAlarmService;
+    private final TicketReleaseProducer producer;
     private final HoldCleanedInformFacade holdCleanedInformFacade;
+    private final ThreadPoolTaskExecutor executor;
+    private final JobSchedulerProperties properties;
 
-    private static final Long BATCH_SIZE = 200L;
-
-    public void runEpoch() {
-        int retry = 5;
-        int limit = 200;
-
-        while(retry-- > 0) {
-            LocalDateTime now = LocalDateTime.now();
-
-            List<Long> ticketIdList = holdCleanedInformFacade.extractCandidates(now, BATCH_SIZE);
-            if(ticketIdList.isEmpty()) break;
-
-            holdCleanedInformFacade.release(now, ticketIdList);
-            Map<Long, TicketMetaDto> ticketMetadata = holdCleanedInformFacade.getChanged(ticketIdList)
-                    .stream()
-                    .collect(Collectors.toMap(
-                            TicketMetaDto::ticketId,
-                            Function.identity()
-                    ));
-            if(ticketMetadata.isEmpty()) break;
-
-            sendByPages(ticketIdList, ticketMetadata, limit);
-        }
+    public TicketReleaseInformJob(
+            TicketReleaseProducer producer,
+            HoldCleanedInformFacade facade,
+            @Qualifier("ticketReleaseExecutor") ThreadPoolTaskExecutor executor,
+            JobSchedulerProperties properties) {
+        this.producer = producer;
+        this.holdCleanedInformFacade = facade;
+        this.executor = executor;
+        this.properties = properties;
     }
 
-    private void sendByPages(List<Long> ticketIdList, Map<Long, TicketMetaDto> ticketMetadata, int limit) {
-        Long cursor = null;
+    public void runEpoch() {
+        Long batchSize = properties.ticketRelease().batchSize();
 
-        while(true) {
-            List<TicketAlarmDto> dtoList = ticketAlarmService.getDtoList(ticketIdList, cursor, limit);
-            if(dtoList.isEmpty()) break;
-            cursor = dtoList.getLast().id();
+        executor.execute(() -> {
+            LocalDateTime now = LocalDateTime.now();
 
-            Map<Long, List<Long>> receiverMap = new HashMap<>();
+            List<Long> ticketIdList = holdCleanedInformFacade.release(now, batchSize);
+            if(ticketIdList.isEmpty()) return;
 
-            for(TicketAlarmDto dto : dtoList) {
-                Long memberId = dto.memberId();
-                Long ticketId = dto.ticketId();
+            Map<Long, TicketMetaDto> ticketMetadata = holdCleanedInformFacade.getChanged(ticketIdList);
 
-                receiverMap.computeIfAbsent(memberId, k -> new ArrayList<>())
-                        .add(ticketId);
-            }
+            TicketReleaseRunKey runKey = TicketReleaseRunKey.create();
+            TicketReleaseRunValue runValue = new TicketReleaseRunValue(ticketIdList, ticketMetadata);
 
-            alarmService.sendTicketReleaseInform(receiverMap, ticketMetadata);
-        }
+            String releaseValueId = TicketReleaseConsumerValue.createId();
+            TicketReleaseConsumerValue value = new TicketReleaseConsumerValue(
+                    releaseValueId,
+                    runKey.get(),
+                    null);
+
+            List<RedisKey<? extends RedisValue>> keys = new ArrayList<>();
+            keys.add(runKey);
+            keys.add(new TicketReleaseConsumerKey());
+
+            producer.publishFirst(
+                    keys,
+                    runValue,
+                    runKey.ttl(),
+                    value,
+                    TicketReleaseConsumerValue.createExpiresAtMillis());
+        });
     }
 }

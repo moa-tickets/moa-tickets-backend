@@ -4,6 +4,26 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app.server.scheduler")
 public record JobSchedulerProperties(
-        boolean sessionStart,
-        boolean ticketRelease
-) {}
+        SessionStart sessionStart,
+        TicketRelease ticketRelease) {
+    public record SessionStart(
+            boolean enabled,
+            Long batchSize,
+            int delay,
+            Executor executor
+    ) {
+        public record Executor(
+                int maxThread
+        ) {}
+    }
+    public record TicketRelease(
+            boolean enabled,
+            Long batchSize,
+            int delay,
+            Executor executor
+    ) {
+        public record Executor(
+                int maxThread
+        ) {}
+    }
+}

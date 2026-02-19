@@ -13,7 +13,8 @@ public class FilterUtil {
             "/health",
             "/actuator/prometheus",
             "/test/alarm/sub",
-            "/test/auth/token"
+            "/test/auth/token",
+            "/api/sentiments/keywords"
     );
     private static final Set<String> PREFIX_FILTER_SET = Set.of(
             "/swagger-ui",

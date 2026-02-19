@@ -4,17 +4,14 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import stack.moaticket.application.dto.BoardDto;
 import stack.moaticket.domain.base.Base;
 import stack.moaticket.domain.member.entity.Member;
-import stack.moaticket.system.exception.MoaException;
-import stack.moaticket.system.exception.MoaExceptionType;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @SuperBuilder
 @Table(name = "board")

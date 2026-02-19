@@ -7,12 +7,30 @@ import org.springframework.web.bind.annotation.*;
 import stack.moaticket.application.dto.CommentDto;
 import stack.moaticket.application.service.CommentService;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class CommentController {
 
     private final CommentService commentService;
+
+    @GetMapping("/comments/{commentId}")
+    public CommentDto.CommentResponse read(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long commentId
+    ) {
+        return commentService.read(commentId);
+    }
+
+    @GetMapping("/boards/{boardId}/comments")
+    public List<CommentDto.CommentResponse> reads(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long boardId
+    ) {
+        return commentService.reads();
+    }
 
     @PostMapping("/board/{boardId}/comments")
     public void createComment(
@@ -23,7 +41,7 @@ public class CommentController {
 
     }
 
-    @PatchMapping("/comment/{commentId}")
+    @PatchMapping("/comments/{commentId}")
     public void fix(@AuthenticationPrincipal Long memberId,
                     @Valid @RequestBody CommentDto.CommentFixRequest commentFixRequest,
                     @PathVariable Long commentId) {
@@ -31,7 +49,7 @@ public class CommentController {
 
     }
 
-    @DeleteMapping("/comment/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     public void delete(@AuthenticationPrincipal Long memberId, @PathVariable Long commentId) {
         commentService.delete(memberId, commentId);
     }

@@ -37,6 +37,7 @@ public interface BoardService {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .nickName(board.getMember().getNickname())
+                .createdAt(board.getCreatedAt())
                 .build();
     }
 }

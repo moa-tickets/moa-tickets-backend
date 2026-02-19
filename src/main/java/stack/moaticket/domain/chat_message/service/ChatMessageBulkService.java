@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stack.moaticket.domain.chat_message.entity.ChatMessage;
 import stack.moaticket.domain.chat_message.repository.ChatMessageBulkRepository;
+import stack.moaticket.system.exception.MoaException;
+import stack.moaticket.system.exception.MoaExceptionType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,7 @@ public class ChatMessageBulkService {
                 // 실패 시 buffer에 다시 반환
                 buffer.addAll(batchList);
                 log.error("bulk save 실패, buffer에 {} 건 반환", batchList.size(), e);
-                throw e; // @Transactional 롤백을 위해 재던지기
+                throw new MoaException(MoaExceptionType.INTERNAL_SERVER_ERROR); // @Transactional 롤백을 위해 재던지기
             } finally {
                 isSaving.set(false);
             }

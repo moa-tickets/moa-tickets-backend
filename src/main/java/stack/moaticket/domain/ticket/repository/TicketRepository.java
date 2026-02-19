@@ -43,4 +43,17 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             @Param("now") LocalDateTime now,
             @Param("ids") List<Long> ticketIdList
     );
+
+    // 잠긴 ROW 제외 Lock 걸기
+    @Query(value = """
+    SELECT *
+    FROM ticket
+    WHERE session_id = :sessionId
+      AND ticket_id IN (:ids)
+      AND ticket_state = 'AVAILABLE'
+    ORDER BY ticket_id
+    FOR UPDATE SKIP LOCKED
+    """, nativeQuery = true)
+    List<Ticket> findForUpdateSkipLocked(@Param("sessionId") Long sessionId,
+                                         @Param("ids") List<Long> ids);
 }

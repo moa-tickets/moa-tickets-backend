@@ -54,6 +54,7 @@ management:
     distribution:
       percentiles-histogram:
         alarm.sse.send.seconds: true
+        executor.session-start.pipeline: true
 
 app:
   server:

@@ -3,6 +3,7 @@ package stack.moaticket.application.facade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stack.moaticket.application.component.gauge.SessionStartGaugeManager;
 import stack.moaticket.domain.session_start_alarm.dto.SessionStartAlarmMetaDto;
 import stack.moaticket.domain.session_start_alarm.service.SessionStartAlarmService;
 
@@ -13,12 +14,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ConcertInformFacade {
     private final SessionStartAlarmService sessionStartAlarmService;
+    private final SessionStartGaugeManager manager;
 
     @Transactional
     public List<Long> passAndProcess(LocalDateTime now, Long batchSize) {
         List<Long> idList = sessionStartAlarmService.getPendingSessionAlarmIdList(now, batchSize);
 
-        sessionStartAlarmService.updateAlarmIdList(idList, now);
+        manager.recordDatabase(() -> sessionStartAlarmService.updateAlarmIdList(idList, now));
         return idList;
     }
 

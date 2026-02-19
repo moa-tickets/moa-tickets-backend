@@ -32,7 +32,7 @@ public interface SessionStartAlarmRepository extends JpaRepository<SessionStartA
             updated_at = NOW(6)
         WHERE session_start_alarm_id IN (:ids)
     """, nativeQuery = true)
-    void updateSessionStartAlarm(
+    long updateSessionStartAlarm(
             @Param("ids") List<Long> alarmIdList,
             @Param("cutoff") LocalDateTime cutoff);
 }

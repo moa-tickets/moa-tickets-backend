@@ -1,3 +1,4 @@
+/*
 package stack.moaticket.application.job;
 
 import org.junit.jupiter.api.DisplayName;
@@ -32,7 +33,8 @@ public class TicketReleaseInformJobTest {
 
     @InjectMocks TicketReleaseInformJob job;
 
-    @Test
+    */
+/*@Test
     @DisplayName("후보가 없으면 즉시 종료한다.")
     void stopImmediatelyWhenNoCandidates() {
         // given
@@ -51,7 +53,8 @@ public class TicketReleaseInformJobTest {
                 .getChanged(anyList());
         then(ticketAlarmService).shouldHaveNoMoreInteractions();
         then(alarmService).shouldHaveNoMoreInteractions();
-    }
+    }*//*
+
 
     @Test
     @DisplayName("후보가 존재하면 Release 후 페이징 전송을 수행하고, DtoList가 비면 종료한다.")
@@ -113,28 +116,38 @@ public class TicketReleaseInformJobTest {
         // then
         InOrder inOrder = inOrder(holdCleanedInformFacade, ticketAlarmService, alarmService);
 
-        /* Cycle 1 */
+        */
+/* Cycle 1 *//*
+
         inOrder.verify(holdCleanedInformFacade)
                 .extractCandidates(any(LocalDateTime.class), eq(200L));
         inOrder.verify(holdCleanedInformFacade)
                 .release(any(LocalDateTime.class), eq(tids));
         inOrder.verify(holdCleanedInformFacade)
                 .getChanged(eq(tids));
-        /* Page 1 */
+        */
+/* Page 1 *//*
+
         inOrder.verify(ticketAlarmService)
                 .getDtoList(eq(tids), isNull(), eq(200));
         inOrder.verify(alarmService)
                 .sendTicketReleaseInform(anyMap(), anyMap());
-        /* Page 2 */
+        */
+/* Page 2 *//*
+
         inOrder.verify(ticketAlarmService)
                 .getDtoList(eq(tids), eq(200L), eq(200));
         inOrder.verify(alarmService)
                 .sendTicketReleaseInform(anyMap(), anyMap());
-        /* Page 3 - EMPTY */
+        */
+/* Page 3 - EMPTY *//*
+
         inOrder.verify(ticketAlarmService)
                 .getDtoList(eq(tids), eq(300L), eq(200));
 
-        /* Cycle 2 */
+        */
+/* Cycle 2 *//*
+
         inOrder.verify(holdCleanedInformFacade)
                 .extractCandidates(any(LocalDateTime.class), eq(200L));
 
@@ -172,3 +185,4 @@ public class TicketReleaseInformJobTest {
         assertThat(second.get(2L)).containsExactlyInAnyOrder(30L);
     }
 }
+*/

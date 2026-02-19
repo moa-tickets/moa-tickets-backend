@@ -3,10 +3,27 @@ spring:
     import: optional:file:.env[.properties]
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
 
   web:
     resources:
       add-mappings: false
+
+  data:
+    redis:
+      inner:
+        host: ${INNER_REDIS_HOST}
+        port: ${INNER_REDIS_PORT}
+        username: ${INNER_REDIS_USERNAME}
+        password: ${INNER_REDIS_PASSWORD}
+      outer:
+        host: ${OUTER_REDIS_HOST}
+        port: ${OUTER_REDIS_PORT}
+        username: ${OUTER_REDIS_USERNAME}
+        password: ${OUTER_REDIS_PASSWORD}
 
   security:
     oauth2:
@@ -48,13 +65,21 @@ app:
         enabled: ${APP_SERVER_SCHEDULER_SESSION_START_ENABLED:true}
         delay: ${APP_SERVER_SCHEDULER_SESSION_START_DELAY:2}
         batch-size: ${APP_SERVER_SCHEDULER_SESSION_START_BATCH_SIZE:200}
-        loop-count: ${APP_SERVER_SCHEDULER_SESSION_START_LOOP_COUNT:5}
+        executor:
+          max-thread: ${APP_SERVER_SCHEDULER_SESSION_START_EXECUTOR_MAX_THREAD:10}
       ticket-release:
         enabled: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_ENABLED:true}
         delay: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_DELAY:2}
         batch-size: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_BATCH_SIZE:200}
-        loop-count: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_LOOP_COUNT:5}
-        page-limit: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_PAGE_LIMIT:200}
+        executor:
+          max-thread: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_MAX_THREAD:10}
+    consumer:
+      ticket-release:
+        consumer-thread: ${APP_SERVER_CONSUMER_TICKET_RELEASE_MAX_THREAD:10}
+        pel-thread: ${APP_SERVER_CONSUMER_TICKET_RELEASE_PEL_THREAD:2}
+        limit: ${APP_SERVER_CONSUMER_TICKET_RELEASE_LIMIT:200}
+        backoff-millis: ${APP_SERVER_CONSUMER_TICKET_RELEASE_BACKOFF_MILLIS:300}
+
   ai:
     url: ${AI_URL}
   frontend:

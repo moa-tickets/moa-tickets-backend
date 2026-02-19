@@ -1,4 +1,12 @@
-UPDATE session_start_alarm
+SET @JITTER_US := 1000000; -- 0 ~ 999,999us (최대 1초 분산)
+
+UPDATE session_start_alarm a
 SET
-    session_start_alarm_at = NOW(6),
-    session_start_alarm_state = 'PENDING'
+    a.session_start_alarm_at =
+        DATE_ADD(
+                NOW(6),
+                INTERVAL (CRC32(CONCAT(a.member_id, '-', a.session_id)) % @JITTER_US) MICROSECOND
+        ),
+    a.session_start_alarm_state = 'PENDING',
+    a.updated_at = NOW(6)
+WHERE a.session_start_alarm_type = 'LEFT_10';

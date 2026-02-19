@@ -22,7 +22,8 @@ public class FilterUtil {
             "/v3/api-docs",
             "/api/product/detail",
             "/api/product/concertList",
-            "/ws"
+            "/ws",
+            "/test"
     );
 
     public static boolean checkFilter(String uri) {

@@ -19,6 +19,7 @@ public class ConcertInformFacade {
     @Transactional
     public List<Long> passAndProcess(LocalDateTime now, Long batchSize) {
         List<Long> idList = sessionStartAlarmService.getPendingSessionAlarmIdList(now, batchSize);
+        if(idList.isEmpty()) return List.of();
 
         manager.recordDatabase(() -> sessionStartAlarmService.updateAlarmIdList(idList, now));
         return idList;

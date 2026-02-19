@@ -1,24 +1,26 @@
 package stack.moaticket.domain.sentiment.repository;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import stack.moaticket.application.dto.KeywordCountDto;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@RequiredArgsConstructor
 public class SentimentKeywordRedisRepository {
+    private final StringRedisTemplate template;
 
-    private final StringRedisTemplate redisTemplate;
+    public SentimentKeywordRedisRepository(
+            @Qualifier("outerStringRedisTemplate") StringRedisTemplate template) {
+        this.template = template;
+    }
 
     public List<KeywordCountDto> findTopKeywordsWithCount(String redisKey, int topN) {
         Set<ZSetOperations.TypedTuple<String>> tuples =
-                redisTemplate.opsForZSet().reverseRangeWithScores(redisKey, 0, topN - 1);
+                template.opsForZSet().reverseRangeWithScores(redisKey, 0, topN - 1);
 
         if (tuples == null || tuples.isEmpty()) {
             return Collections.emptyList();

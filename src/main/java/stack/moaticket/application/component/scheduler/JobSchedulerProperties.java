@@ -9,14 +9,21 @@ public record JobSchedulerProperties(
     public record SessionStart(
             boolean enabled,
             Long batchSize,
-            int loopCount,
-            int delay
-    ) {}
+            int delay,
+            Executor executor
+    ) {
+        public record Executor(
+                int maxThread
+        ) {}
+    }
     public record TicketRelease(
             boolean enabled,
             Long batchSize,
-            int pageLimit,
-            int loopCount,
-            int delay
-    ) {}
+            int delay,
+            Executor executor
+    ) {
+        public record Executor(
+                int maxThread
+        ) {}
+    }
 }

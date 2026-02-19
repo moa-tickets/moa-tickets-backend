@@ -31,15 +31,11 @@ public class SessionStartAlarmService {
     }
 
     public List<Long> getPendingSessionAlarmIdList(LocalDateTime now, Long batchSize) {
-        return sessionStartAlarmRepository.getSessionStartAlarmIdList(now, batchSize, SessionStartAlarmState.PENDING);
+        return sessionStartAlarmRepository.getSessionStartAlarmIdList(now, batchSize);
     }
 
-    public void updatePendingToPassed(LocalDateTime now, List<Long> alarmList) {
-        sessionStartAlarmRepository.updatePendingSessionStartAlarmToPassed(now, alarmList);
-    }
-
-    public void updatePendingToProcessed(LocalDateTime now, List<Long> alarmList) {
-        sessionStartAlarmRepository.updatePendingSessionStartAlarmToProcessed(now, alarmList);
+    public void updateAlarmIdList(List<Long> alarmIdList, LocalDateTime now) {
+        sessionStartAlarmRepository.updateSessionStartAlarm(alarmIdList, now.minusMinutes(5));
     }
 
     public List<SessionStartAlarmMetaDto> getProcessedSessionAlarmList(List<Long> alarmIdList) {

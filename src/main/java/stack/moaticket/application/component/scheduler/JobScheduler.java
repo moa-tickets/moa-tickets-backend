@@ -36,14 +36,14 @@ public class JobScheduler {
     @PostConstruct
     public void start() {
         if(properties.sessionStart().enabled()) {
-            sessionStartScheduler.scheduleWithFixedDelay(
+            sessionStartScheduler.scheduleAtFixedRate(
                     concertStartInformJob::runEpoch,
                     Duration.ofSeconds(properties.sessionStart().delay())
             );
         }
 
         if(properties.ticketRelease().enabled()) {
-            ticketReleaseScheduler.scheduleWithFixedDelay(
+            ticketReleaseScheduler.scheduleAtFixedRate(
                     ticketReleaseInformJob::runEpoch,
                     Duration.ofSeconds(properties.ticketRelease().delay())
             );

@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import stack.moaticket.application.job.ConcertStartInformJob;
+import stack.moaticket.application.job.TicketReleaseInformJob;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
 import stack.moaticket.system.jwt.JwtUtil;
 import stack.moaticket.test.service.AlarmTestService;
@@ -22,8 +23,9 @@ public class LoadTestConfig {
     @Bean
     public AlarmTestService alarmTestService(
             SseSubscribeService sseSubscribeService,
-            ConcertStartInformJob concertStartInformJob) {
-        return new AlarmTestService(sseSubscribeService, concertStartInformJob);
+            ConcertStartInformJob concertStartInformJob,
+            TicketReleaseInformJob ticketReleaseInformJob) {
+        return new AlarmTestService(sseSubscribeService, concertStartInformJob, ticketReleaseInformJob);
     }
 
     @Bean

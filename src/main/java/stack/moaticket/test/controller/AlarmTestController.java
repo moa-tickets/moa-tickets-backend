@@ -29,4 +29,10 @@ public class AlarmTestController {
         alarmTestService.triggerSessionStartAlarm();
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/trigger/ticket_release")
+    public ResponseEntity<Void> triggerTicketReleaseAlarm() {
+        alarmTestService.triggerTicketReleaseAlarm();
+        return ResponseEntity.noContent().build();
+    }
 }

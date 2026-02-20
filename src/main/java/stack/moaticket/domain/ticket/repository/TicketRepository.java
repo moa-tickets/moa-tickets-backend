@@ -19,6 +19,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             AND expires_at <= :now
             AND hold_token IS NOT NULL
             AND member_id IS NOT NULL
+        ORDER BY ticket_id
         LIMIT :batch
         FOR UPDATE SKIP LOCKED;
     """, nativeQuery = true)

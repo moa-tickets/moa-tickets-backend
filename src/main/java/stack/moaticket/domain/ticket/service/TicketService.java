@@ -38,8 +38,8 @@ public class TicketService {
         return ticketRepository.getHoldTicketIdList(now, batchSize);
     }
 
-    public void releaseHoldTickets(LocalDateTime now, List<Long> ticketIdList) {
-        ticketRepository.releaseHoldTickets(now, ticketIdList);
+    public long releaseHoldTickets(LocalDateTime now, List<Long> ticketIdList) {
+        return ticketRepository.releaseHoldTickets(now, ticketIdList);
     }
 
     public List<TicketMetaDto> getTicketMetadataList(List<Long> ticketIdList) {

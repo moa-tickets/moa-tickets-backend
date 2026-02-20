@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
+import stack.moaticket.application.component.gauge.TicketReleaseRedisGaugeManager;
 import stack.moaticket.application.model.TicketReleaseConsumerKey;
 import stack.moaticket.application.model.TicketReleaseConsumerValue;
 import stack.moaticket.system.redis.component.ops.RedisClient;
@@ -20,6 +21,7 @@ import java.util.List;
 public class TicketReleaseProducer implements RedisProducer {
     private final RedisClient redis;
     private final ObjectMapper mapper;
+    private final TicketReleaseRedisGaugeManager manager;
     private final TicketReleaseConsumerKey consumerKey = new TicketReleaseConsumerKey();
 
     @Override
@@ -28,16 +30,18 @@ public class TicketReleaseProducer implements RedisProducer {
     }
 
     public void publishFirst(List<RedisKey<? extends RedisValue>> keys, Object... args) {
-        Object[] json = argsToJson(args);
-        redis.inner().lua().eval(scriptFirst(), keys, json);
+        manager.recordProducer(() -> {
+            Object[] json = argsToJson(args);
+            redis.inner().lua().eval(scriptFirst(), keys, json);
+        });
     }
 
     public void publishContinue(TicketReleaseConsumerValue payload, Long expiresAtMillis) {
-        redis.inner().stream().xAdd(
+        manager.recordProducer(() -> redis.inner().stream().xAdd(
                 consumerKey,
                 payload,
                 expiresAtMillis
-        );
+        ));
     }
 
     private DefaultRedisScript<Void> scriptFirst() {

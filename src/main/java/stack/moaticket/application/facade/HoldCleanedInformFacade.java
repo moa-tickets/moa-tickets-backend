@@ -2,7 +2,9 @@ package stack.moaticket.application.facade;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import stack.moaticket.application.component.gauge.TicketReleaseExecutorGaugeManager;
 import stack.moaticket.domain.ticket.dto.TicketMetaDto;
 import stack.moaticket.domain.ticket.service.TicketService;
 
@@ -16,11 +18,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HoldCleanedInformFacade {
     private final TicketService ticketService;
+    private final TicketReleaseExecutorGaugeManager manager;
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<Long> release(LocalDateTime now, Long batchSize) {
         List<Long> ticketIdList = ticketService.getHoldTicketIdList(now, batchSize);
-        ticketService.releaseHoldTickets(now, ticketIdList);
+        manager.recordDatabase(() -> ticketService.releaseHoldTickets(now, ticketIdList));
 
         return ticketIdList;
     }

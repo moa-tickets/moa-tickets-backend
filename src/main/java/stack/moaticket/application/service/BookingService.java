@@ -50,6 +50,26 @@ public class BookingService {
         // 데드락 방지: 항상 같은 순서로 락 획득
         List<Long> sortedIds = ticketIds.stream().distinct().sorted().toList();
 
+        // 구매 장수 제한(SOLD 기준)
+        long alreadyBought = ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId);
+        if(alreadyBought + sortedIds.size() > MAX_TICKETS_PER_HOLD) {
+            throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
+        }
+
+        // HOLD 토큰/만료시간 생성
+        String holdToken = TokenGenerator.generateHoldToken();
+        LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
+
+        try {
+            List<Long> locked = ticketRepository.lockTicketsNowait(sessionId, sortedIds);
+            if (locked.size() != sortedIds.size()) {
+                throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
+            }
+        } catch (Exception e) {
+            // Hibernate/JPA에서 NOWAIT 락 실패가 여러 예외 타입으로 래핑될 수 있음
+            // PessimisticLockException / LockTimeoutException / CannotAcquireLockException 등
+            throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
+        }
 
 
         // 비관적 락으로 티켓들 조회
@@ -86,9 +106,7 @@ public class BookingService {
 //            throw new MoaException(TICKET_ALREADY_HELD);
 //        }
 
-        // HOLD 토큰/만료시간 생성
-        String holdToken = TokenGenerator.generateHoldToken();
-        LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
+
 
         int affected = ticketRepository.holdAtomicAvailableOnly(sessionId, memberId, holdToken, expiresAt, sortedIds);
 
@@ -97,11 +115,7 @@ public class BookingService {
             throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
         }
 
-        // 구매 장수 제한(SOLD 기준)
-        long alreadyBought = ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId);
-        if(alreadyBought + sortedIds.size() > MAX_TICKETS_PER_HOLD) {
-            throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
-        }
+
 
         // 엔티티에 hold 정보 세팅 (영속성 컨텍스트(메모리)만 변경)
 //        for (Ticket t : tickets) {

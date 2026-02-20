@@ -57,6 +57,17 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findForUpdateSkipLocked(@Param("sessionId") Long sessionId,
                                          @Param("ids") List<Long> ids);
 
+    // 락을 NOWAIT로 즉시 시도 (락 못 잡으면 예외)
+    @Query(value = """
+    SELECT ticket_id
+      FROM ticket
+     WHERE session_id = :sessionId
+       AND ticket_id IN (:ticketIds)
+     FOR UPDATE NOWAIT
+    """, nativeQuery = true)
+    List<Long> lockTicketsNowait(@Param("sessionId") Long sessionId,
+                                 @Param("ticketIds") List<Long> ticketIds);
+
     // booking availbale -> hold 원자적 업데이트
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """

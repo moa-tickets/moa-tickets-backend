@@ -8,6 +8,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import stack.moaticket.application.component.gauge.TicketReleaseMarks;
+import stack.moaticket.application.component.gauge.TicketReleaseRedisGaugeManager;
 import stack.moaticket.application.component.handler.TicketReleaseHandler;
 import stack.moaticket.application.component.producer.TicketReleaseProducer;
 import stack.moaticket.application.model.*;
@@ -28,6 +30,7 @@ public class TicketReleaseConsumerRunner {
     private final RedisClient redis;
     private final TicketReleaseHandler handler;
     private final TicketReleaseProducer producer;
+    private final TicketReleaseRedisGaugeManager manager;
     private final ThreadPoolTaskExecutor executor;
     private final AlarmConsumerProperties properties;
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -45,11 +48,13 @@ public class TicketReleaseConsumerRunner {
             RedisClient redis,
             TicketReleaseHandler handler,
             TicketReleaseProducer producer,
+            TicketReleaseRedisGaugeManager manager,
             @Qualifier("ticketReleaseRedisConsumerExecutor") ThreadPoolTaskExecutor executor,
             AlarmConsumerProperties properties) {
         this.redis = redis;
         this.handler = handler;
         this.producer = producer;
+        this.manager = manager;
         this.executor = executor;
         this.properties = properties;
     }
@@ -64,7 +69,7 @@ public class TicketReleaseConsumerRunner {
 
         for(int i=1; i<=properties.ticketRelease().consumerThread(); i++) {
             String consumerName = CONSUMER_PREFIX + i;
-            workers.add(executor.submit(() -> consumeLoop(consumerName)));
+            workers.add(executor.submit(() ->consumeLoop(consumerName)));
             log.info("TicketReleaseConsumer: {} is running", consumerName);
         }
         for(int i=1; i<=properties.ticketRelease().pelThread(); i++) {
@@ -79,7 +84,7 @@ public class TicketReleaseConsumerRunner {
             try {
                 StreamMessage<TicketReleaseConsumerValue> message = getConsumerMessage(consumerName);
                 if(message == null) continue;
-                processLoop(message);
+                manager.recordConsumer(marks -> processLoop(message, marks));
             } catch (Exception e) {
                 log.error("TicketReleaseConsumerRunner: Alarm loop error. consumer={}", consumerName, e);
                 backoff();
@@ -95,7 +100,7 @@ public class TicketReleaseConsumerRunner {
                     backoff();
                     continue;
                 }
-                processLoop(message);
+                manager.recordPel(marks -> processLoop(message, marks));
             } catch (Exception e) {
                 log.error("TicketReleaseConsumerRunner: Alarm loop error. consumer={}", consumerName, e);
                 backoff();
@@ -103,21 +108,22 @@ public class TicketReleaseConsumerRunner {
         }
     }
 
-    private void processLoop(StreamMessage<TicketReleaseConsumerValue> message) {
+    private void processLoop(StreamMessage<TicketReleaseConsumerValue> message, TicketReleaseMarks marks) {
         if(message.expiresAt() < System.currentTimeMillis()) {
-            ack(message.id());
+            ack(message.id(), marks);
             return;
         }
 
         boolean done = redis.inner().basic().isExist(new TicketReleaseDoneKey(message.payload().id()));
         if(done) {
-            ack(message.id());
+            ack(message.id(), marks);
             return;
         }
 
         TicketReleaseLockKey lockKey = new TicketReleaseLockKey(message.payload().id());
         boolean lock = redis.inner().basic().setIfAbsent(lockKey, lockValue);
         if(!lock) return;
+        marks.markLocked();
 
         try {
             String runId = message.payload().refKey();
@@ -131,8 +137,8 @@ public class TicketReleaseConsumerRunner {
 
             Long nextCursor = handler.handle(ticketIdList, meta, cursor, properties.ticketRelease().limit());
 
-            setDone(message.payload().id());
-            ack(message.id());
+            setDone(message.payload().id(), marks);
+            ack(message.id(), marks);
 
             if(nextCursor != null) {
                 TicketReleaseConsumerValue payload = new TicketReleaseConsumerValue(
@@ -143,7 +149,7 @@ public class TicketReleaseConsumerRunner {
                 producer.publishContinue(payload, TicketReleaseConsumerValue.createExpiresAtMillis());
             }
         } finally {
-            unlock(lockKey);
+            unlock(lockKey, marks);
         }
     }
 
@@ -181,21 +187,24 @@ public class TicketReleaseConsumerRunner {
         );
     }
 
-    private void ack(RecordId id) {
+    private void ack(RecordId id, TicketReleaseMarks marks) {
         redis.inner().stream().xAck(
                 consumerKey,
                 GROUP,
                 id);
+        marks.markAcked();
     }
 
-    private void unlock(TicketReleaseLockKey lockKey) {
+    private void unlock(TicketReleaseLockKey lockKey, TicketReleaseMarks marks) {
         redis.inner().basic().remove(lockKey);
+        marks.markUnlocked();
     }
 
-    private void setDone(String id) {
+    private void setDone(String id, TicketReleaseMarks marks) {
         redis.inner().basic().set(
                 new TicketReleaseDoneKey(id),
                 doneValue
         );
+        marks.markDone();
     }
 }

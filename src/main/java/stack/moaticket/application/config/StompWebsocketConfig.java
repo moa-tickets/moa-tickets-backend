@@ -1,12 +1,8 @@
 package stack.moaticket.application.config;
 
-import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.AsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
@@ -21,10 +17,8 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import stack.moaticket.application.component.handler.StompHandler;
 import stack.moaticket.application.component.interceptor.StompHandshakeInterceptor;
-import stack.moaticket.application.component.interceptor.WebSocketMessageMetricsInterceptor;
 import stack.moaticket.application.component.registry.StompRoomRegistry;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 @RequiredArgsConstructor
@@ -34,7 +28,6 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
     private final StompHandshakeInterceptor stompHandshakeInterceptor;
     private final StompRoomRegistry stompRoomRegistry;
 
-    private final WebSocketMessageMetricsInterceptor metricsInterceptor;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -63,7 +56,6 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
         executor.initialize();
         registration.taskExecutor(executor);
         registration.interceptors(stompHandler);
-        registration.interceptors(metricsInterceptor);
     }
     @Override
     public void configureClientOutboundChannel(ChannelRegistration registration) {
@@ -74,7 +66,6 @@ public class StompWebsocketConfig implements WebSocketMessageBrokerConfigurer {
         executor.setQueueCapacity(0);
         executor.initialize();
         registration.taskExecutor(executor);
-        registration.interceptors(metricsInterceptor);
     }
 
     @Override

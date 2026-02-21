@@ -22,4 +22,5 @@ public final class TicketReleaseGaugeMetrics {
     public static final String TICKET_RELEASE_REDIS_PEL_UNLOCKED = "executor.ticket-release.redis.pel.unlocked";
     public static final String TICKET_RELEASE_REDIS_PEL_ACKED = "executor.ticket-release.redis.pel.acked";
     public static final String TICKET_RELEASE_REDIS_PEL_DONE = "executor.ticket-release.redis.pel.done";
+    public static final String TICKET_RELEASE_REDIS_PEL_DROPPED = "executor.ticket-release.redis.pel.dropped";
 }

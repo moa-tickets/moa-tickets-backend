@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -84,7 +85,7 @@ public class TicketReleaseConsumerRunner {
             try {
                 StreamMessage<TicketReleaseConsumerValue> message = getConsumerMessage(consumerName);
                 if(message == null) continue;
-                manager.recordConsumer(marks -> processLoop(message, marks));
+                manager.recordConsumer(marks -> processLoop(message, marks, false));
             } catch (Exception e) {
                 log.error("TicketReleaseConsumerRunner: Alarm loop error. consumer={}", consumerName, e);
                 backoff();
@@ -102,7 +103,7 @@ public class TicketReleaseConsumerRunner {
                     backoff();
                     continue;
                 }
-                manager.recordPel(marks -> processLoop(message, marks));
+                manager.recordPel(marks -> processLoop(message, marks, true));
             } catch (Exception e) {
                 log.error("TicketReleaseConsumerRunner: Alarm loop error. consumer={}", consumerName, e);
                 backoff();
@@ -110,14 +111,17 @@ public class TicketReleaseConsumerRunner {
         }
     }
 
-    private void processLoop(StreamMessage<TicketReleaseConsumerValue> message, TicketReleaseMarks marks) {
-        if(message.expiresAt() < System.currentTimeMillis()) {
+    private void processLoop(
+            StreamMessage<TicketReleaseConsumerValue> message,
+            TicketReleaseMarks marks,
+            boolean pel) {
+        if (message.expiresAt() < System.currentTimeMillis()) {
             ack(message.id(), marks);
             return;
         }
 
         boolean done = redis.inner().basic().isExist(new TicketReleaseDoneKey(message.payload().id()));
-        if(done) {
+        if (done) {
             ack(message.id(), marks);
             return;
         }
@@ -126,14 +130,14 @@ public class TicketReleaseConsumerRunner {
                 message.payload().id(),
                 Duration.ofMillis(properties.ticketRelease().lockMillis()));
         boolean lock = redis.inner().basic().setIfAbsent(lockKey, lockValue);
-        if(!lock) return;
+        if (!lock) return;
         marks.markLocked();
 
         try {
             String runId = message.payload().refKey();
             TicketReleaseRunKey runKey = TicketReleaseRunKey.create(runId, false);
             TicketReleaseRunValue runValue = redis.inner().basic().get(runKey);
-            if(runValue == null) return;
+            if (runValue == null) return;
 
             List<Long> ticketIdList = runValue.ticketIdList();
             Map<Long, TicketMetaDto> meta = runValue.metadata();
@@ -144,13 +148,17 @@ public class TicketReleaseConsumerRunner {
             setDone(message.payload().id(), marks);
             ack(message.id(), marks);
 
-            if(nextCursor != null) {
+            if (nextCursor != null) {
                 TicketReleaseConsumerValue payload = new TicketReleaseConsumerValue(
                         TicketReleaseConsumerValue.createId(),
                         runId,
                         nextCursor);
 
                 producer.publishContinue(payload, TicketReleaseConsumerValue.createExpiresAtMillis());
+            }
+        } catch (RejectedExecutionException e) {
+            if(pel) {
+                drop(message.id(), marks);
             }
         } finally {
             unlock(lockKey, marks);
@@ -198,6 +206,11 @@ public class TicketReleaseConsumerRunner {
                 GROUP,
                 id);
         marks.markAcked();
+    }
+
+    public void drop(RecordId id, TicketReleaseMarks marks) {
+        ack(id, marks);
+        marks.markDropped();
     }
 
     private void unlock(TicketReleaseLockKey lockKey, TicketReleaseMarks marks) {

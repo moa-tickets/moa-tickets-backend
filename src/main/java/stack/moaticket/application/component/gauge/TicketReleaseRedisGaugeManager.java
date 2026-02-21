@@ -25,6 +25,7 @@ public class TicketReleaseRedisGaugeManager {
     private final Counter pelUnlocked;
     private final Counter pelAcked;
     private final Counter pelDone;
+    private final Counter pelDropped;
 
     private final Timer producePipeline;
     private final Timer consumePipeline;
@@ -45,6 +46,7 @@ public class TicketReleaseRedisGaugeManager {
         this.pelUnlocked = Counter.builder(TICKET_RELEASE_REDIS_PEL_UNLOCKED).register(registry);
         this.pelAcked = Counter.builder(TICKET_RELEASE_REDIS_PEL_ACKED).register(registry);
         this.pelDone = Counter.builder(TICKET_RELEASE_REDIS_PEL_DONE).register(registry);
+        this.pelDropped = Counter.builder(TICKET_RELEASE_REDIS_PEL_DROPPED).register(registry);
 
         this.producePipeline = Timer.builder(TICKET_RELEASE_REDIS_PRODUCE_PIPELINE)
                 .publishPercentileHistogram(true)
@@ -99,6 +101,7 @@ public class TicketReleaseRedisGaugeManager {
             if(marks.isUnlocked()) pelUnlocked.increment();
             if(marks.isDone()) pelDone.increment();
             if(marks.isAcked()) pelAcked.increment();
+            if(marks.isDropped()) pelDropped.increment();
         }
     }
 }

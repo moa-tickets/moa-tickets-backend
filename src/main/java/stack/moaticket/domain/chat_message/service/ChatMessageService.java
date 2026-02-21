@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import stack.moaticket.application.component.consumer.ChatBulkProperties;
 import stack.moaticket.application.model.ChatShardBuffer;
 import stack.moaticket.application.model.ChatShardBufferMap;
 import stack.moaticket.domain.chat_message.entity.ChatMessage;
@@ -21,6 +22,7 @@ public class ChatMessageService {
     private final ChatMessageRepositoryQueryDsl chatMessageRepositoryQueryDsl;
     private final ChatMessageBulkRepository chatMessageBulkRepository;
 
+    private final ChatBulkProperties properties;
 
     @Async(value = "chatToBufferExecutor")
     public void addToBuffer(String content, Long memberId, String playbackId, LocalDateTime sendTime, String memberNickname) {
@@ -31,20 +33,9 @@ public class ChatMessageService {
                 .timestamp(sendTime)
                 .nickname(memberNickname)
                 .build();
-        switch ((int) (chatMessage.getMemberId() % 4) + 1) {
-            case 1:
-                ChatShardBufferMap.getBuffer(1).getActive().add(chatMessage);
-                break;
-            case 2:
-                ChatShardBufferMap.getBuffer(2).getActive().add(chatMessage);
-                break;
-            case 3:
-                ChatShardBufferMap.getBuffer(3).getActive().add(chatMessage);
-                break;
-            case 4:
-                ChatShardBufferMap.getBuffer(4).getActive().add(chatMessage);
-                break;
-        }
+        int shardCount = properties.chatMessageBulk().shardCount();
+        int shardNum = (int) (memberId % shardCount + 1);
+        ChatShardBufferMap.getBuffer(shardNum).getActive().add(chatMessage);
     }
 
     public void saveBulk(ChatShardBuffer shard) {

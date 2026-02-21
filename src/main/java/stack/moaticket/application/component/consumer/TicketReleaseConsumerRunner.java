@@ -159,6 +159,8 @@ public class TicketReleaseConsumerRunner {
         } catch (RejectedExecutionException e) {
             if(pel) {
                 drop(message.id(), marks);
+            } else {
+                throw e;
             }
         } finally {
             unlock(lockKey, marks);

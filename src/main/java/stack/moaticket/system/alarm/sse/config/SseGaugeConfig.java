@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.core.task.AsyncTaskExecutor;
 import stack.moaticket.system.alarm.sse.component.gauge.SseGaugeBinder;
 import stack.moaticket.system.alarm.sse.component.gauge.SseGaugeManager;
 import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
@@ -22,7 +22,7 @@ public class SseGaugeConfig {
     public SseGaugeBinder sseGaugeBinder(
             MeterRegistry meterRegistry,
             SseEmitterRegister sseEmitterRegister,
-            @Qualifier("asyncExecutor")ThreadPoolTaskExecutor asyncExecutor) {
+            @Qualifier("asyncExecutor") AsyncTaskExecutor asyncExecutor) {
         return new SseGaugeBinder(meterRegistry, sseEmitterRegister, asyncExecutor);
     }
 

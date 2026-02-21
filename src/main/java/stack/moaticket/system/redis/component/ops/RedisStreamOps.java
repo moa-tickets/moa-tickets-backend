@@ -118,7 +118,7 @@ public class RedisStreamOps implements RedisOps<RedisStreamOps.Bound> {
                     group,
                     Range.unbounded(),
                     1L,
-                    Duration.ofMinutes(1));
+                    Duration.ofMillis(2000));
             if(pending == null || pending.isEmpty()) return null;
 
             RecordId id = pending.get(0).getId();

@@ -4,7 +4,8 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
-import stack.moaticket.application.job.ChatMessageBulkJob;import stack.moaticket.application.job.ConcertStartInformJob;
+import stack.moaticket.application.job.ChatMessageBulkJob;
+import stack.moaticket.application.job.ConcertStartInformJob;
 import stack.moaticket.application.job.TicketReleaseInformJob;
 
 import java.time.Duration;

@@ -1,11 +1,13 @@
 package stack.moaticket.application.model;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import stack.moaticket.domain.chat_message.entity.ChatMessage;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@RequiredArgsConstructor
 public class ChatShardBuffer {
     private final Queue<ChatMessage> buffer1;
     private final Queue<ChatMessage> buffer2;
@@ -15,7 +17,6 @@ public class ChatShardBuffer {
     @Getter
     private Long lastUpdatedTime = System.currentTimeMillis();
 
-    private final static int THRESHOLD = 100;
 
     public ChatShardBuffer(int shardNum) {
         this.shardNum = shardNum;
@@ -41,7 +42,7 @@ public class ChatShardBuffer {
         this.lastUpdatedTime = System.currentTimeMillis();
     }
 
-    public boolean isFull() {
-        return getActiveSize() >= THRESHOLD;
+    public boolean isFull(int threshold) {
+        return getActiveSize() >= threshold;
     }
 }

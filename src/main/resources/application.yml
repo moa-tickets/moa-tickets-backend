@@ -83,6 +83,12 @@ app:
         pel-thread: ${APP_SERVER_CONSUMER_TICKET_RELEASE_PEL_THREAD:2}
         limit: ${APP_SERVER_CONSUMER_TICKET_RELEASE_LIMIT:200}
         backoff-millis: ${APP_SERVER_CONSUMER_TICKET_RELEASE_BACKOFF_MILLIS:300}
+      chat:
+        chat-message-bulk:
+          shard-count: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_SHARD_COUNT:4}
+          threshold: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_THRESHOLD:100}
+          flush-timeout: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_FLUSH_TIMEEOUT:5000}
+
 
   ai:
     url: ${AI_URL}

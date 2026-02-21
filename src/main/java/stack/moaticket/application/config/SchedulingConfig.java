@@ -20,6 +20,8 @@ public class SchedulingConfig {
     private static final String SESSION_START_EXECUTOR_PREFIX = "ex-ss-";
     private static final String TICKET_RELEASE_EXECUTOR_PREFIX = "ex-tr-";
 
+    private static final String CHAT_MESSAGE_BULK_SCHEDULER_PREFIX = "sch-cm-bulk-";
+
     @Bean(name = "sessionStartScheduler")
     public ThreadPoolTaskScheduler sessionStartScheduler() {
         ThreadPoolTaskScheduler ts = new ThreadPoolTaskScheduler();
@@ -64,5 +66,17 @@ public class SchedulingConfig {
         ex.setThreadNamePrefix(TICKET_RELEASE_EXECUTOR_PREFIX);
         ex.initialize();
         return ex;
+    }
+
+    @Bean(name = "chatMessageBulkScheduler")
+    public ThreadPoolTaskScheduler chatMessageBulkScheduler() {
+        ThreadPoolTaskScheduler ts = new ThreadPoolTaskScheduler();
+        ts.setPoolSize(1);
+        ts.setThreadNamePrefix(CHAT_MESSAGE_BULK_SCHEDULER_PREFIX);
+        ts.setWaitForTasksToCompleteOnShutdown(true);
+        ts.setAwaitTerminationSeconds(10);
+        ts.initialize();
+
+        return ts;
     }
 }

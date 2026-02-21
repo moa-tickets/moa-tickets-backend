@@ -6,5 +6,12 @@ import stack.moaticket.system.alarm.core.type.SenderType;
 @ConfigurationProperties(prefix = "app.server.alarm")
 public record AlarmConfigProperties(
         SenderType type,
-        int shardCount
-) {}
+        int shardCount,
+        Executor executor
+) {
+    public record Executor(
+            int coreThread,
+            int maxThread,
+            int queueCapacity
+    ) {}
+}

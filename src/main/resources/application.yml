@@ -63,8 +63,12 @@ management:
 app:
   server:
     alarm:
-      type: ${APP_SERVER_ALARM:SSE}
-      shard-count: 8
+      type: ${APP_SERVER_ALARM_TYPE:SSE}
+      shard-count: ${APP_SERVER_ALARM_SHARD_COUNT:8}
+      executor:
+        core-thread: ${APP_SERVER_ALARM_EXECUTOR_CORE_THREAD:8}
+        max-thread: ${APP_SERVER_ALARM_EXECUTOR_MAX_THREAD:20}
+        queue-capacity: ${APP_SERVER_ALARM_EXECUTOR_QUEUE_CAPACITY:1000}
     scheduler:
       session-start:
         enabled: ${APP_SERVER_SCHEDULER_SESSION_START_ENABLED:true}

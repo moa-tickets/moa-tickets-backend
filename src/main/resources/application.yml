@@ -74,6 +74,9 @@ app:
         batch-size: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_BATCH_SIZE:200}
         executor:
           max-thread: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_MAX_THREAD:10}
+      chat-message-bulk:
+        enabled: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_ENABLED:true}
+        rate-millis: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_DELAY:5000}
     consumer:
       ticket-release:
         consumer-thread: ${APP_SERVER_CONSUMER_TICKET_RELEASE_MAX_THREAD:10}

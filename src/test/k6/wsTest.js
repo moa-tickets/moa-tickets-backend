@@ -54,7 +54,8 @@ export default function () {
     // 쿠키 설정 (로그에 찍혔던 인증 과정을 통과하기 위해 필수)
     const params = {
         headers: {
-            'Cookie': `Authorization=;`, // 실제 유효한 쿠키/토큰 값
+            // 'Cookie': `Authorization=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzcxNTU5MTIxLCJleHAiOjE3NzE2NDU1MjF9.cTAwK1LlGzCtBcCeL1J20RpElPpOkW03cgHCbP7jcNM;`, // 실제 유효한 쿠키/토큰 값
+            'Cookie': `Authorization=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzcxNTgxNjYzLCJleHAiOjE3NzE2NjgwNjN9.9TW6xyn1QdGfMwuQQfem-152fBVilfcB8GOwbPAkc3Y;`, // 실제 유효한 쿠키/토큰 값
                 'Origin': 'http://localhost:8080',
         },
     };
@@ -86,8 +87,8 @@ export default function () {
             // 3. STOMP SUBSCRIBE 프레임 (채팅 수신  구독)
             const subscribeFrame =
                 "SUBSCRIBE\n" +
-                "id:sub-" + userId + "\n" +
-                "destination:/sub/" + roomId + "/messages\n" +
+                "id:" + userId + "\n" +
+                "destination:/sub/1/messages\n" +
                 "\n" +
                 "\0";
             socket.send(subscribeFrame);
@@ -111,13 +112,13 @@ export default function () {
                     if (isConnected) {
                         const chatPayload = JSON.stringify({
                             sender: `user-${userId}`,
-                            message: "Hello STOMP!",
+                            message: `Hello STOMP! ${userId}`,
                             type: "CHAT"
                         });
 
                         const sendFrame =
                             "SEND\n" +
-                            "destination:/pub/send/" + roomId + "\n" +
+                            "destination:/pub/send/1\n" +
                             "content-type:application/json\n" +
                             "\n" +
                             chatPayload +
@@ -135,7 +136,6 @@ export default function () {
             // }, 1000);    //100명
             // }, 6000);    //1000명
             // }, 50000);   //7500명     rps 150으로 맞추기 위함
-
         });
 
         // 메시지 수신 시 로그 (너무 많으면 주석 처리하세요)

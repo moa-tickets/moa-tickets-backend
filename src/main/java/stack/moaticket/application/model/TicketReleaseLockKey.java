@@ -19,7 +19,7 @@ public class TicketReleaseLockKey implements BasicKey<TicketReleaseLockValue> {
 
     @Override
     public Duration ttl() {
-        return Duration.ofMinutes(1);
+        return Duration.ofMillis(2000);
     }
 
     @Override

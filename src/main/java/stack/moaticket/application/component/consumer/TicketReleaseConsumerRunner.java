@@ -93,9 +93,11 @@ public class TicketReleaseConsumerRunner {
     }
 
     private void pelLoop(String consumerName) {
+        Duration lockMillis = Duration.ofMillis(properties.ticketRelease().lockMillis());
+
         while(running.get() && !Thread.currentThread().isInterrupted()) {
             try {
-                StreamMessage<TicketReleaseConsumerValue> message = getPelMessage(consumerName);
+                StreamMessage<TicketReleaseConsumerValue> message = getPelMessage(consumerName, lockMillis);
                 if(message == null) {
                     backoff();
                     continue;
@@ -120,7 +122,9 @@ public class TicketReleaseConsumerRunner {
             return;
         }
 
-        TicketReleaseLockKey lockKey = new TicketReleaseLockKey(message.payload().id());
+        TicketReleaseLockKey lockKey = new TicketReleaseLockKey(
+                message.payload().id(),
+                Duration.ofMillis(properties.ticketRelease().lockMillis()));
         boolean lock = redis.inner().basic().setIfAbsent(lockKey, lockValue);
         if(!lock) return;
         marks.markLocked();
@@ -179,11 +183,12 @@ public class TicketReleaseConsumerRunner {
         );
     }
 
-    private StreamMessage<TicketReleaseConsumerValue> getPelMessage(String consumerName) {
+    private StreamMessage<TicketReleaseConsumerValue> getPelMessage(String consumerName, Duration lockMillis) {
         return redis.inner().stream().xAutoClaim(
                 consumerKey,
                 GROUP,
-                consumerName
+                consumerName,
+                lockMillis
         );
     }
 

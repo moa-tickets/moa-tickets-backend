@@ -7,9 +7,11 @@ import java.time.Duration;
 public class TicketReleaseLockKey implements BasicKey<TicketReleaseLockValue> {
     private static final String PREFIX = "tr:lock:";
     private final String key;
+    private final Duration ttl;
 
-    public TicketReleaseLockKey(String key) {
+    public TicketReleaseLockKey(String key, Duration ttl) {
         this.key = PREFIX + key;
+        this.ttl = ttl;
     }
 
     @Override
@@ -19,7 +21,7 @@ public class TicketReleaseLockKey implements BasicKey<TicketReleaseLockValue> {
 
     @Override
     public Duration ttl() {
-        return Duration.ofMillis(2000);
+        return ttl;
     }
 
     @Override

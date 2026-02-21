@@ -126,8 +126,9 @@ public class RedisClient {
         public <T extends RedisValue> StreamMessage<T> xAutoClaim(
                 StreamKey<T> key,
                 String group,
-                String consumerName) {
-            return ops.xAutoClaim(key, group, consumerName);
+                String consumerName,
+                Duration lockMillis) {
+            return ops.xAutoClaim(key, group, consumerName, lockMillis);
         }
 
         public <T extends RedisValue> long xAck(StreamKey<T> key, String group, RecordId... ids) {

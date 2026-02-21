@@ -12,5 +12,6 @@ public record AlarmConsumerProperties(
     public record ConsumerConfig(@Min(1) int consumerThread,
                                  @Min(1) int pelThread,
                                  @Min(200) int limit,
+                                 @Min(500) long lockMillis,
                                  @Min(200) long backoffMillis) {}
 }

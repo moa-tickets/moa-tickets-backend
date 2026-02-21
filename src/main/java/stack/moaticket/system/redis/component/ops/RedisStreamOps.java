@@ -112,13 +112,14 @@ public class RedisStreamOps implements RedisOps<RedisStreamOps.Bound> {
         public <T extends RedisValue> StreamMessage<T> xAutoClaim(
                 StreamKey<T> key,
                 String group,
-                String consumerName) {
+                String consumerName,
+                Duration lockMillis) {
             PendingMessages pending = template.opsForStream().pending(
                     key.get(),
                     group,
                     Range.unbounded(),
                     1L,
-                    Duration.ofMillis(2000));
+                    lockMillis);
             if(pending == null || pending.isEmpty()) return null;
 
             RecordId id = pending.get(0).getId();
@@ -127,7 +128,7 @@ public class RedisStreamOps implements RedisOps<RedisStreamOps.Bound> {
                     key.get(),
                     group,
                     consumerName,
-                    Duration.ofMinutes(1),
+                    lockMillis,
                     id);
             if(claimed == null || claimed.isEmpty()) return null;
             MapRecord<String, Object, Object> record = claimed.getFirst();

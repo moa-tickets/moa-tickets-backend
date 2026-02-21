@@ -55,6 +55,10 @@ management:
       percentiles-histogram:
         alarm.sse.send.seconds: true
         executor.session-start.pipeline: true
+        executor.ticket-release.pipeline: true
+        executor.ticket-release.redis.produce-pipeline: true
+        executor.ticket-release.redis.consume-pipeline: true
+        executor.ticket-release.redis.pel-pipeline: true
 
 app:
   server:

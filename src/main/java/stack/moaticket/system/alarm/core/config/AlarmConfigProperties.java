@@ -10,8 +10,11 @@ public record AlarmConfigProperties(
         Executor executor
 ) {
     public record Executor(
+            boolean useVirtual,
             int coreThread,
             int maxThread,
-            int queueCapacity
+            int queueCapacity,
+            int maxConcurrent,
+            long acquireTimeoutMillis
     ) {}
 }

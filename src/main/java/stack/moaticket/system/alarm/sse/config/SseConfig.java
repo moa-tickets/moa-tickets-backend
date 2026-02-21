@@ -5,10 +5,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.support.TaskExecutorAdapter;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import stack.moaticket.system.alarm.core.config.AlarmConfigProperties;
+import stack.moaticket.system.alarm.sse.component.executor.SemaphoreBoundedAsyncTaskExecutor;
 import stack.moaticket.system.alarm.sse.component.gauge.SseGaugeManager;
 import stack.moaticket.system.alarm.sse.job.SseHeartbeatInformJob;
 import stack.moaticket.system.alarm.sse.component.scheduler.SseHeartbeatScheduler;
@@ -16,6 +19,8 @@ import stack.moaticket.system.alarm.sse.component.register.SseEmitterRegister;
 import stack.moaticket.system.alarm.sse.service.SseHeartbeatService;
 import stack.moaticket.system.alarm.sse.service.SseSendService;
 import stack.moaticket.system.alarm.sse.service.SseSubscribeService;
+
+import java.util.concurrent.Executors;
 
 @ConditionalOnProperty(
         value = "app.server.alarm.type",
@@ -41,8 +46,13 @@ public class SseConfig {
         return ts;
     }
 
+    @ConditionalOnProperty(
+            value = "app.server.alarm.executor.use-virtual",
+            havingValue = "false",
+            matchIfMissing = true
+    )
     @Bean(name = "asyncExecutor")
-    public ThreadPoolTaskExecutor asyncExecutor() {
+    public AsyncTaskExecutor asyncExecutor() {
         int corePoolSize = properties.executor().coreThread();
         int maxPoolSize = properties.executor().maxThread();
         int queueCapacity = properties.executor().queueCapacity();
@@ -54,6 +64,23 @@ public class SseConfig {
         ex.setThreadNamePrefix(SEND_EXECUTOR_PREFIX);
         ex.initialize();
         return ex;
+    }
+
+    @ConditionalOnProperty(
+            value = "app.server.alarm.executor.use-virtual",
+            havingValue = "true"
+    )
+    @Bean(name = "asyncExecutor")
+    public AsyncTaskExecutor asyncVirtualExecutor() {
+        int maxConcurrent = properties.executor().maxConcurrent();
+        long acquireTimeoutMillis = properties.executor().acquireTimeoutMillis();
+
+        return new SemaphoreBoundedAsyncTaskExecutor(
+                new TaskExecutorAdapter(Executors.newVirtualThreadPerTaskExecutor()),
+                maxConcurrent,
+                SemaphoreBoundedAsyncTaskExecutor.Mode.BLOCK,
+                acquireTimeoutMillis
+        );
     }
 
     @Bean
@@ -84,7 +111,7 @@ public class SseConfig {
     @Bean
     public SseSendService sseSendService(
             SseEmitterRegister register,
-            @Qualifier("asyncExecutor") ThreadPoolTaskExecutor asyncExecutor,
+            @Qualifier("asyncExecutor") AsyncTaskExecutor asyncExecutor,
             SseGaugeManager manager) {
         return new SseSendService(register, asyncExecutor, manager);
     }

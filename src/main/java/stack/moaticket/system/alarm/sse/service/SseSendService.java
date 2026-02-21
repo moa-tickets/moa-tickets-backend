@@ -2,7 +2,7 @@ package stack.moaticket.system.alarm.sse.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import stack.moaticket.system.alarm.core.model.AlarmEnvelope;
 import stack.moaticket.system.alarm.core.model.AlarmMessage;
@@ -24,12 +24,12 @@ import java.util.function.Predicate;
 @Slf4j
 public class SseSendService implements AlarmSendService {
     private final SseEmitterRegister sseEmitterRegister;
-    private final ThreadPoolTaskExecutor asyncExecutor;
+    private final AsyncTaskExecutor asyncExecutor;
     private final SseGaugeManager sseGaugeManager;
 
     public SseSendService(
             SseEmitterRegister sseEmitterRegister,
-            @Qualifier("asyncExecutor") ThreadPoolTaskExecutor asyncExecutor,
+            @Qualifier("asyncExecutor") AsyncTaskExecutor asyncExecutor,
             SseGaugeManager sseGaugeManager) {
         this.asyncExecutor = asyncExecutor;
         this.sseEmitterRegister = sseEmitterRegister;

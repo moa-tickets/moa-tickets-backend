@@ -17,17 +17,18 @@ public class SseGaugeBinder {
             SseEmitterRegister sseEmitterRegister,
             @Qualifier("asyncExecutor") AsyncTaskExecutor asyncExecutor) {
 
+        // 전체 SSE 연결 수
+        Gauge.builder(SSE_EMITTER_TOTAL, sseEmitterRegister, SseEmitterRegister::getTotalEmitterCount)
+                .description("Total number of active SSE emitters")
+                .register(meterRegistry);
+
+        // 전체 연결된 유저 수
+        Gauge.builder(SSE_MEMBER_TOTAL, sseEmitterRegister, SseEmitterRegister::getTotalMemberCount)
+                .description("Total number of active members")
+                .register(meterRegistry);
+
         if(asyncExecutor instanceof ThreadPoolTaskExecutor executor) {
             ThreadPoolExecutor tp = executor.getThreadPoolExecutor();
-            // 전체 SSE 연결 수
-            Gauge.builder(SSE_EMITTER_TOTAL, sseEmitterRegister, SseEmitterRegister::getTotalEmitterCount)
-                    .description("Total number of active SSE emitters")
-                    .register(meterRegistry);
-
-            // 전체 연결된 유저 수
-            Gauge.builder(SSE_MEMBER_TOTAL, sseEmitterRegister, SseEmitterRegister::getTotalMemberCount)
-                    .description("Total number of active members")
-                    .register(meterRegistry);
 
             // 활성화 된 SSE Executor 스레드
             Gauge.builder(SSE_EXECUTOR_ACTIVE, tp, ThreadPoolExecutor::getActiveCount)

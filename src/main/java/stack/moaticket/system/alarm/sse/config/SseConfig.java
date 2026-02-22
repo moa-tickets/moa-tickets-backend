@@ -78,7 +78,7 @@ public class SseConfig {
         return new SemaphoreBoundedAsyncTaskExecutor(
                 new TaskExecutorAdapter(Executors.newVirtualThreadPerTaskExecutor()),
                 maxConcurrent,
-                SemaphoreBoundedAsyncTaskExecutor.Mode.BLOCK,
+                SemaphoreBoundedAsyncTaskExecutor.Mode.FAIL_FAST,
                 acquireTimeoutMillis
         );
     }

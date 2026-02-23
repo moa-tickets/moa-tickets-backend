@@ -6,7 +6,7 @@ server:
     connection-timeout: 30000  # 연결 타임아웃
     keep-alive-timeout: 60000
     threads:
-      max: 40
+      max: 200
       min-spare: 10
 
 spring:

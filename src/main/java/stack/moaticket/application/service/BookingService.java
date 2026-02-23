@@ -60,53 +60,6 @@ public class BookingService {
         String holdToken = TokenGenerator.generateHoldToken();
         LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
-        try {
-            List<Long> locked = ticketRepository.lockTicketsNowait(sessionId, sortedIds);
-            if (locked.size() != sortedIds.size()) {
-                throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
-            }
-        } catch (Exception e) {
-            // Hibernate/JPA에서 NOWAIT 락 실패가 여러 예외 타입으로 래핑될 수 있음
-            // PessimisticLockException / LockTimeoutException / CannotAcquireLockException 등
-            throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
-        }
-
-
-        // 비관적 락으로 티켓들 조회
-//        List<Ticket> tickets = ticketRepositoryQueryDsl.findTicketsForUpdate(sortedIds, sessionId);
-
-        // 락 시도 (SKIP LOCKED = 경합이면 즉시 반환) affectedRows == 요청개수면 성공, 아니면 즉시 409.
-//        List<Ticket> tickets = ticketRepository.findForUpdateSkipLocked(sessionId, sortedIds);
-//        if (tickets.size() != sortedIds.size()) throw new MoaException(TICKET_ALREADY_HELD);
-//
-//        boolean allHold = tickets.stream().allMatch(Ticket::isHold);
-//        boolean allOwnedByMe = tickets.stream().allMatch(t -> t.isOwnedBy(memberId));
-//
-//        if(allHold && allOwnedByMe) {
-//            String existingToken = tickets.getFirst().getHoldToken();
-//            LocalDateTime existingExpiresAt = tickets.getFirst().getExpiresAt();
-//
-//            boolean sameToken = tickets.stream().allMatch(t -> existingToken != null && existingToken.equals(t.getHoldToken()));
-//            boolean sameExpiresAt = tickets.stream().allMatch(t -> existingExpiresAt != null && existingExpiresAt.equals(t.getExpiresAt()));
-//
-//            // holdToken/expiresAt이 정합한 경우에만 멱등 성공 처리
-//            if (sameToken && sameExpiresAt) {
-//                return new HoldResult(existingToken, existingExpiresAt);
-//            }
-//        }
-
-        // 요청한 개수만큼 전부 조회됐는지(세션/존재 검증)
-//        if(tickets.size() != sortedIds.size()) {
-//            throw new MoaException(MISMATCH_PARAMETER);
-//        }
-
-        // 모두 AVAILABLE 상태인지 검증
-//        boolean allAvailable = tickets.stream().allMatch(Ticket::isAvailable);
-//        if(!allAvailable) {
-//            throw new MoaException(TICKET_ALREADY_HELD);
-//        }
-
-
 
         int affected = ticketRepository.holdAtomicAvailableOnly(sessionId, memberId, holdToken, expiresAt, sortedIds);
 
@@ -114,14 +67,6 @@ public class BookingService {
         if (affected != sortedIds.size()) {
             throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
         }
-
-
-
-        // 엔티티에 hold 정보 세팅 (영속성 컨텍스트(메모리)만 변경)
-//        for (Ticket t : tickets) {
-//            t.holdBy(member, holdToken, expiresAt);
-//        }
-        // 트랜잭션 커밋 시점에 JPA flush -> UPDATE (영속성 컨텍스트 → DB 버퍼 풀)
 
         return new HoldResult(holdToken, expiresAt);
     }

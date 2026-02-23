@@ -198,4 +198,23 @@ public class TicketRepositoryQueryDsl {
                 .fetch();
     }
 
+    // 존재 + 세션 정합성 검증용 (락 없음)
+    public long countByIdsAndSession(List<Long> ticketIds, Long sessionId) {
+        if (ticketIds == null || ticketIds.isEmpty()) {
+            return 0L;
+        }
+
+        Long count = jpaQueryFactory
+                .select(ticket.count())
+                .from(ticket)
+                .where(
+                        ticket.id.in(ticketIds)
+                                .and(ticket.session.id.eq(sessionId))
+                )
+                .fetchOne();
+
+        return count != null ? count : 0L;
+    }
+
+
 }

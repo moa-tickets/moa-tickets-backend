@@ -5,6 +5,9 @@ server:
     max-connections: 40000    # 최대 연결 수(서버 소켓의 차일드 소켓들)
     connection-timeout: 30000  # 연결 타임아웃
     keep-alive-timeout: 60000
+    threads:
+      max: 200
+      min-spare: 10
 
 spring:
   datasource:
@@ -45,6 +48,8 @@ logging:
     root: WARN                     # 프로덕션에서는 경고 이상만 로깅
     com.my.investment_mentor: WARN # 애플리케이션 로그는 INFO 수준
     org.springframework: WARN      # Spring 로그는 경고 이상만
+    org.hibernate.orm.jdbc.error: ERROR
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: ERROR
 
 app:
   server:

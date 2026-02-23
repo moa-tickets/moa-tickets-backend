@@ -32,7 +32,9 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String requestUri = request.getRequestURI();
+            log.error("TEMP_URI: {}", requestUri);
             boolean isPass = FilterUtil.checkFilter(requestUri);
+            log.error("TEMP_IS_PASS: {}", isPass);
 
             if(isPass) {
                 filterChain.doFilter(request, response);

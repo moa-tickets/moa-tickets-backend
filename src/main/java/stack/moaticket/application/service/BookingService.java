@@ -3,6 +3,7 @@ package stack.moaticket.application.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import stack.moaticket.application.component.metrics.HoldMetrics;
 import stack.moaticket.application.dto.BookingDto;
 import stack.moaticket.domain.member.entity.Member;
 import stack.moaticket.domain.member.service.MemberService;
@@ -32,6 +33,7 @@ public class BookingService {
     private final MemberService memberService;
     private final TicketRepositoryQueryDsl ticketRepositoryQueryDsl; //TODO: querydsl 수정했으니 확인해주세요
     private final TicketRepository ticketRepository;
+    private final HoldMetrics holdMetrics;
 
     private static final int HOLD_MINUTES = 10;
     private static final int MAX_TICKETS_PER_HOLD = 4;
@@ -39,36 +41,57 @@ public class BookingService {
     // 좌석 임시 점유 (AVAILABLE -> HOLD)
     @Transactional
     public HoldResult holdTickets(Long memberId, Long sessionId, List<Long> ticketIds) {
-        // Member에 락을 걸어 동일 사용자 동시 처리 방지하는 방법도 있는데 쓰면 DB 성능에 영향이 있을지 체크하기
-        Member member = validator.of(memberService.findById(memberId))
-                .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
-                .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
-                .get();
-        validateHoldRequest(sessionId, ticketIds);
-        LocalDateTime now = LocalDateTime.now();
+        var totalSample = holdMetrics.start();
+        String result = "ok";
 
-        // 데드락 방지: 항상 같은 순서로 락 획득
-        List<Long> sortedIds = ticketIds.stream().distinct().sorted().toList();
+         try {
+             Member member = validator.of(
+                             holdMetrics.record("booking_hold_member_lookup", "ok", () -> memberService.findById(memberId))
+                     )
+                     .validateOrThrow(Objects::isNull, MoaExceptionType.MEMBER_NOT_FOUND)
+                     .validateOrThrow(m -> m.getState() != MemberState.ACTIVE, MoaExceptionType.UNAUTHORIZED)
+                     .get();
+             validateHoldRequest(sessionId, ticketIds);
+             LocalDateTime now = LocalDateTime.now();
 
-        // 구매 장수 제한(SOLD 기준)
-        long alreadyBought = ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId);
-        if(alreadyBought + sortedIds.size() > MAX_TICKETS_PER_HOLD) {
-            throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
-        }
+             // 데드락 방지: 항상 같은 순서로 락 획득
+             List<Long> sortedIds = ticketIds.stream().distinct().sorted().toList();
 
-        // HOLD 토큰/만료시간 생성
-        String holdToken = TokenGenerator.generateHoldToken();
-        LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
+             // 구매 장수 제한(SOLD 기준)
+             long alreadyBought = holdMetrics.record(HoldMetrics.Names.HOLD_COUNT_SOLD, "ok",
+                     () -> ticketRepositoryQueryDsl.countSoldByMemberAndSession(memberId, sessionId)
+             );
+             if(alreadyBought + sortedIds.size() > MAX_TICKETS_PER_HOLD) {
+                 result = "limit";
+                 throw new MoaException(MoaExceptionType.TICKET_LIMIT_EXCEEDED);
+             }
+
+             // HOLD 토큰/만료시간 생성
+             String holdToken = TokenGenerator.generateHoldToken();
+             LocalDateTime expiresAt = now.plusMinutes(HOLD_MINUTES);
 
 
-        int affected = ticketRepository.holdAtomicAvailableOnly(sessionId, memberId, holdToken, expiresAt, sortedIds);
+             int affected = holdMetrics.record(HoldMetrics.Names.HOLD_UPDATE, "ok",
+                     () -> ticketRepository.holdAtomicAvailableOnly(sessionId, memberId, holdToken, expiresAt, sortedIds)
+             );
 
-        // 전부 못 잡았으면 즉시 실패
-        if (affected != sortedIds.size()) {
-            throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
-        }
+             // 전부 못 잡았으면 즉시 실패
+             if (affected != sortedIds.size()) {
+                 result = "conflict";
+                 throw new MoaException(MoaExceptionType.TICKET_ALREADY_HELD);
+             }
 
-        return new HoldResult(holdToken, expiresAt);
+             return new HoldResult(holdToken, expiresAt);
+         }catch (MoaException e){
+             if ("ok".equals(result)) result = "error";
+             throw e;
+         }catch (RuntimeException e){
+             result = "error";
+             throw e;
+         }finally {
+             holdMetrics.stop(totalSample, HoldMetrics.Names.HOLD_TOTAL, result);
+         }
+
     }
 
     // 회차별 좌석 목록 조회

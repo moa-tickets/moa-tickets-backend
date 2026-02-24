@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public interface BoardService {
 
-    void create(Long memberId, BoardDto.Request request);
+    void create(Long memberId, BoardDto.BoardPostRequest boardPostRequest);
 
     BoardDto.BoardResponse read(Long id);
 
@@ -20,14 +20,13 @@ public interface BoardService {
 
     void delete(Long memberId, Long id);
 
-    default Board requestToEntity(Member member, BoardDto.Request request) {
+    default Board requestToEntity(Member member, BoardDto.BoardPostRequest boardPostRequest) {
 
         return Board.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
+                .title(boardPostRequest.getTitle())
+                .content(boardPostRequest.getContent())
                 .member(member)
                 .build();
-
     }
 
     //엔티티로 만들어서 전체조회
@@ -37,6 +36,7 @@ public interface BoardService {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .nickName(board.getMember().getNickname())
+                .likeCount(board.getLikeCount())
                 .createdAt(board.getCreatedAt())
                 .build();
     }

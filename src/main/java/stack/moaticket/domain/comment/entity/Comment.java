@@ -35,6 +35,5 @@ public class Comment extends Base {
 
     public void fix(CommentDto.CommentFixRequest commentFixRequest) {
         this.content = commentFixRequest.content();
-
     }
 }

@@ -19,8 +19,8 @@ public class BoardController {
     @PostMapping("/board")
     public void createBoard(
             @AuthenticationPrincipal Long memberId,
-            @Valid @RequestBody BoardDto.Request request) {
-        boardService.create(memberId, request);
+            @Valid @RequestBody BoardDto.BoardPostRequest boardPostRequest) {
+        boardService.create(memberId, boardPostRequest);
     }
 
     //전체 조회

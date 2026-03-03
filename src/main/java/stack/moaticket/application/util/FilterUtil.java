@@ -1,0 +1,32 @@
+package stack.moaticket.application.util;
+
+import java.util.Set;
+
+public class FilterUtil {
+    private FilterUtil() {}
+    private static final Set<String> API_FILTER_SET = Set.of(
+            "/login",
+            "/rtmp/on-publish",
+            "/rtmp/on-done",
+            "/favicon.ico",
+            "/error",
+            "/health",
+            "/actuator/prometheus",
+            "/test/alarm/sub",
+            "/test/auth/token",
+            "/api/sentiments/keywords"
+    );
+    private static final Set<String> PREFIX_FILTER_SET = Set.of(
+            "/swagger-ui",
+            "/api-docs",
+            "/v3/api-docs",
+            "/api/product/detail",
+            "/api/product/concertList",
+            "/ws",
+            "/test"
+    );
+
+    public static boolean checkFilter(String uri) {
+        return API_FILTER_SET.contains(uri) || PREFIX_FILTER_SET.stream().anyMatch(uri::startsWith);
+    }
+}

@@ -1,0 +1,141 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
+}
+
+group = 'stack'
+description = 'moaticket'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+bootJar.enabled = true
+jar.enabled = false
+
+repositories {
+    mavenCentral()
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-security:4.0.1'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+
+    // 기존 JWT (JWT 라이브러리 버전 업데이트 필요 (보안 이슈로 0.12.6으로 변경 추천))
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+    implementation 'org.postgresql:postgresql:42.6.0'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Validation
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.0.Final'
+
+    // Querydsl 관련 라이브러리
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // UUID
+    implementation 'com.github.f4b6a3:uuid-creator:5.3.3'
+
+    // Monitor
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    runtimeOnly "com.h2database:h2"
+    testImplementation "com.squareup.okhttp3:okhttp:4.12.0"
+    testImplementation "com.squareup.okhttp3:okhttp-sse:4.12.0"
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn test
+
+    classDirectories.setFrom(
+            files(classDirectories.files.collect { dir ->
+                fileTree(dir: dir, exclude: [
+                        // DTO
+                        '**/dto/**',
+                        '**/*Dto.class',
+                        '**/*Request.class',
+                        '**/*Response.class',
+
+                        // Exception
+                        '**/exception/**',
+                        '**/*Exception.class',
+
+                        // Querydsl
+                        '**/Q*.class',
+
+                        // entity
+                        '**/entity/**',
+
+                        // Generated / 공통
+                        '**/*Application.class',
+
+                        '**/concert/**',
+                        '**/hall/**',
+                        '**/system/toss/**',
+                        '**/system/component/Validator**',
+                        '**/domain/session/**',
+                        '**/domain/ticket/**',
+                        '**/ProductService.class',
+                        '**/ReviewService.class',
+                        '**/RtmpService.class',
+                        '**/MemberInfoService.class',
+                        '**/PaymentFailWriter.class',
+                        '**/domain/booking_history/**',
+                        '**/BookingHistoryService.class',
+
+                        '**/controller/**'
+
+                ])
+            })
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}

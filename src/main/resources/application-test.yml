@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${DB_TEST_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  sql:
+    init:
+      mode: never

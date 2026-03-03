@@ -1,0 +1,58 @@
+server:
+  port: 8080
+  tomcat:
+    accept-count: 30000       # 백로그 큐 크기(backlog)
+    max-connections: 40000    # 최대 연결 수(서버 소켓의 차일드 소켓들)
+    connection-timeout: 30000  # 연결 타임아웃
+    keep-alive-timeout: 60000
+    threads:
+      max: 200
+      min-spare: 10
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 60
+      minimum-idle: 10
+      connection-timeout: 2000
+      validation-timeout: 1000
+      max-lifetime: 1800000
+      idle-timeout: 600000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  sql:
+    init:
+      mode: never
+  kafka:
+    # 브로커 주소 목록 (클러스터 구성)
+    bootstrap-servers:
+      - ec2-3-35-241-141.ap-northeast-2.compute.amazonaws.com:9092
+
+    producer:
+      # key/value 직렬화 클래스
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # 메시지를 즉시 보내지 않고, 최대 1ms 동안 배치 모으기
+      linger-ms: 1
+
+logging:
+  level:
+    root: WARN                     # 프로덕션에서는 경고 이상만 로깅
+    com.my.investment_mentor: WARN # 애플리케이션 로그는 INFO 수준
+    org.springframework: WARN      # Spring 로그는 경고 이상만
+    org.hibernate.orm.jdbc.error: ERROR
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: ERROR
+
+app:
+  server:
+    test:
+      load-test:
+        enabled: true

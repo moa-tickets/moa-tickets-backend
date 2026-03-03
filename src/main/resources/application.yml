@@ -1,0 +1,110 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+
+  web:
+    resources:
+      add-mappings: false
+
+  data:
+    redis:
+      inner:
+        host: ${INNER_REDIS_HOST}
+        port: ${INNER_REDIS_PORT}
+        username: ${INNER_REDIS_USERNAME}
+        password: ${INNER_REDIS_PASSWORD}
+      outer:
+        host: ${OUTER_REDIS_HOST}
+        port: ${OUTER_REDIS_PORT}
+        username: ${OUTER_REDIS_USERNAME}
+        password: ${OUTER_REDIS_PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            redirect-uri: ${REDIRECT_URI}
+            scope:
+              - profile
+              - email
+  jwt:
+    secret: ${JWT_SECRET}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,env,metrics,websocket
+  metrics:
+    distribution:
+      percentiles-histogram:
+        alarm.sse.send.seconds: true
+        executor.session-start.pipeline: true
+        executor.ticket-release.pipeline: true
+        executor.ticket-release.redis.produce-pipeline: true
+        executor.ticket-release.redis.consume-pipeline: true
+        executor.ticket-release.redis.pel-pipeline: true
+
+app:
+  server:
+    alarm:
+      type: ${APP_SERVER_ALARM_TYPE:SSE}
+      shard-count: ${APP_SERVER_ALARM_SHARD_COUNT:8}
+      executor:
+        use-virtual: ${APP_SERVER_ALARM_EXECUTOR_USE_VIRTUAL:true}
+        core-thread: ${APP_SERVER_ALARM_EXECUTOR_CORE_THREAD:8}
+        max-thread: ${APP_SERVER_ALARM_EXECUTOR_MAX_THREAD:20}
+        queue-capacity: ${APP_SERVER_ALARM_EXECUTOR_QUEUE_CAPACITY:1000}
+        max-concurrent: ${APP_SERVER_ALARM_EXECUTOR_MAX_CONCURRENT:200}
+        acquire-timeout-millis: ${APP_SERVER_ALARM_EXECUTOR_ACQUIRE_TIMEOUT_MILLIS:0}
+    scheduler:
+      session-start:
+        enabled: ${APP_SERVER_SCHEDULER_SESSION_START_ENABLED:true}
+        rate-millis: ${APP_SERVER_SCHEDULER_SESSION_START_DELAY:1000}
+        batch-size: ${APP_SERVER_SCHEDULER_SESSION_START_BATCH_SIZE:200}
+        executor:
+          max-thread: ${APP_SERVER_SCHEDULER_SESSION_START_EXECUTOR_MAX_THREAD:10}
+      ticket-release:
+        enabled: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_ENABLED:true}
+        rate-millis: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_DELAY:1000}
+        batch-size: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_BATCH_SIZE:200}
+        executor:
+          max-thread: ${APP_SERVER_SCHEDULER_TICKET_RELEASE_MAX_THREAD:10}
+      chat-message-bulk:
+        enabled: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_ENABLED:true}
+        rate-millis: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_DELAY:5000}
+    consumer:
+      ticket-release:
+        consumer-thread: ${APP_SERVER_CONSUMER_TICKET_RELEASE_MAX_THREAD:10}
+        pel-thread: ${APP_SERVER_CONSUMER_TICKET_RELEASE_PEL_THREAD:2}
+        limit: ${APP_SERVER_CONSUMER_TICKET_RELEASE_LIMIT:200}
+        lock-millis: ${APP_SERVER_CONSUMER_TICKET_RELEASE_LOCK_MILLIS:20000}
+        backoff-millis: ${APP_SERVER_CONSUMER_TICKET_RELEASE_BACKOFF_MILLIS:300}
+      chat:
+        chat-message-bulk:
+          shard-count: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_SHARD_COUNT:4}
+          threshold: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_THRESHOLD:100}
+          flush-timeout: ${APP_SERVER_SCHEDULER_CHAT_MESSAGE_BULK_FLUSH_TIMEEOUT:5000}
+
+
+  ai:
+    url: ${AI_URL}
+  frontend:
+    url: ${APP_FRONTEND_URL}
+  cookie:
+    domain: ${APP_COOKIE_DOMAIN}

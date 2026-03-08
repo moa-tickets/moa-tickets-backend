@@ -17,7 +17,7 @@ public class ConcertInformFacade {
     private final SessionStartAlarmService sessionStartAlarmService;
     private final SessionStartGaugeManager manager;
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<Long> passAndProcess(LocalDateTime now, Long batchSize) {
         List<Long> idList = sessionStartAlarmService.getPendingSessionAlarmIdList(now, batchSize);
         if(idList.isEmpty()) return List.of();

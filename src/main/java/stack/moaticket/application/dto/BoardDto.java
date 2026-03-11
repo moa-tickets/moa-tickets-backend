@@ -13,7 +13,7 @@ public abstract class BoardDto {
     // Create
     //title, content
     @Getter
-    public static class Request {
+    public static class BoardPostRequest {
         @NotNull private String title;
         @NotNull private String content;
     }
@@ -25,11 +25,13 @@ public abstract class BoardDto {
         private String title;
         private String content;
         private String nickName;
+        private long likeCount; //해당 게시글 좋아요 수
         private LocalDateTime createdAt;
     }
 
     public record BoardFixRequest(
-            @NotNull String title,@NotNull String content
+            @NotNull String title,
+            @NotNull String content
     ){
     }
 }

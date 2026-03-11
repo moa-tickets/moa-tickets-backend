@@ -26,8 +26,7 @@ public class CommentController {
 
     @GetMapping("/boards/{boardId}/comments")
     public List<CommentDto.CommentResponse> reads(
-            @AuthenticationPrincipal Long memberId,
-            @PathVariable Long boardId
+            @AuthenticationPrincipal Long memberId
     ) {
         return commentService.reads();
     }
